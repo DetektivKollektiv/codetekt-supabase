@@ -20,7 +20,7 @@ VALUES (
         "type": "multi-line-text",
         "question": "Fehlen Stichwörter?",
         "options": [],
-        "additonal_option_count": 3,
+        "additonal_option_count": 5,
         "max_length": 50,
         "placeholder": "Stichwort hinzufügen...",
         "is_required": true
@@ -55,7 +55,7 @@ VALUES (
         "prefilled_answer_value": null,
         "is_required": true,
         "is_disabled": false,
-        "is_disputable": true
+        "is_disputable": false
       }
     ]
   },

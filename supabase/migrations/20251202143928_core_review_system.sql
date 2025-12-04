@@ -282,14 +282,14 @@ begin
       v_supabase_url := current_setting('app.settings.supabase_url', true);
       v_service_role_key := current_setting('app.settings.service_role_key', true);
       
-      -- Async HTTP Call zur Edge Function
-      perform extensions.http_post(
+      -- Async HTTP Call zur Edge Function via pg_net
+      perform net.http_post(
         url := v_supabase_url || '/functions/v1/calculate-aggregation',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || v_service_role_key
         ),
-        body := jsonb_build_object('case_id', new.case_id)::text
+        body := jsonb_build_object('case_id', new.case_id)
       );
     end if;
   end if;

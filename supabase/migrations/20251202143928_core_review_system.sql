@@ -1,5 +1,5 @@
 -- ============================================
--- MIGRATION: Core Review System
+-- MIGRATION: Core Review System (Performance Optimized)
 -- Tables: review_templates, cases, reviews, aggregated_reviews
 -- ============================================
 
@@ -36,7 +36,7 @@ create policy "Only authenticated users can create review templates."
   as permissive
   for insert
   to authenticated
-  with check (created_by = auth.uid());
+  with check (created_by = (select auth.uid()));
 
 -- Grants
 grant select on table "public"."review_templates" to "anon";
@@ -53,7 +53,6 @@ create table "public"."cases" (
   "submitted_by" uuid references public.profiles(id),
   "content" text not null,
   "content_type" text not null check (content_type in ('url', 'text')),
-  "case_type" text,
   "template_version" integer references public.review_templates(version),
   "submitted_at" timestamp with time zone default now()
 );
@@ -80,21 +79,21 @@ create policy "Authenticated users can create cases."
   as permissive
   for insert
   to authenticated
-  with check (submitted_by = auth.uid());
+  with check (submitted_by = (select auth.uid()));
 
 create policy "Users can update their own cases."
   on "public"."cases"
   as permissive
   for update
   to authenticated
-  using (submitted_by = auth.uid());
+  using (submitted_by = (select auth.uid()));
 
 create policy "Users can delete their own cases."
   on "public"."cases"
   as permissive
   for delete
   to authenticated
-  using (submitted_by = auth.uid());
+  using (submitted_by = (select auth.uid()));
 
 -- Grants
 grant select on table "public"."cases" to "anon";
@@ -109,7 +108,7 @@ grant all on table "public"."cases" to "service_role";
 create table "public"."reviews" (
   "id" uuid not null default gen_random_uuid(),
   "case_id" uuid not null references public.cases(id) on delete cascade,
-  "user_id" uuid not null references public.profiles(id),
+  "reviewed_by" uuid not null references public.profiles(id),
   "status" text not null default 'in_progress' check (status in ('in_progress', 'submitted')),
   "data" jsonb,
   "created_at" timestamp with time zone default now(),
@@ -122,12 +121,12 @@ create unique index reviews_pkey on public.reviews using btree (id);
 alter table "public"."reviews" add constraint "reviews_pkey" primary key using index "reviews_pkey";
 
 -- Ein User kann nur eine Review pro Case haben
-create unique index reviews_case_user_unique on public.reviews using btree (case_id, user_id);
+create unique index reviews_case_user_unique on public.reviews using btree (case_id, reviewed_by);
 alter table "public"."reviews" add constraint "reviews_case_user_unique" unique using index "reviews_case_user_unique";
 
 -- Indizes für Queries und Trigger
 create index reviews_case_id_idx on public.reviews using btree (case_id);
-create index reviews_user_id_idx on public.reviews using btree (user_id);
+create index reviews_reviewed_by_idx on public.reviews using btree (reviewed_by);
 create index reviews_case_status_idx on public.reviews using btree (case_id, status);
 
 -- Policies
@@ -136,28 +135,38 @@ create policy "Users can view their own reviews."
   as permissive
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (reviewed_by = (select auth.uid()));
 
 create policy "Authenticated users can create reviews."
   on "public"."reviews"
   as permissive
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (reviewed_by = (select auth.uid()));
 
 create policy "Users can update their own in-progress reviews."
   on "public"."reviews"
   as permissive
   for update
   to authenticated
-  using (user_id = auth.uid() and status = 'in_progress');
+  using (reviewed_by = (select auth.uid()) and status = 'in_progress');
 
 create policy "Users can delete their own in-progress reviews."
   on "public"."reviews"
   as permissive
   for delete
   to authenticated
-  using (user_id = auth.uid() and status = 'in_progress');
+  using (reviewed_by = (select auth.uid()) and status = 'in_progress');
+
+create policy "Users can view submitted reviews for cases."
+  on "public"."reviews"
+  as permissive
+  for select
+  to authenticated
+  using (
+    reviewed_by = (select auth.uid()) 
+    OR status = 'submitted'  -- Nur submitted reviews sind für alle sichtbar
+  );
 
 -- Grants
 grant select, insert, update, delete on table "public"."reviews" to "authenticated";

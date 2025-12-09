@@ -1,3 +1,10 @@
+import {
+  ChipAnswer,
+  LikertScaleAnswer,
+  MultyLineTextAnswer,
+  TextAreaAnswer,
+  TrafficLightAnswer,
+} from "../answers-values.ts";
 import { Condition } from "./condition.ts";
 import {
   ChipOption,
@@ -19,34 +26,34 @@ export interface ChipField extends BaseField {
   type: "chip";
   question: string;
   options: ChipOption[];
-  answer_value: string[] | null; // Multi-Select: Array von Option-IDs
+  answer_value: ChipAnswer; // Multi-Select: Array von Option-IDs
 }
 
 export interface TraficLightField extends BaseField {
   type: "traffic-light";
   options: [TraficLightOption]; // Nur EINE Option pro Field
-  answer_value: 0 | 1 | 2 | 3 | 4 | null; // Single-Select: Ein Wert
+  answer_value: TrafficLightAnswer; // Single-Select: Ein Wert
 }
 
 export interface LikertScaleField extends BaseField {
   type: "likert-scale";
   question: string;
   options: LikertScaleOption[];
-  answer_value: 0 | 1 | 2 | 3 | 4 | null; // Single-Select: Ein Wert
+  answer_value: LikertScaleAnswer; // Single-Select: Ein Wert
 }
 
 export interface TextAreaField extends BaseField {
   type: "text-area";
   question: string;
   options: TextAreaOption[];
-  answer_value: string | null; // Text-Input
+  answer_value: TextAreaAnswer; // Text-Input
 }
 
 export interface MultiLineTextField extends BaseField {
   type: "multi-line-text";
   question: string;
   options: MultiLineTextOption[];
-  answer_value: string[] | null;
+  answer_value: MultyLineTextAnswer;
   additonal_option_count: number;
   max_length: number;
   placeholder: string;

@@ -71,7 +71,7 @@ INSERT INTO public.reviews (
 );
 
 -- Review 3: Dritter Reviewer ergänzt 1 Keyword (submitted)
-/* INSERT INTO public.reviews (
+INSERT INTO public.reviews (
   id,
   case_id,
   reviewed_by,
@@ -101,10 +101,5 @@ INSERT INTO public.reviews (
   }'::jsonb,
   now() - interval '12 hours',
   now() - interval '12 hours'
-); */
+);
 
--- HINWEIS: 
--- Review 1: gorm-labenz@hotmail.com
--- Review 2: anna.schmidt@example.com
--- Review 3: max.mueller@example.com
--- Der on_review_submitted Trigger sollte bei Review 3 die calculate-aggregation Edge Function aufrufen

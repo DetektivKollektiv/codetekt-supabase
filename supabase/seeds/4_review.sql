@@ -5,7 +5,7 @@
 -- ============================================
 
 -- Review 1: Erster Reviewer setzt content_type + 5 Keywords (submitted)
-INSERT INTO public.reviews (
+INSERT INTO public."review_answers" (
   id,
   case_id,
   reviewed_by,
@@ -39,7 +39,7 @@ INSERT INTO public.reviews (
 );
 
 -- Review 2: Zweiter Reviewer ergänzt 3 Keywords (submitted)
-INSERT INTO public.reviews (
+INSERT INTO public."review_answers" (
   id,
   case_id,
   reviewed_by,
@@ -71,7 +71,7 @@ INSERT INTO public.reviews (
 );
 
 -- Review 3: Dritter Reviewer ergänzt 1 Keyword (submitted)
-INSERT INTO public.reviews (
+INSERT INTO public."review_answers" (
   id,
   case_id,
   reviewed_by,

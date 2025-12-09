@@ -6,7 +6,7 @@ import {
     TrafficLightAnswer,
 } from "../answers-values.ts";
 
-export interface ReviewAnswers {
+export interface ReviewAnswer {
     [key: string]:
         | MultyLineTextAnswer
         | ChipAnswer

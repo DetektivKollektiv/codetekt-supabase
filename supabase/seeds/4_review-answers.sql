@@ -31,7 +31,7 @@ INSERT INTO public."review_answers" (
     "public_media_match": 3,
     "author_credentials": 2,
     "images_quality": 3,
-    "additional_rating": "minor_issue",
+    "additional_rating": 4,
     "additional_comment": "Die Überschrift ist etwas reißerisch formuliert, könnte neutraler sein."
   }'::jsonb,
   now() - interval '2 days',
@@ -64,7 +64,7 @@ INSERT INTO public."review_answers" (
     "public_media_match": 3,
     "author_credentials": 3,
     "images_quality": 3,
-    "additional_rating": "nothing"
+    "additional_rating": 1
   }'::jsonb,
   now() - interval '1 day',
   now() - interval '1 day'
@@ -96,7 +96,7 @@ INSERT INTO public."review_answers" (
     "public_media_match": 3,
     "author_credentials": 3,
     "images_quality": 3,
-    "additional_rating": "major_issue",
+    "additional_rating":1,
     "additional_comment": "Der Artikel stellt nur eine Seite des Konflikts dar. Russische Perspektive fehlt komplett."
   }'::jsonb,
   now() - interval '12 hours',

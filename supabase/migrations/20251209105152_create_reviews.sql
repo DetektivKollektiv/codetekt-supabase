@@ -8,9 +8,16 @@ create table "public"."reviews" (
   "case_id" uuid not null references public.cases(id) on delete cascade,
   "reviewed_by" uuid not null references public.profiles(id),
   "status" text not null default 'in_progress' check (status in ('in_progress', 'submitted')),
-  "data" jsonb,
-  "created_at" timestamp with time zone default now(),
-  "submitted_at" timestamp with time zone
+  "data" jsonb not null,
+  "created_at" timestamp with time zone  not null default now(),
+  "submitted_at" timestamp with time zone,
+  
+  -- Validierung: submitted_at nur bei status='submitted'
+  constraint "reviews_submitted_at_required_when_submitted"
+    check (
+      (status = 'in_progress' and submitted_at is null) or
+      (status = 'submitted' and submitted_at is not null)
+    )
 );
 
 alter table "public"."reviews" enable row level security;

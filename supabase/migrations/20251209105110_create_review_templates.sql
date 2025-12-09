@@ -6,8 +6,8 @@
 create table "public"."review_templates" (
   "version" integer not null,
   "template" jsonb not null,
-  "created_by" uuid references public.profiles(id),
-  "created_at" timestamp with time zone default now()
+  "created_by" uuid not null references public.profiles(id),
+  "created_at" timestamp with time zone not null default now()
 );
 
 alter table "public"."review_templates" enable row level security;

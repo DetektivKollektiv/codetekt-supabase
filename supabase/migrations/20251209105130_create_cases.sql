@@ -5,11 +5,11 @@
 
 create table "public"."cases" (
   "id" uuid not null default gen_random_uuid(),
-  "submitted_by" uuid references public.profiles(id),
+  "submitted_by" uuid not null references public.profiles(id),
   "content" text not null,
   "content_type" text not null check (content_type in ('url', 'text')),
-  "template_version" integer references public.review_templates(version),
-  "submitted_at" timestamp with time zone default now()
+  "template_version" integer not null references public.review_templates(version),
+  "submitted_at" timestamp with time zone not null default now()
 );
 
 alter table "public"."cases" enable row level security;
@@ -54,31 +54,3 @@ create policy "Users can delete their own cases."
 grant select on table "public"."cases" to "anon";
 grant select, insert, update, delete on table "public"."cases" to "authenticated";
 grant all on table "public"."cases" to "service_role";
-
--- ============================================
--- TRIGGER: Auto-set template_version
--- ============================================
-
-create or replace function public.on_case_created()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  -- Template Version einfrieren (höchste verfügbare)
-  if new.template_version is null then
-    new.template_version := (
-      select max(version) 
-      from public.review_templates
-    );
-  end if;
-  
-  return new;
-end;
-$$;
-
-create trigger on_case_created
-  before insert on public.cases
-  for each row
-  execute function public.on_case_created();

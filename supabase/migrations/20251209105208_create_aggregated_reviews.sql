@@ -5,10 +5,10 @@
 
 create table "public"."aggregated_reviews" (
   "case_id" uuid not null references public.cases(id) on delete cascade,
-  "result_score" decimal(3,2),
-  "data" jsonb,
-  "reviewer_ids" uuid[],
-  "calculated_at" timestamp with time zone default now()
+  "result_score" decimal(3,2) not null,
+  "data" jsonb not null,
+  "reviewer_ids" uuid[] not null,
+  "calculated_at" timestamp with time zone not null default now()
 );
 
 alter table "public"."aggregated_reviews" enable row level security;

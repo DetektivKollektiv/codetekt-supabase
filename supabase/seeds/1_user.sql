@@ -1,6 +1,7 @@
 -- ============================================
 -- SEED: Test Users + Sample Data
 -- Nur für lokale Entwicklung
+-- Mit festen UUIDs für referenzierbare Test-Daten
 -- ============================================
 
 -- Test User 1: gorm-labenz@hotmail.com / testpassword123
@@ -24,7 +25,7 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
   'authenticated',
   'authenticated',
   'gorm-labenz@hotmail.com',
@@ -52,26 +53,23 @@ INSERT INTO auth.identities (
   created_at,
   updated_at
 ) VALUES (
-  uuid_generate_v4(),
-  (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com'),
-  format(
-    '{"sub":"%s","email":"%s"}',
-    (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com')::text,
-    'gorm-labenz@hotmail.com'
-  )::jsonb,
+  gen_random_uuid(),
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+  '{"sub":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","email":"gorm-labenz@hotmail.com"}'::jsonb,
   'email',
-  uuid_generate_v4(),
+  gen_random_uuid(),
   current_timestamp,
   current_timestamp,
   current_timestamp
 );
 
+-- Profile wurde via Trigger erstellt, jetzt updaten
 UPDATE public.profiles
 SET
   username = 'gormlabenz',
   full_name = 'Gorm Labenz',
   updated_at = current_timestamp
-WHERE id = (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com');
+WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 -- ============================================
 -- Test User 2: anna.schmidt@example.com / testpassword123
@@ -97,7 +95,7 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
   'authenticated',
   'authenticated',
   'anna.schmidt@example.com',
@@ -125,15 +123,11 @@ INSERT INTO auth.identities (
   created_at,
   updated_at
 ) VALUES (
-  uuid_generate_v4(),
-  (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com'),
-  format(
-    '{"sub":"%s","email":"%s"}',
-    (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com')::text,
-    'anna.schmidt@example.com'
-  )::jsonb,
+  gen_random_uuid(),
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  '{"sub":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","email":"anna.schmidt@example.com"}'::jsonb,
   'email',
-  uuid_generate_v4(),
+  gen_random_uuid(),
   current_timestamp,
   current_timestamp,
   current_timestamp
@@ -144,7 +138,7 @@ SET
   username = 'annaschmidt',
   full_name = 'Anna Schmidt',
   updated_at = current_timestamp
-WHERE id = (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com');
+WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 -- ============================================
 -- Test User 3: max.mueller@example.com / testpassword123
@@ -170,7 +164,7 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
   'authenticated',
   'authenticated',
   'max.mueller@example.com',
@@ -198,15 +192,11 @@ INSERT INTO auth.identities (
   created_at,
   updated_at
 ) VALUES (
-  uuid_generate_v4(),
-  (SELECT id FROM auth.users WHERE email = 'max.mueller@example.com'),
-  format(
-    '{"sub":"%s","email":"%s"}',
-    (SELECT id FROM auth.users WHERE email = 'max.mueller@example.com')::text,
-    'max.mueller@example.com'
-  )::jsonb,
+  gen_random_uuid(),
+  'cccccccc-cccc-cccc-cccc-cccccccccccc',
+  '{"sub":"cccccccc-cccc-cccc-cccc-cccccccccccc","email":"max.mueller@example.com"}'::jsonb,
   'email',
-  uuid_generate_v4(),
+  gen_random_uuid(),
   current_timestamp,
   current_timestamp,
   current_timestamp
@@ -217,7 +207,7 @@ SET
   username = 'maxmueller',
   full_name = 'Max Müller',
   updated_at = current_timestamp
-WHERE id = (SELECT id FROM auth.users WHERE email = 'max.mueller@example.com');
+WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
 -- ============================================
 -- Test User 4: lisa.weber@example.com / testpassword123
@@ -243,7 +233,7 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
+  'dddddddd-dddd-dddd-dddd-dddddddddddd',
   'authenticated',
   'authenticated',
   'lisa.weber@example.com',
@@ -271,15 +261,11 @@ INSERT INTO auth.identities (
   created_at,
   updated_at
 ) VALUES (
-  uuid_generate_v4(),
-  (SELECT id FROM auth.users WHERE email = 'lisa.weber@example.com'),
-  format(
-    '{"sub":"%s","email":"%s"}',
-    (SELECT id FROM auth.users WHERE email = 'lisa.weber@example.com')::text,
-    'lisa.weber@example.com'
-  )::jsonb,
+  gen_random_uuid(),
+  'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  '{"sub":"dddddddd-dddd-dddd-dddd-dddddddddddd","email":"lisa.weber@example.com"}'::jsonb,
   'email',
-  uuid_generate_v4(),
+  gen_random_uuid(),
   current_timestamp,
   current_timestamp,
   current_timestamp
@@ -290,4 +276,4 @@ SET
   username = 'lisaweber',
   full_name = 'Lisa Weber',
   updated_at = current_timestamp
-WHERE id = (SELECT id FROM auth.users WHERE email = 'lisa.weber@example.com');
+WHERE id = 'dddddddd-dddd-dddd-dddd-dddddddddddd';

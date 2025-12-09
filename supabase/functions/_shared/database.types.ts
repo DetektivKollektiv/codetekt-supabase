@@ -36,25 +36,25 @@ export type Database = {
     Tables: {
       aggregated_reviews: {
         Row: {
-          calculated_at: string | null
+          calculated_at: string
           case_id: string
-          data: Json | null
-          result_score: number | null
-          reviewer_ids: string[] | null
+          data: Json
+          result_score: number
+          reviewer_ids: string[]
         }
         Insert: {
-          calculated_at?: string | null
+          calculated_at?: string
           case_id: string
-          data?: Json | null
-          result_score?: number | null
-          reviewer_ids?: string[] | null
+          data: Json
+          result_score: number
+          reviewer_ids: string[]
         }
         Update: {
-          calculated_at?: string | null
+          calculated_at?: string
           case_id?: string
-          data?: Json | null
-          result_score?: number | null
-          reviewer_ids?: string[] | null
+          data?: Json
+          result_score?: number
+          reviewer_ids?: string[]
         }
         Relationships: [
           {
@@ -148,25 +148,25 @@ export type Database = {
           content: string
           content_type: string
           id: string
-          submitted_at: string | null
-          submitted_by: string | null
-          template_version: number | null
+          submitted_at: string
+          submitted_by: string
+          template_version: number
         }
         Insert: {
           content: string
           content_type: string
           id?: string
-          submitted_at?: string | null
-          submitted_by?: string | null
-          template_version?: number | null
+          submitted_at?: string
+          submitted_by: string
+          template_version: number
         }
         Update: {
           content?: string
           content_type?: string
           id?: string
-          submitted_at?: string | null
-          submitted_by?: string | null
-          template_version?: number | null
+          submitted_at?: string
+          submitted_by?: string
+          template_version?: number
         }
         Relationships: [
           {
@@ -214,20 +214,20 @@ export type Database = {
       }
       review_templates: {
         Row: {
-          created_at: string | null
-          created_by: string | null
+          created_at: string
+          created_by: string
           template: Json
           version: number
         }
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
+          created_at?: string
+          created_by: string
           template: Json
           version: number
         }
         Update: {
-          created_at?: string | null
-          created_by?: string | null
+          created_at?: string
+          created_by?: string
           template?: Json
           version?: number
         }
@@ -244,8 +244,8 @@ export type Database = {
       reviews: {
         Row: {
           case_id: string
-          created_at: string | null
-          data: Json | null
+          created_at: string
+          data: Json
           id: string
           reviewed_by: string
           status: string
@@ -253,8 +253,8 @@ export type Database = {
         }
         Insert: {
           case_id: string
-          created_at?: string | null
-          data?: Json | null
+          created_at?: string
+          data: Json
           id?: string
           reviewed_by: string
           status?: string
@@ -262,8 +262,8 @@ export type Database = {
         }
         Update: {
           case_id?: string
-          created_at?: string | null
-          data?: Json | null
+          created_at?: string
+          data?: Json
           id?: string
           reviewed_by?: string
           status?: string

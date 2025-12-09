@@ -34,38 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      aggregated_reviews: {
-        Row: {
-          calculated_at: string
-          case_id: string
-          data: Json
-          result_score: number
-          reviewer_ids: string[]
-        }
-        Insert: {
-          calculated_at?: string
-          case_id: string
-          data: Json
-          result_score: number
-          reviewer_ids: string[]
-        }
-        Update: {
-          calculated_at?: string
-          case_id?: string
-          data?: Json
-          result_score?: number
-          reviewer_ids?: string[]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aggregated_reviews_case_id_fkey"
-            columns: ["case_id"]
-            isOneToOne: true
-            referencedRelation: "cases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       case_disputes: {
         Row: {
           case_id: string
@@ -212,36 +180,39 @@ export type Database = {
         }
         Relationships: []
       }
-      review_templates: {
+      review_aggregations: {
         Row: {
-          created_at: string
-          created_by: string
-          template: Json
-          version: number
+          calculated_at: string
+          case_id: string
+          data: Json
+          result_score: number
+          reviewer_ids: string[]
         }
         Insert: {
-          created_at?: string
-          created_by: string
-          template: Json
-          version: number
+          calculated_at?: string
+          case_id: string
+          data: Json
+          result_score: number
+          reviewer_ids: string[]
         }
         Update: {
-          created_at?: string
-          created_by?: string
-          template?: Json
-          version?: number
+          calculated_at?: string
+          case_id?: string
+          data?: Json
+          result_score?: number
+          reviewer_ids?: string[]
         }
         Relationships: [
           {
-            foreignKeyName: "review_templates_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            foreignKeyName: "review_aggregations_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases"
             referencedColumns: ["id"]
           },
         ]
       }
-      reviews: {
+      review_answers: {
         Row: {
           case_id: string
           created_at: string
@@ -271,15 +242,44 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "reviews_case_id_fkey"
+            foreignKeyName: "review_answers_case_id_fkey"
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "reviews_reviewed_by_fkey"
+            foreignKeyName: "review_answers_reviewed_by_fkey"
             columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          template: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          template: Json
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          template?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_templates_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

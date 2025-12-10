@@ -8,22 +8,22 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { Database } from "../_shared/types/database.types.ts";
 import {
+  inProgressReviewAnswerSchema,
   reviewAggregationSchema,
-  reviewAnswerSchema,
+  submittedReviewAnswerSchema,
 } from "../_shared/schemas/index.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type Payload = z.infer<typeof payloadSchema>;
 type ReviewAnswer = Database["public"]["Tables"]["review_answers"]["Row"];
 type ReviewAggregationRow =
   Database["public"]["Tables"]["review_aggregations"]["Row"];
 
 const payloadSchema = z.object({
   case_id: z.uuid(),
-  data: reviewAnswerSchema,
+  data: z.record(z.string(), z.unknown()),
 });
 
 Deno.serve(async (req) => {
@@ -52,21 +52,56 @@ Deno.serve(async (req) => {
 
   if (!parsed.success) {
     return new Response(
-      JSON.stringify({ error: parsed.error.flatten() }),
+      JSON.stringify({ error: parsed.error.issues }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
   const { case_id, data } = parsed.data;
 
+  // Try to validate as submitted (complete) review first
+  const submittedValidation = submittedReviewAnswerSchema.safeParse(data);
+  let status: "submitted" | "in_progress";
+  let submitted_at: string | null;
+  let validatedData: Record<string, unknown>;
+
+  if (submittedValidation.success) {
+    // Data is complete and valid for submission
+    status = "submitted";
+    submitted_at = new Date().toISOString();
+    validatedData = submittedValidation.data as Record<string, unknown>;
+  } else {
+    // Try to validate as in-progress (partial) review
+    const inProgressValidation = inProgressReviewAnswerSchema.safeParse(data);
+
+    if (inProgressValidation.success) {
+      // Data is valid but incomplete
+      status = "in_progress";
+      submitted_at = null;
+      validatedData = inProgressValidation.data as Record<string, unknown>;
+    } else {
+      // Data is invalid - return detailed errors from both validations
+      return new Response(
+        JSON.stringify({
+          error: "Invalid review answer data",
+          details: {
+            submitted_validation_errors: submittedValidation.error.issues,
+            in_progress_validation_errors: inProgressValidation.error.issues,
+          },
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  }
+
   // Upsert review answer for this user and case
-  const { error: upsertError, data: review_answer } = await supabase
+  const { error: upsertError } = await supabase
     .from("review_answers")
     .upsert({
       case_id,
       reviewed_by: user.id,
-      data,
-      status: "submitted",
-      submitted_at: new Date().toISOString(),
+      data: validatedData as never,
+      status,
+      submitted_at,
     }, {
       onConflict: "case_id,reviewed_by",
     });
@@ -76,53 +111,56 @@ Deno.serve(async (req) => {
     return new Response("Failed to save review answer", { status: 500 });
   }
 
-  // Fetch submitted answers for this case
-  const { data: submitted, error: selectError } = await supabase
-    .from("review_answers")
-    .select("data, reviewed_by")
-    .eq("case_id", case_id)
-    .eq("status", "submitted");
+  // Only run aggregation logic if current save is submitted
+  if (status === "submitted") {
+    // Fetch all submitted answers for this case
+    const { data: submitted, error: selectError } = await supabase
+      .from("review_answers")
+      .select("data, reviewed_by")
+      .eq("case_id", case_id)
+      .eq("status", "submitted");
 
-  if (selectError || !submitted) {
-    console.error("Select review_answers error", selectError);
-    return new Response("Failed to read review answers", { status: 500 });
-  }
+    if (selectError || !submitted) {
+      console.error("Select review_answers error", selectError);
+      return new Response("Failed to read review answers", { status: 500 });
+    }
 
-  // Only aggregate when at least 3 submitted answers exist
-  if (submitted.length >= 3) {
-    const { aggregation, resultScore } = buildAggregation(submitted);
+    // Only aggregate when at least 3 submitted answers exist
+    if (submitted.length >= 3) {
+      const { aggregation, resultScore } = buildAggregation(submitted);
 
-    // Validate aggregation structure to match shared schema
-    const validAggregation = reviewAggregationSchema.parse(aggregation);
+      // Validate aggregation structure to match shared schema
+      const validAggregation = reviewAggregationSchema.parse(aggregation);
 
-    const serviceClient = createClient<Database>(
-      supabaseUrl,
-      supabaseServiceRoleKey,
-    );
-
-    const { error: aggError } = await serviceClient
-      .from("review_aggregations")
-      .upsert(
-        {
-          case_id,
-          data: validAggregation,
-          result_score: resultScore,
-          reviewer_ids: submitted.map((row) => row.reviewed_by),
-          calculated_at: new Date().toISOString(),
-        } satisfies ReviewAggregationRow,
-        {
-          onConflict: "case_id",
-        },
+      const serviceClient = createClient<Database>(
+        supabaseUrl,
+        supabaseServiceRoleKey,
       );
 
-    if (aggError) {
-      console.error("Upsert review_aggregations error", aggError);
-      return new Response("Failed to save aggregation", { status: 500 });
+      const { error: aggError } = await serviceClient
+        .from("review_aggregations")
+        .upsert(
+          {
+            case_id,
+            data: validAggregation,
+            result_score: resultScore,
+            reviewer_ids: submitted.map((row) => row.reviewed_by),
+            calculated_at: new Date().toISOString(),
+          } satisfies ReviewAggregationRow,
+          {
+            onConflict: "case_id",
+          },
+        );
+
+      if (aggError) {
+        console.error("Upsert review_aggregations error", aggError);
+        return new Response("Failed to save aggregation", { status: 500 });
+      }
     }
   }
 
   return new Response(
-    JSON.stringify(submitted),
+    JSON.stringify({ status, saved: true }),
     { headers: { "Content-Type": "application/json" } },
   );
 });

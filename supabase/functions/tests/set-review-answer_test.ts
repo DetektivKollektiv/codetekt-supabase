@@ -90,29 +90,32 @@ Deno.test("set-review-answer - upserts review for authenticated user", async () 
       !error,
       `Function invocation failed: ${error?.message ?? "unknown error"}`,
     );
-    assert(Array.isArray(data), "Expected array of submitted answers");
 
-    // Type definition for clarity
-    type SubmissionRow = {
-      reviewed_by: string;
-      data: Record<string, unknown>;
-    };
+    // Verify response structure
+    assertExists(data, "Expected response data");
+    assertEquals(data.status, "submitted", "Expected status to be 'submitted'");
+    assertEquals(data.saved, true, "Expected saved to be true");
 
-    const submissions = data as SubmissionRow[];
+    // Step 5: Verify data was persisted by querying database
+    const { data: dbData, error: dbError } = await supabase
+      .from("review_answers")
+      .select("data, status, submitted_at")
+      .eq("case_id", testCaseId)
+      .eq("reviewed_by", userId)
+      .single();
 
-    // Find submission for current user
-    const ownSubmission = submissions.find((row) => row.reviewed_by === userId);
-    assertExists(ownSubmission, "Missing submission for authenticated user");
+    assert(!dbError, `Failed to query review answer: ${dbError?.message}`);
+    assertExists(dbData, "No review answer found in database");
 
-    // Verify the data was persisted correctly
-    const submittedData = ownSubmission.data as Record<string, unknown>;
+    assertEquals(dbData.status, "submitted", "Status should be 'submitted'");
+    assertExists(dbData.submitted_at, "submitted_at should be set");
+
+    const submittedData = dbData.data as Record<string, unknown>;
     assertEquals(
       submittedData.additional_comment,
       marker,
       "Upsert did not persist new comment value",
     );
-
-    // Verify other fields
     assertEquals(submittedData.grammar, 1, "Grammar rating not persisted");
     assertEquals(submittedData.structure, 1, "Structure rating not persisted");
     assertEquals(submittedData.headline, 1, "Headline rating not persisted");
@@ -191,6 +194,64 @@ Deno.test({
   },
 });
 
+// Test: In-progress review (partial data)
+Deno.test("set-review-answer - saves in-progress review with partial data", async () => {
+  const supabase = createTestClient();
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth
+      .signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+
+    assert(!authError, `Authentication failed: ${authError?.message}`);
+    const accessToken = authData.session!.access_token;
+    const userId = authData.session!.user.id;
+
+    const marker = `in-progress-${crypto.randomUUID()}`;
+
+    // Submit partial data (only few fields filled)
+    const payload = {
+      case_id: testCaseId,
+      data: {
+        grammar: 2,
+        structure: 1,
+        additional_comment: marker,
+      },
+    };
+
+    const { data, error } = await supabase.functions.invoke(
+      "set-review-answer",
+      {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+
+    assert(!error, "In-progress submission failed");
+    assertEquals(data.status, "in_progress", "Expected status 'in_progress'");
+    assertEquals(data.saved, true, "Expected saved to be true");
+
+    // Verify in database
+    const { data: dbData, error: dbError } = await supabase
+      .from("review_answers")
+      .select("data, status, submitted_at")
+      .eq("case_id", testCaseId)
+      .eq("reviewed_by", userId)
+      .single();
+
+    assert(!dbError, "Failed to query review answer");
+    assertExists(dbData, "Review answer not found");
+    assertEquals(dbData.status, "in_progress", "Status should be in_progress");
+    assertEquals(dbData.submitted_at, null, "submitted_at should be null");
+
+    console.log("✓ In-progress review successfully saved");
+  } finally {
+    await supabase.auth.signOut();
+  }
+});
+
 // Test: Update existing review
 Deno.test("set-review-answer - updates existing review (upsert behavior)", async () => {
   const supabase = createTestClient();
@@ -227,26 +288,38 @@ Deno.test("set-review-answer - updates existing review (upsert behavior)", async
     );
 
     assert(!error1, "First submission failed");
+    assertEquals(data1.status, "in_progress", "Expected status 'in_progress' for partial data");
 
-    type SubmissionRow = {
-      reviewed_by: string;
-      data: Record<string, unknown>;
-    };
+    // Verify first submission in database
+    const { data: db1, error: dbError1 } = await supabase
+      .from("review_answers")
+      .select("data, status, submitted_at")
+      .eq("case_id", testCaseId)
+      .eq("reviewed_by", userId)
+      .single();
 
-    const submissions1 = data1 as SubmissionRow[];
-    const own1 = submissions1.find((row) => row.reviewed_by === userId);
-    assertExists(own1, "First submission not found");
-    assertEquals(
-      (own1.data as Record<string, unknown>).additional_comment,
-      marker1,
-      "First comment not saved",
-    );
+    assert(!dbError1, "Failed to query first submission");
+    assertExists(db1, "First submission not found");
+    assertEquals(db1.status, "in_progress", "First submission should be in_progress");
+    assertEquals(db1.submitted_at, null, "submitted_at should be null for in_progress");
 
-    // Second submission (update)
+    // Second submission (update) - now with all required fields
     const payload2 = {
       case_id: testCaseId,
       data: {
+        keyword_type: ["test"],
+        content_type: ["nachrichtenartikel"],
         grammar: 2,
+        structure: 2,
+        headline: 2,
+        objectivity: 2,
+        perspectives: 2,
+        external_sources: 2,
+        claims_match_sources: 2,
+        public_media_match: 2,
+        author_credentials: 2,
+        images_quality: 2,
+        additional_rating: 4,
         additional_comment: marker2,
       },
     };
@@ -260,24 +333,26 @@ Deno.test("set-review-answer - updates existing review (upsert behavior)", async
     );
 
     assert(!error2, "Second submission failed");
+    assertEquals(data2.status, "submitted", "Expected status 'submitted' for complete data");
 
-    const submissions2 = data2 as SubmissionRow[];
-    const own2 = submissions2.find((row) => row.reviewed_by === userId);
-    assertExists(own2, "Second submission not found");
+    // Verify second submission in database
+    const { data: db2, error: dbError2 } = await supabase
+      .from("review_answers")
+      .select("data, status, submitted_at")
+      .eq("case_id", testCaseId)
+      .eq("reviewed_by", userId)
+      .single();
 
-    // Verify the update happened
-    assertEquals(
-      (own2.data as Record<string, unknown>).additional_comment,
-      marker2,
-      "Comment was not updated",
-    );
-    assertEquals(
-      (own2.data as Record<string, unknown>).grammar,
-      2,
-      "Grammar rating was not updated",
-    );
+    assert(!dbError2, "Failed to query second submission");
+    assertExists(db2, "Second submission not found");
+    assertEquals(db2.status, "submitted", "Second submission should be submitted");
+    assertExists(db2.submitted_at, "submitted_at should be set for submitted review");
 
-    console.log("✓ Review successfully updated (upsert worked)");
+    const submittedData = db2.data as Record<string, unknown>;
+    assertEquals(submittedData.additional_comment, marker2, "Comment was not updated");
+    assertEquals(submittedData.grammar, 2, "Grammar rating was not updated");
+
+    console.log("✓ Review successfully updated from in_progress to submitted");
   } finally {
     await supabase.auth.signOut();
   }

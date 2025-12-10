@@ -1,6 +1,6 @@
 -- ============================================
 -- SEED: Test Reviews for Case 1
--- Voraussetzung: Case 11111111-1111-1111-1111-111111111111 existiert
+-- Voraussetzung: Case 11111111-1111-4111-8111-111111111111 existiert
 -- Voraussetzung: 3 verschiedene User existieren
 -- ============================================
 
@@ -15,7 +15,7 @@ INSERT INTO public."review_answers" (
   submitted_at
 ) VALUES (
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com'),
   'submitted',
   '{
@@ -49,7 +49,7 @@ INSERT INTO public."review_answers" (
   submitted_at
 ) VALUES (
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com'),
   'submitted',
   '{
@@ -81,7 +81,7 @@ INSERT INTO public."review_answers" (
   submitted_at
 ) VALUES (
   'cccccccc-cccc-cccc-cccc-cccccccccccc',
-  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'max.mueller@example.com'),
   'submitted',
   '{

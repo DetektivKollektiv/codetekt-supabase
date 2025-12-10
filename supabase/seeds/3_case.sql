@@ -7,7 +7,7 @@ INSERT INTO public.cases (
   submitted_at
 ) VALUES 
   (
-    '11111111-1111-1111-1111-111111111111',
+    '11111111-1111-4111-8111-111111111111',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- <- Gorm
     'https://example.com/artikel-ukraine-krieg-2024',
     'url',
@@ -15,7 +15,7 @@ INSERT INTO public.cases (
     now() - interval '2 days'
   ),
   (
-    '22222222-2222-2222-2222-222222222222',
+    '22222222-2222-4222-8222-222222222222',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',  -- <- Anna
     'Die aktuellen Entwicklungen in der Klimapolitik zeigen...',
     'text',

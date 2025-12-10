@@ -56,12 +56,12 @@ create policy "Authenticated users can create review_answers."
   to authenticated
   with check (reviewed_by = (select auth.uid()));
 
-create policy "Users can update their own in-progress review_answers."
+create policy "Users can update their own review_answers."
   on "public"."review_answers"
-  as permissive
   for update
   to authenticated
-  using (reviewed_by = (select auth.uid()) and status = 'in_progress');
+  using (reviewed_by = (select auth.uid()))
+  with check (reviewed_by = (select auth.uid()));
 
 create policy "Users can delete their own in-progress review_answers."
   on "public"."review_answers"

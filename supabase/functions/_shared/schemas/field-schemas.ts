@@ -22,6 +22,7 @@ export const baseFieldSchema = z.object({
   is_required: z.union([z.boolean(), z.array(conditionSchema)]).optional(),
   is_shown: z.union([z.boolean(), z.array(conditionSchema)]).optional(),
   is_disputable: z.union([z.boolean(), z.array(conditionSchema)]).optional(),
+  prefilled_answer_value: z.unknown().optional(),
 });
 
 // Specific field type schemas

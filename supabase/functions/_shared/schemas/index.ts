@@ -16,7 +16,6 @@ export {
   comparisonConditionSchema,
   conditionSchema,
   equalsConditionSchema,
-  hasAnswerConditionSchema,
   type ConditionInput,
 } from "./condition-schemas.ts";
 

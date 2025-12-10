@@ -2,10 +2,6 @@ interface BaseCondition {
   field_id: string;
 }
 
-interface HasAnswerCondition extends BaseCondition {
-  operator: "has_answer";
-}
-
 interface ComparisonCondition extends BaseCondition {
   operator: ">" | "<";
   value: number;
@@ -17,6 +13,5 @@ interface EqualsCondition extends BaseCondition {
 }
 
 export type Condition =
-  | HasAnswerCondition
   | ComparisonCondition
   | EqualsCondition;

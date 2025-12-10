@@ -10,7 +10,7 @@ import { Database } from "../_shared/types/database.types.ts";
 import {
   reviewAggregationSchema,
   reviewAnswerSchema,
-} from "../_shared/zod-schemas.ts";
+} from "../_shared/schemas/index.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;

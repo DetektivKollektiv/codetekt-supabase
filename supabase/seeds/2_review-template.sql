@@ -281,7 +281,13 @@ VALUES (
             "max_length": 500
           }
         ],
-        "is_required": true,
+        "is_required": [
+          {
+            "field_id": "additional_rating",
+            "operator": "<",
+            "value": 4
+          }
+        ],
         "is_shown": [
           {
             "field_id": "additional_rating",

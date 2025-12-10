@@ -5,35 +5,27 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { z } from "npm:zod@4.1.13";
 import { Database } from "../_shared/types/database.types.ts";
-import {
-  inProgressReviewAnswerSchema,
-  reviewAggregationSchema,
-  submittedReviewAnswerSchema,
-} from "../_shared/schemas/index.ts";
+import { reviewAggregationSchema } from "../_shared/schemas/index.ts";
+import { payloadSchema, validateReviewAnswer } from "./validation.ts";
+import { buildAggregation } from "./aggregation.ts";
+
+type ReviewAggregationRow =
+  Database["public"]["Tables"]["review_aggregations"]["Row"];
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type ReviewAnswer = Database["public"]["Tables"]["review_answers"]["Row"];
-type ReviewAggregationRow =
-  Database["public"]["Tables"]["review_aggregations"]["Row"];
-
-const payloadSchema = z.object({
-  case_id: z.uuid(),
-  data: z.record(z.string(), z.unknown()),
-});
-
 Deno.serve(async (req) => {
+  // Step 1: Authenticate user
   const authHeader = req.headers.get("Authorization");
 
   if (!authHeader) {
     return new Response("Missing Authorization header", { status: 401 });
   }
 
-  const supabase = createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+  const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
   });
 
@@ -47,6 +39,7 @@ Deno.serve(async (req) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // Step 2: Parse and validate payload
   const json = await req.json().catch(() => null);
   const parsed = payloadSchema.safeParse(json);
 
@@ -56,44 +49,22 @@ Deno.serve(async (req) => {
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
+
   const { case_id, data } = parsed.data;
 
-  // Try to validate as submitted (complete) review first
-  const submittedValidation = submittedReviewAnswerSchema.safeParse(data);
-  let status: "submitted" | "in_progress";
-  let submitted_at: string | null;
-  let validatedData: Record<string, unknown>;
+  // Step 3: Validate review answer data (submitted vs in-progress)
+  const validationResult = validateReviewAnswer(data);
 
-  if (submittedValidation.success) {
-    // Data is complete and valid for submission
-    status = "submitted";
-    submitted_at = new Date().toISOString();
-    validatedData = submittedValidation.data as Record<string, unknown>;
-  } else {
-    // Try to validate as in-progress (partial) review
-    const inProgressValidation = inProgressReviewAnswerSchema.safeParse(data);
-
-    if (inProgressValidation.success) {
-      // Data is valid but incomplete
-      status = "in_progress";
-      submitted_at = null;
-      validatedData = inProgressValidation.data as Record<string, unknown>;
-    } else {
-      // Data is invalid - return detailed errors from both validations
-      return new Response(
-        JSON.stringify({
-          error: "Invalid review answer data",
-          details: {
-            submitted_validation_errors: submittedValidation.error.issues,
-            in_progress_validation_errors: inProgressValidation.error.issues,
-          },
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
-    }
+  if (!validationResult.success) {
+    return new Response(
+      JSON.stringify(validationResult.error),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
   }
 
-  // Upsert review answer for this user and case
+  const { status, validatedData, submitted_at } = validationResult;
+
+  // Step 4: Save review answer
   const { error: upsertError } = await supabase
     .from("review_answers")
     .upsert({
@@ -111,7 +82,7 @@ Deno.serve(async (req) => {
     return new Response("Failed to save review answer", { status: 500 });
   }
 
-  // Only run aggregation logic if current save is submitted
+  // Step 5: Run aggregation logic if review was submitted
   if (status === "submitted") {
     // Fetch all submitted answers for this case
     const { data: submitted, error: selectError } = await supabase
@@ -159,111 +130,21 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Step 6: Return success response
   return new Response(
     JSON.stringify({ status, saved: true }),
     { headers: { "Content-Type": "application/json" } },
   );
 });
 
-type SubmittedAnswer = Pick<ReviewAnswer, "data" | "reviewed_by">;
-
-const numericLabeledValues = [0, 1, 2, 3] as const;
-
-function buildAggregation(
-  submitted: SubmittedAnswer[],
-): { aggregation: ReviewAggregationRow["data"]; resultScore: number } {
-  const fields: Record<
-    string,
-    {
-      counts: { 0: number; 1: number; 2: number; 3: number };
-      percentages: { 0: number; 1: number; 2: number; 3: number };
-      average: number;
-      warnings: string[];
-    }
-  > = {};
-
-  // Collect metadata from first answer if present
-  const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
-  const metadata = {
-    keywords: (firstData?.keywords as string[] | null | undefined) ?? null,
-    content_type: (firstData?.content_type as string[] | null | undefined) ??
-      null,
-  };
-
-  for (const { data } of submitted) {
-    const answerRecord = data as Record<string, unknown>;
-
-    for (const [fieldId, value] of Object.entries(answerRecord)) {
-      // Only aggregate numeric answers (traffic-light / likert)
-      if (
-        typeof value !== "number" ||
-        !numericLabeledValues.includes(
-          value as (typeof numericLabeledValues)[number],
-        )
-      ) {
-        continue;
-      }
-
-      // Initialize accumulator
-      if (!fields[fieldId]) {
-        fields[fieldId] = {
-          counts: { 0: 0, 1: 0, 2: 0, 3: 0 },
-          percentages: { 0: 0, 1: 0, 2: 0, 3: 0 },
-          average: 0,
-          warnings: [],
-        };
-      }
-
-      const field = fields[fieldId];
-      // Restrict to 0..3 as defined in AggregationFieldValue
-      const bucket = Math.max(0, Math.min(3, value)) as 0 | 1 | 2 | 3;
-      field.counts[bucket] += 1;
-    }
-  }
-
-  // Calculate percentages and averages
-  for (const field of Object.values(fields)) {
-    const total = numericLabeledValues.reduce<number>(
-      (sum, key) => sum + field.counts[key],
-      0,
-    );
-    if (total > 0) {
-      for (const key of numericLabeledValues) {
-        field.percentages[key] = (field.counts[key] / total) * 100;
-      }
-      const sum = numericLabeledValues.reduce<number>(
-        (s, key) => s + field.counts[key] * key,
-        0,
-      );
-      field.average = sum / total;
-      if (field.average < 2) {
-        field.warnings.push("Warning");
-      }
-    }
-  }
-
-  const averages = Object.values(fields).map((f) => f.average);
-  const resultScore = averages.length
-    ? averages.reduce<number>((sum, v) => sum + v, 0) / averages.length
-    : 0;
-
-  return {
-    aggregation: {
-      metadata,
-      fields,
-    },
-    resultScore,
-  };
-}
-
 /* To invoke locally:
 
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
   2. Make an HTTP request:
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/test-fucntion' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJhYWFhYWFhYS1hYWFhLWFhYWEtYWFhYS1hYWFhYWFhYWFhYWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzY1MzU2MDU3LCJpYXQiOjE3NjUzNTI0NTcsImVtYWlsIjoiZ29ybS1sYWJlbnpAaG90bWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImZ1bGxfbmFtZSI6Ikdvcm0gTGFiZW56In0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjUzNTI0NTd9XSwic2Vzc2lvbl9pZCI6ImJkYzM1NzFkLTQwMTItNGFkMS1iMDY2LWY0YTliZDVmYjIyYSIsImlzX2Fub255bW91cyI6ZmFsc2V9.wr0NXS2wGwoMqspdufiYPzO_MKeZS7b-YHmP2BWZ5Pk' \
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/set-review-answer' \
+    --header 'Authorization: Bearer YOUR_TOKEN' \
     --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
+    --data '{"case_id":"uuid","data":{}}'
 
 */

@@ -212,15 +212,70 @@ export type Database = {
           },
         ]
       }
-      review_answers: {
+      review_answers_in_progress: {
+        Row: {
+          case_id: string
+          created_at: string
+          data: Json
+          has_unpublished_changes: boolean
+          id: string
+          reviewed_by: string
+          submitted_review_answers_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          data: Json
+          has_unpublished_changes?: boolean
+          id?: string
+          reviewed_by: string
+          submitted_review_answers_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          data?: Json
+          has_unpublished_changes?: boolean
+          id?: string
+          reviewed_by?: string
+          submitted_review_answers_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_answers_in_progress_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_submitted_review_answers_id_fkey"
+            columns: ["submitted_review_answers_id"]
+            isOneToOne: false
+            referencedRelation: "review_answers_submitted"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_answers_submitted: {
         Row: {
           case_id: string
           created_at: string
           data: Json
           id: string
           reviewed_by: string
-          status: string
-          submitted_at: string | null
+          submitted_at: string
+          updated_at: string
         }
         Insert: {
           case_id: string
@@ -228,8 +283,8 @@ export type Database = {
           data: Json
           id?: string
           reviewed_by: string
-          status?: string
-          submitted_at?: string | null
+          submitted_at?: string
+          updated_at?: string
         }
         Update: {
           case_id?: string
@@ -237,19 +292,19 @@ export type Database = {
           data?: Json
           id?: string
           reviewed_by?: string
-          status?: string
-          submitted_at?: string | null
+          submitted_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "review_answers_case_id_fkey"
+            foreignKeyName: "review_answers_submitted_case_id_fkey"
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "review_answers_reviewed_by_fkey"
+            foreignKeyName: "review_answers_submitted_reviewed_by_fkey"
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "profiles"

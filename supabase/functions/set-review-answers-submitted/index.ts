@@ -62,6 +62,9 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Capture updated_at for optimistic locking (race condition protection)
+    const originalUpdatedAt = inProgressReview.updated_at;
+
     // Step 4: Validate data with strict schema
     const validation = validateSubmittedData(
       inProgressReview.data as Record<string, unknown>,
@@ -107,21 +110,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 7: Update in-progress tracking (DO NOT DELETE - keep for history)
-    const { error: updateError } = await supabase
+    // Step 7: Update in-progress tracking (with race condition protection)
+    const { data: updateResult, error: updateError } = await supabase
       .from("review_answers_in_progress")
       .update({
         submitted_review_answers_id: submittedReview.id,
         has_unpublished_changes: false,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", in_progress_id);
+      .eq("id", in_progress_id)
+      .eq("updated_at", originalUpdatedAt) // Optimistic lock
+      .select("id");
 
-    if (updateError) {
-      console.error(
-        "Failed to update in-progress tracking:",
-        updateError,
+    // If no rows updated (race condition), fallback to linking only
+    if (!updateResult || updateResult.length === 0) {
+      console.warn(
+        "Race condition detected: in-progress review was modified during publish. " +
+          "Linking submitted_review_answers_id only, preserving newer draft state.",
       );
+
+      const { error: fallbackError } = await supabase
+        .from("review_answers_in_progress")
+        .update({
+          submitted_review_answers_id: submittedReview.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", in_progress_id);
+
+      if (fallbackError) {
+        console.error("Fallback update failed:", fallbackError);
+      }
+    } else if (updateError) {
+      console.error("Failed to update in-progress tracking:", updateError);
       // Don't fail the request - the review was published successfully
     }
 

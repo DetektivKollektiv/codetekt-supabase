@@ -60,8 +60,9 @@ supabase functions deploy
 # Run all function tests
 deno test --allow-net --allow-env supabase/functions/tests/
 
-# Run specific test file
-deno test --allow-net --allow-env supabase/functions/tests/set-review-answer_test.ts
+# Run specific test files
+deno test --allow-net --allow-env supabase/functions/tests/set-review-answers-in-progress_test.ts
+deno test --allow-net --allow-env supabase/functions/tests/set-review-answers-submitted_test.ts
 ```
 
 ## Architecture
@@ -74,7 +75,9 @@ User → profiles
   ↓
 Creates case → cases (references review_templates by version)
   ↓
-Receives review_answers (status: in_progress or submitted)
+Saves draft → review_answers_in_progress (private to author)
+  ↓
+Publishes → review_answers_submitted (public read, service_role write)
   ↓
 When 3+ submitted → review_aggregations (statistical results)
   ↓
@@ -85,9 +88,14 @@ Optional: case_disputes (metadata challenges requiring admin resolution)
 - **profiles**: User profiles (extends auth.users), public read, self-update
 - **review_templates**: Versioned questionnaires stored as JSONB, immutable versions
 - **cases**: Content submissions, references specific template version
-- **review_answers**: User reviews with dual state (in_progress vs submitted)
-  - Unique constraint: (case_id, reviewed_by) - one review per user per case
-  - Visibility: Own reviews + all submitted reviews
+- **review_answers_in_progress**: Draft reviews (private to author)
+  - Unique constraint: (case_id, reviewed_by) - one draft per user per case
+  - Visibility: Own drafts only
+  - Tracks: `submitted_review_answers_id` (link to published), `has_unpublished_changes` (sync state)
+- **review_answers_submitted**: Published reviews (public read, service_role write only)
+  - Unique constraint: (case_id, reviewed_by) - one published review per user per case
+  - Visibility: All authenticated users can read
+  - Immutable by users after publish (only edge function can write)
 - **review_aggregations**: Statistical aggregation of 3+ submitted reviews
   - Only service_role can write (via edge function)
   - Contains counts, percentages, averages, warnings, result_score (0-3 scale)
@@ -95,27 +103,47 @@ Optional: case_disputes (metadata challenges requiring admin resolution)
 
 ### Edge Functions
 
-#### set-review-answer (Primary Function)
-**Location:** `supabase/functions/set-review-answer/index.ts`
+#### set-review-answers-in-progress
+**Location:** `supabase/functions/set-review-answers-in-progress/index.ts`
 
-**Purpose:** Save and validate review answers, trigger aggregation when threshold met
+**Purpose:** Save draft review answers (all fields optional)
 
 **Key Flow:**
 1. **Authentication** - Verify JWT, extract user ID
-2. **Dual Validation** - Smart status determination:
-   - Try `submittedReviewAnswerSchema` (all required fields) → status: "submitted"
-   - Fallback to `inProgressReviewAnswerSchema` (all optional) → status: "in_progress"
-   - Both fail → Return validation errors
-3. **Upsert Review** - Save/update review_answers (handles duplicate submissions)
-4. **Aggregation Logic** (only if status = "submitted"):
-   - Query all submitted reviews for case
-   - If count >= 3: Calculate aggregation via `buildAggregation()`
-   - Save to review_aggregations using service_role client
-5. **Return** - {status, saved: true}
+2. **Parse Payload** - `{ case_id, data }`
+3. **Validation** - Use `inProgressReviewAnswerSchema` (all fields optional)
+4. **Upsert Draft** - Save/update to `review_answers_in_progress` table
+   - Sets `has_unpublished_changes = true`
+   - Uses `onConflict: "case_id,reviewed_by"`
+5. **Return** - `{ saved: true }`
 
 **Modules:**
-- `validation.ts` - Dual-schema validation logic
+- `validation.ts` - Simple validation with optional fields
+
+#### set-review-answers-submitted
+**Location:** `supabase/functions/set-review-answers-submitted/index.ts`
+
+**Purpose:** Publish complete review drafts, trigger aggregation when threshold met
+
+**Key Flow:**
+1. **Authentication** - Verify JWT, extract user ID
+2. **Parse Payload** - `{ in_progress_id }`
+3. **Fetch Draft** - Get in-progress review (verify ownership with `reviewed_by = user.id`)
+4. **Capture Timestamp** - Store `updated_at` for optimistic locking (race condition protection)
+5. **Validation** - Use `submittedReviewAnswerSchema` (all fields required, strict)
+6. **Publish Review** - Upsert to `review_answers_submitted` using service_role client
+7. **Update Tracking** - Update in-progress record with optimistic lock:
+   - Normal case: Set `submitted_review_answers_id` + `has_unpublished_changes = false`
+   - Race condition detected: Only set `submitted_review_answers_id` (preserves newer draft state)
+8. **Aggregation** - If 3+ submitted reviews: Calculate and save aggregation
+9. **Return** - `{ saved: true, review_id, aggregated }`
+
+**Modules:**
+- `validation.ts` - Strict validation (all fields required)
 - `aggregation.ts` - Statistical calculations (counts, percentages, averages, warnings)
+
+**Race Condition Protection:**
+Uses optimistic locking with `updated_at` timestamp to prevent overwriting concurrent edits. If draft is modified during publish, the function gracefully degrades to only linking the published review while preserving the newer draft's unpublished state.
 
 #### get-review-template
 **Status:** Placeholder (not yet implemented)
@@ -123,13 +151,12 @@ Optional: case_disputes (metadata challenges requiring admin resolution)
 
 ### Validation Architecture
 
-**Dual Schema Pattern** (unique to this codebase):
-- Same endpoint handles both draft saves and final submissions
-- Two Zod schemas for identical data structure:
-  - `submittedReviewAnswerSchema`: All fields `.required()` - strict validation
-  - `inProgressReviewAnswerSchema`: All fields `.optional()` - relaxed validation
-- Validation determines status automatically based on data completeness
-- Provides detailed error reporting for both validation attempts
+**Two-Schema Pattern:**
+- Two separate edge functions with different validation requirements:
+  - `set-review-answers-in-progress`: Uses `inProgressReviewAnswerSchema` (all fields optional)
+  - `set-review-answers-submitted`: Uses `submittedReviewAnswerSchema` (all fields required)
+- Clear separation of draft vs. published concerns
+- Provides detailed error reporting with Zod validation issues
 
 **Conditional Field Logic:**
 Review template fields support dynamic properties:
@@ -142,7 +169,9 @@ Example: `{field_id: "additional_rating", operator: "<", value: 4}` makes a fiel
 
 ### Aggregation Logic
 
-**Function:** `buildAggregation()` in `supabase/functions/set-review-answer/aggregation.ts`
+**Function:** `buildAggregation()` in `supabase/functions/set-review-answers-submitted/aggregation.ts`
+
+**When Triggered:** Automatically when 3+ submitted reviews exist for a case
 
 **Process:**
 1. Aggregates only numeric fields (traffic-light and likert-scale with values 0-3)
@@ -155,7 +184,7 @@ Example: `{field_id: "additional_rating", operator: "<", value: 4}` makes a fiel
 ```typescript
 {
   aggregation: {
-    metadata: { keywords: string[], content_type: string[] },
+    metadata: { keywords: string[] | null, content_type: string[] | null },
     fields: {
       [fieldId]: {
         counts: { 0: number, 1: number, 2: number, 3: number },
@@ -168,6 +197,46 @@ Example: `{field_id: "additional_rating", operator: "<", value: 4}` makes a fiel
   resultScore: number
 }
 ```
+
+**Saved to:** `review_aggregations` table with `reviewer_ids` array and `calculated_at` timestamp
+
+### Two-Table Review Architecture
+
+**Design Pattern:** Separation of draft and published review data
+
+**Benefits:**
+- **Clean State Management**: No ambiguous "status" field; table determines state
+- **Security**: Published reviews are immutable by users (service_role only)
+- **History Preservation**: In-progress table maintains draft history even after publish
+- **Race Condition Protection**: Optimistic locking prevents concurrent edit conflicts
+
+**Key Concepts:**
+
+1. **Draft → Publish Flow:**
+   ```
+   User creates draft → review_answers_in_progress (has_unpublished_changes = true)
+   User edits draft → Upsert to in_progress (maintains has_unpublished_changes = true)
+   User publishes → Copies to review_answers_submitted (via service_role)
+                  → Updates in_progress (sets submitted_review_answers_id, has_unpublished_changes = false)
+   ```
+
+2. **Edit After Publish Flow:**
+   ```
+   User edits published review → Creates new version in in_progress (has_unpublished_changes = true)
+   Published review unchanged → Original remains in submitted table
+   User republishes → Updates submitted (upsert), resets in_progress tracking
+   ```
+
+3. **State Indicators:**
+   - `has_unpublished_changes = false` + `submitted_review_answers_id != null` → Draft synced with published
+   - `has_unpublished_changes = true` + `submitted_review_answers_id != null` → Newer draft exists
+   - `has_unpublished_changes = true` + `submitted_review_answers_id = null` → Never published
+   - No in_progress record → No draft (may have published review only)
+
+4. **Race Condition Handling:**
+   - `set-review-answers-submitted` uses optimistic locking via `updated_at` timestamp
+   - If concurrent edit detected during publish: Only links published review, preserves draft's unpublished state
+   - Prevents data corruption from simultaneous save + publish operations
 
 ## Important Patterns and Conventions
 
@@ -182,7 +251,8 @@ Example: `{field_id: "additional_rating", operator: "<", value: 4}` makes a fiel
 ### Row Level Security (RLS)
 All tables use RLS policies for fine-grained access control:
 - **Public read, authenticated write**: review_templates, cases (own cases)
-- **Complex visibility**: review_answers (own + all submitted reviews)
+- **Private to author**: review_answers_in_progress (users can only see/edit their own drafts)
+- **Public read, service_role write**: review_answers_submitted (read-only for users)
 - **Service role only**: review_aggregations write operations
 - **Admin workflows**: case_disputes resolution
 

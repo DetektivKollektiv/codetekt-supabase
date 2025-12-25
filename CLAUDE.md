@@ -1,10 +1,11 @@
+```markdown
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Codetekt is a **crowd-sourced content verification platform** built on Supabase. Users submit content (articles, posts) for review, multiple reviewers evaluate the content using structured questionnaires, and the system automatically aggregates results when 3+ reviews are submitted.
+Codetekt is a **crowd-sourced content verification platform** built on Supabase. Users submit content (articles, posts) for review, multiple reviewers evaluate the content using structured questionnaires, and the system automatically aggregates results when 3+ reviews are submitted. Users can discuss cases through a comment system with moderation capabilities.
 
 **Tech Stack:** Supabase (PostgreSQL 17, Auth, Edge Functions), Deno 2, TypeScript, Zod 4.1.13
 
@@ -82,12 +83,20 @@ Publishes → review_answers_submitted (public read, service_role write)
 When 3+ submitted → review_aggregations (statistical results)
   ↓
 Optional: case_disputes (metadata challenges requiring admin resolution)
+  ↓
+Community: case_comments (discussion, moderation, likes, reports)
 ```
 
 **Key Tables:**
+
+**Core Tables:**
 - **profiles**: User profiles (extends auth.users), public read, self-update
+  - Fields: `id`, `username`, `is_admin`, `updated_at`
+  - `is_admin`: Boolean flag for admin privileges (default: false)
 - **review_templates**: Versioned questionnaires stored as JSONB, immutable versions
 - **cases**: Content submissions, references specific template version
+
+**Review System:**
 - **review_answers_in_progress**: Draft reviews (private to author)
   - Unique constraint: (case_id, reviewed_by) - one draft per user per case
   - Visibility: Own drafts only
@@ -100,6 +109,28 @@ Optional: case_disputes (metadata challenges requiring admin resolution)
   - Only service_role can write (via edge function)
   - Contains counts, percentages, averages, warnings, result_score (0-3 scale)
 - **case_disputes**: Admin queue for disputing case metadata fields
+
+**Comment System:**
+- **case_comments**: User comments on cases
+  - Fields: `id`, `case_id`, `author_id`, `content`, `edited_at`, `created_at`, `updated_at`
+  - Edit tracking: `edited_at` timestamp (no edit history)
+  - Authors can edit/delete only non-moderated comments
+  - Content limit: 1-5000 characters
+- **case_comment_moderations**: Admin moderation of comments
+  - Fields: `id`, `comment_id`, `reason`, `moderated_by`, `moderated_at`
+  - Unique constraint: One moderation per comment
+  - Existence = comment is hidden
+  - `moderated_by` nullable (supports deleted admins via SET NULL)
+  - Prevents author edit/delete when moderation exists
+- **case_comment_likes**: User likes on comments
+  - Fields: `id`, `comment_id`, `user_id`, `created_at`
+  - Unique constraint: One like per user per comment
+  - Simple like/unlike functionality (no reaction types)
+- **case_comment_reports**: User reports of problematic comments
+  - Fields: `id`, `comment_id`, `reported_by`, `reason`, `created_at`
+  - Unique constraint: One report per user per comment
+  - `reason`: Freetext explanation (10-500 characters)
+  - No resolution tracking (admin checks if moderation exists)
 
 ### Edge Functions
 
@@ -238,6 +269,101 @@ Example: `{field_id: "additional_rating", operator: "<", value: 4}` makes a fiel
    - If concurrent edit detected during publish: Only links published review, preserves draft's unpublished state
    - Prevents data corruption from simultaneous save + publish operations
 
+### Comment System Architecture
+
+**Design Principles:**
+- **KISS Principle**: Minimal complexity, no edit history
+- **GDPR-Friendly**: CASCADE deletes for user data removal
+- **Admin Preservation**: Moderations survive admin deletion via SET NULL
+
+**Comment Lifecycle:**
+```
+User creates comment → case_comments
+  ↓
+User can edit (if not moderated) → edited_at timestamp updated
+  ↓
+Other users can like → case_comment_likes
+  ↓
+Other users can report → case_comment_reports
+  ↓
+Admin moderates (hides) → case_comment_moderations
+  ↓
+User cannot edit/delete moderated comments
+```
+
+**Key Features:**
+
+1. **Edit Tracking (Simple):**
+   - `edited_at` timestamp only (no edit history)
+   - Trigger updates timestamp on content change
+   - Frontend shows "(bearbeitet)" badge
+
+2. **Moderation:**
+   - Existence-based: Entry in `case_comment_moderations` = hidden
+   - Admin provides reason (10-500 characters)
+   - Deleting moderation = unhiding comment
+   - `moderated_by` can be NULL (deleted admin)
+
+3. **Likes:**
+   - Simple like/unlike (no reaction types)
+   - One like per user per comment
+   - Count aggregated in frontend
+
+4. **Reports:**
+   - Freetext reason (10-500 characters)
+   - No resolution workflow (admin checks if moderated)
+   - One report per user per comment
+
+**CASCADE Rules:**
+
+- **User Deletion (GDPR):**
+  ```
+  DELETE profiles
+    → CASCADE → case_comments (all user comments deleted)
+      → CASCADE → case_comment_likes (likes on those comments deleted)
+      → CASCADE → case_comment_moderations (moderations deleted)
+      → CASCADE → case_comment_reports (reports deleted)
+    → CASCADE → case_comment_likes (user's own likes deleted)
+    → CASCADE → case_comment_reports (user's own reports deleted)
+  ```
+
+- **Admin Deletion:**
+  ```
+  DELETE profiles (admin)
+    → SET NULL → case_comment_moderations.moderated_by
+    (moderations remain, show "Gelöschter Administrator")
+  ```
+
+- **Case Deletion:**
+  ```
+  DELETE cases
+    → CASCADE → case_comments
+      → CASCADE → case_comment_likes
+      → CASCADE → case_comment_moderations
+      → CASCADE → case_comment_reports
+  ```
+
+**RLS Policies:**
+
+- **case_comments:**
+  - SELECT: Everyone (true)
+  - INSERT: Authenticated, own author_id
+  - UPDATE: Own comments, not moderated
+  - DELETE: Own comments, not moderated
+
+- **case_comment_moderations:**
+  - SELECT: Everyone (transparency)
+  - ALL: Admins only (is_admin = true)
+
+- **case_comment_likes:**
+  - SELECT: Everyone (true)
+  - INSERT: Authenticated, own user_id
+  - DELETE: Own likes
+
+- **case_comment_reports:**
+  - SELECT: Admins see all OR users see own
+  - INSERT: Authenticated, own reported_by
+
 ## Important Patterns and Conventions
 
 ### Naming Conventions
@@ -254,12 +380,20 @@ All tables use RLS policies for fine-grained access control:
 - **Private to author**: review_answers_in_progress (users can only see/edit their own drafts)
 - **Public read, service_role write**: review_answers_submitted (read-only for users)
 - **Service role only**: review_aggregations write operations
-- **Admin workflows**: case_disputes resolution
+- **Admin workflows**: case_disputes resolution, comment moderation
+- **Comment system**: Public read comments/likes, restricted write, admin-only moderation
+
+### Admin System
+- **Admin Flag**: `profiles.is_admin` boolean (default: false)
+- **Set via UI**: Managed through Supabase Studio or direct SQL
+- **Capabilities**: Moderate comments, resolve disputes, full moderation access
+- **Preservation**: Admin deletion sets moderated_by to NULL (moderations remain)
 
 ### Test Data
 - Fixed UUIDs for test users: `aaaaaaaa-aaaa-...`, `bbbbbbbb-bbbb-...`, etc.
 - Consistent test password: "testpassword123"
-- Seeds create complete relational test data
+- First test user (Gorm) is admin: `is_admin = true`
+- Seeds create complete relational test data including comments, moderations, likes, reports
 - Run `supabase db reset` to reload fresh test data
 
 ### Database Type Generation
@@ -274,6 +408,19 @@ Edge functions share code via `supabase/functions/_shared/`:
 - `schemas/` - Zod validation schemas (grouped by domain)
 - `types/` - TypeScript types (including auto-generated database.types.ts)
 - Import using relative paths: `import { schema } from "../_shared/schemas/index.ts"`
+
+### Security Functions
+All PL/pgSQL functions use secure search paths:
+```sql
+CREATE OR REPLACE FUNCTION function_name()
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+...
+$$;
+```
 
 ## Configuration Files
 
@@ -325,8 +472,10 @@ This makes the comment field visible only when rating indicates an issue (value 
 **Migration Patterns in this Codebase:**
 - Use `IF NOT EXISTS` for idempotent operations
 - Include `CASCADE` on foreign key deletes where appropriate
+- Use `SET NULL` for admin references to preserve data on admin deletion
 - Add RLS policies immediately after table creation
 - Create helper functions for complex queries (e.g., `has_admin_resolution()`)
+- Set `search_path` in all PL/pgSQL functions for security
 
 ## Environment Variables
 
@@ -346,3 +495,49 @@ supabase secrets set KEY_NAME=value
 - **Code**: English (functions, variables, comments)
 - **Target audience**: German-speaking users (evident from review template)
 - When adding features, maintain German UI text in review templates and user-facing content
+
+## Frontend Integration Notes
+
+### Comment System Frontend Queries
+
+**Fetch Comments for a Case:**
+```typescript
+// Get all comments with author info
+const { data: comments } = await supabase
+  .from('case_comments')
+  .select('*, profiles!author_id(username)')
+  .eq('case_id', caseId);
+
+// Get moderations
+const { data: moderations } = await supabase
+  .from('case_comment_moderations')
+  .select('comment_id, reason, moderated_at, profiles!moderated_by(username)')
+  .in('comment_id', commentIds);
+
+// Get like counts + user's likes
+const { data: likes } = await supabase
+  .from('case_comment_likes')
+  .select('comment_id, user_id')
+  .in('comment_id', commentIds);
+
+// Get user's reports
+const { data: myReports } = await supabase
+  .from('case_comment_reports')
+  .select('comment_id')
+  .eq('reported_by', userId)
+  .in('comment_id', commentIds);
+
+// Merge in frontend:
+// - is_hidden = moderations.some(m => m.comment_id === comment.id)
+// - like_count = likes.filter(l => l.comment_id === comment.id).length
+// - i_liked = likes.some(l => l.comment_id === comment.id && l.user_id === userId)
+// - i_reported = myReports.some(r => r.comment_id === comment.id)
+```
+
+**Display Logic:**
+- Show "(bearbeitet)" badge if `edited_at` is not null
+- Hide content if moderation exists, show reason instead
+- Show "Gelöschter Administrator" if `moderated_by` is null
+- Disable edit/delete buttons on moderated comments
+- Only show comment form on cases with 3+ reviews (aggregation exists)
+```

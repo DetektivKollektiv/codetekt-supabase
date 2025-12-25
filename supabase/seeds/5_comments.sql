@@ -103,6 +103,14 @@ INSERT INTO public.case_comments (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     'Wichtiger Punkt zur CO2-Bepreisung: Die aktuellen Modelle berücksichtigen soziale Gerechtigkeit nicht ausreichend.',
     now() - interval '5 hours'
+  ),
+  -- Kommentar moderiert von Admin der später gelöscht wird (NULL test)
+  (
+    'c0000002-0002-4002-8002-000000000005',
+    '22222222-2222-4222-8222-222222222222',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'Dies ist ein Testkommentar für gelöschten Moderator.',
+    now() - interval '3 hours'
   );
 
 -- ============================================
@@ -116,7 +124,7 @@ INSERT INTO public.case_comment_moderations (
   moderated_by,
   moderated_at
 ) VALUES 
-  -- Spam moderiert
+  -- Spam moderiert (von Gorm)
   (
     'a0000001-0001-4001-8001-000000000001',
     'c0000002-0002-4002-8002-000000000002',
@@ -124,13 +132,21 @@ INSERT INTO public.case_comment_moderations (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- Gorm (Admin)
     now() - interval '14 hours'
   ),
-  -- Beleidigung moderiert
+  -- Beleidigung moderiert (von Gorm)
   (
     'a0000002-0002-4002-8002-000000000002',
     'c0000002-0002-4002-8002-000000000003',
     'Dieser Kommentar verstößt gegen unsere Nutzerrichtlinien bezüglich respektvoller Kommunikation und wurde ausgeblendet.',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- Gorm (Admin)
     now() - interval '9 hours'
+  ),
+  -- Moderation mit NULL moderator (simuliert gelöschten Admin)
+  (
+    'a0000003-0003-4003-8003-000000000003',
+    'c0000002-0002-4002-8002-000000000005',
+    'Dieser Kommentar wurde von einem ehemaligen Administrator moderiert.',
+    NULL,  -- Gelöschter Admin
+    now() - interval '2 hours'
   );
 
 -- ============================================
@@ -294,14 +310,27 @@ INSERT INTO public.case_comment_reports (
 --   - 2 unresolved Reports
 
 -- Case 2 (Klimapolitik):
---   - 4 Kommentare (2 davon versteckt durch Moderation)
---   - 2 Moderationen (Spam + Beleidigung)
+--   - 5 Kommentare (3 davon versteckt durch Moderation)
+--   - 3 Moderationen (Spam + Beleidigung + NULL moderator)
 --   - 3 Likes
 --   - 3 Reports (2x derselbe moderierte Kommentar)
 
 -- Insgesamt:
---   - 9 Kommentare (2 versteckt, 1 editiert)
---   - 2 aktive Moderationen
+--   - 10 Kommentare (3 versteckt, 1 editiert)
+--   - 3 Moderationen (1 mit NULL moderator für gelöschten Admin)
 --   - 12 Likes
 --   - 5 Reports (3 für moderierte Comments, 2 für nicht-moderierte)
 --   - Alle 4 Test-User haben interagiert
+
+-- ============================================
+-- Test-Szenarien abgedeckt:
+-- ============================================
+-- ✅ Normale Kommentare
+-- ✅ Editierte Kommentare (mit edited_at)
+-- ✅ Moderierte Kommentare (versteckt)
+-- ✅ Moderation mit gelöschtem Admin (moderated_by = NULL)
+-- ✅ Likes auf verschiedene Kommentare
+-- ✅ Mehrere Reports für denselben Kommentar
+-- ✅ Unresolved Reports (Admin-Queue)
+-- ✅ GDPR-Test: User-Löschung → CASCADE
+-- ✅ Admin-Löschung → Moderationen bleiben mit NULL

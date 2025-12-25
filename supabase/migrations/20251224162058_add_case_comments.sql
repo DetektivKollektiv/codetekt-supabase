@@ -1,5 +1,5 @@
--- Migration: add_case_comments_system
--- Created: 2024-12-24
+-- Migration: add_case_comments
+-- Created: 2025-12-24
 
 -- ============================================================================
 -- TABLE: case_comments
@@ -24,7 +24,6 @@ CREATE INDEX idx_case_comments_case_id ON case_comments(case_id);
 CREATE INDEX idx_case_comments_author_id ON case_comments(author_id);
 CREATE INDEX idx_case_comments_created_at ON case_comments(created_at DESC);
 
--- Trigger for edit tracking
 -- Trigger for edit tracking
 CREATE OR REPLACE FUNCTION track_comment_edit()
 RETURNS TRIGGER 
@@ -57,8 +56,8 @@ CREATE TABLE case_comment_moderations (
   -- Moderation (existence = hidden)
   reason text NOT NULL CHECK (char_length(reason) >= 10 AND char_length(reason) <= 500),
   
-  -- Admin tracking
-  moderated_by uuid NOT NULL REFERENCES profiles(id),
+  -- Admin tracking (nullable - admin kann gelöscht werden)
+  moderated_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
   moderated_at timestamptz NOT NULL DEFAULT now(),
   
   -- Only one moderation per comment

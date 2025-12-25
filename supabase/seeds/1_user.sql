@@ -34,7 +34,7 @@ INSERT INTO auth.users (
   current_timestamp,
   current_timestamp,
   '{"provider":"email","providers":["email"]}',
-  '{"full_name":"Gorm Labenz"}',
+  '{}',
   current_timestamp,
   current_timestamp,
   '',
@@ -67,7 +67,7 @@ INSERT INTO auth.identities (
 UPDATE public.profiles
 SET
   username = 'gormlabenz',
-  full_name = 'Gorm Labenz',
+  is_admin = true, -- Erster User ist Admin
   updated_at = current_timestamp
 WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
@@ -104,7 +104,7 @@ INSERT INTO auth.users (
   current_timestamp,
   current_timestamp,
   '{"provider":"email","providers":["email"]}',
-  '{"full_name":"Anna Schmidt"}',
+  '{}',
   current_timestamp,
   current_timestamp,
   '',
@@ -136,7 +136,6 @@ INSERT INTO auth.identities (
 UPDATE public.profiles
 SET
   username = 'annaschmidt',
-  full_name = 'Anna Schmidt',
   updated_at = current_timestamp
 WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
@@ -173,7 +172,7 @@ INSERT INTO auth.users (
   current_timestamp,
   current_timestamp,
   '{"provider":"email","providers":["email"]}',
-  '{"full_name":"Max Müller"}',
+  '{}',
   current_timestamp,
   current_timestamp,
   '',
@@ -205,7 +204,6 @@ INSERT INTO auth.identities (
 UPDATE public.profiles
 SET
   username = 'maxmueller',
-  full_name = 'Max Müller',
   updated_at = current_timestamp
 WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
@@ -242,7 +240,7 @@ INSERT INTO auth.users (
   current_timestamp,
   current_timestamp,
   '{"provider":"email","providers":["email"]}',
-  '{"full_name":"Lisa Weber"}',
+  '{}',
   current_timestamp,
   current_timestamp,
   '',
@@ -274,6 +272,5 @@ INSERT INTO auth.identities (
 UPDATE public.profiles
 SET
   username = 'lisaweber',
-  full_name = 'Lisa Weber',
   updated_at = current_timestamp
 WHERE id = 'dddddddd-dddd-dddd-dddd-dddddddddddd';

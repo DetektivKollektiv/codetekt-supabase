@@ -1,137 +1,103 @@
-drop extension if exists "pg_net";
+-- Migration: create_profiles_table (ÜBERARBEITET)
 
+DROP EXTENSION IF EXISTS "pg_net";
 
-  create table "public"."profiles" (
-    "id" uuid not null,
-    "updated_at" timestamp with time zone,
-    "username" text,
-    "full_name" text,
-    "avatar_url" text,
-    "website" text
-      );
+CREATE TABLE "public"."profiles" (
+  "id" uuid NOT NULL,
+  "updated_at" timestamp with time zone,
+  "username" text,
+  "is_admin" boolean NOT NULL DEFAULT false
+);
 
-
-alter table "public"."profiles" enable row level security;
+ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
 
 CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id);
-
 CREATE UNIQUE INDEX profiles_username_key ON public.profiles USING btree (username);
+CREATE INDEX idx_profiles_is_admin ON public.profiles(is_admin) WHERE is_admin = true;
 
-alter table "public"."profiles" add constraint "profiles_pkey" PRIMARY KEY using index "profiles_pkey";
+ALTER TABLE "public"."profiles" ADD CONSTRAINT "profiles_pkey" PRIMARY KEY USING INDEX "profiles_pkey";
+ALTER TABLE "public"."profiles" ADD CONSTRAINT "profiles_id_fkey" FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE NOT VALID;
+ALTER TABLE "public"."profiles" VALIDATE CONSTRAINT "profiles_id_fkey";
+ALTER TABLE "public"."profiles" ADD CONSTRAINT "profiles_username_key" UNIQUE USING INDEX "profiles_username_key";
+ALTER TABLE "public"."profiles" ADD CONSTRAINT "username_length" CHECK ((char_length(username) >= 3)) NOT VALID;
+ALTER TABLE "public"."profiles" VALIDATE CONSTRAINT "username_length";
 
-alter table "public"."profiles" add constraint "profiles_id_fkey" FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
-
-alter table "public"."profiles" validate constraint "profiles_id_fkey";
-
-alter table "public"."profiles" add constraint "profiles_username_key" UNIQUE using index "profiles_username_key";
-
-alter table "public"."profiles" add constraint "username_length" CHECK ((char_length(username) >= 3)) not valid;
-
-alter table "public"."profiles" validate constraint "username_length";
-
-set check_function_bodies = off;
+SET check_function_bodies = off;
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO ''
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
 AS $function$
-begin
-  insert into public.profiles (id, full_name, avatar_url)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
-  return new;
-end;
-$function$
-;
+BEGIN
+  INSERT INTO public.profiles (id, username)
+  VALUES (new.id, NULL);
+  RETURN new;
+END;
+$function$;
 
-grant delete on table "public"."profiles" to "anon";
+GRANT DELETE ON TABLE "public"."profiles" TO "anon";
+GRANT INSERT ON TABLE "public"."profiles" TO "anon";
+GRANT REFERENCES ON TABLE "public"."profiles" TO "anon";
+GRANT SELECT ON TABLE "public"."profiles" TO "anon";
+GRANT TRIGGER ON TABLE "public"."profiles" TO "anon";
+GRANT TRUNCATE ON TABLE "public"."profiles" TO "anon";
+GRANT UPDATE ON TABLE "public"."profiles" TO "anon";
 
-grant insert on table "public"."profiles" to "anon";
+GRANT DELETE ON TABLE "public"."profiles" TO "authenticated";
+GRANT INSERT ON TABLE "public"."profiles" TO "authenticated";
+GRANT REFERENCES ON TABLE "public"."profiles" TO "authenticated";
+GRANT SELECT ON TABLE "public"."profiles" TO "authenticated";
+GRANT TRIGGER ON TABLE "public"."profiles" TO "authenticated";
+GRANT TRUNCATE ON TABLE "public"."profiles" TO "authenticated";
+GRANT UPDATE ON TABLE "public"."profiles" TO "authenticated";
 
-grant references on table "public"."profiles" to "anon";
+GRANT DELETE ON TABLE "public"."profiles" TO "service_role";
+GRANT INSERT ON TABLE "public"."profiles" TO "service_role";
+GRANT REFERENCES ON TABLE "public"."profiles" TO "service_role";
+GRANT SELECT ON TABLE "public"."profiles" TO "service_role";
+GRANT TRIGGER ON TABLE "public"."profiles" TO "service_role";
+GRANT TRUNCATE ON TABLE "public"."profiles" TO "service_role";
+GRANT UPDATE ON TABLE "public"."profiles" TO "service_role";
 
-grant select on table "public"."profiles" to "anon";
+CREATE POLICY "Public profiles are viewable by everyone"
+  ON "public"."profiles"
+  AS PERMISSIVE
+  FOR SELECT
+  TO public
+  USING (true);
 
-grant trigger on table "public"."profiles" to "anon";
+CREATE POLICY "Users can insert their own profile"
+  ON "public"."profiles"
+  AS PERMISSIVE
+  FOR INSERT
+  TO public
+  WITH CHECK ((SELECT auth.uid()) = id);
 
-grant truncate on table "public"."profiles" to "anon";
+CREATE POLICY "Users can update own profile"
+  ON "public"."profiles"
+  AS PERMISSIVE
+  FOR UPDATE
+  TO public
+  USING ((SELECT auth.uid()) = id);
 
-grant update on table "public"."profiles" to "anon";
+CREATE TRIGGER on_auth_user_created 
+  AFTER INSERT ON auth.users 
+  FOR EACH ROW 
+  EXECUTE FUNCTION public.handle_new_user();
 
-grant delete on table "public"."profiles" to "authenticated";
+-- Storage policies bleiben unverändert
+CREATE POLICY "Anyone can upload an avatar"
+  ON "storage"."objects"
+  AS PERMISSIVE
+  FOR INSERT
+  TO public
+  WITH CHECK ((bucket_id = 'avatars'::text));
 
-grant insert on table "public"."profiles" to "authenticated";
-
-grant references on table "public"."profiles" to "authenticated";
-
-grant select on table "public"."profiles" to "authenticated";
-
-grant trigger on table "public"."profiles" to "authenticated";
-
-grant truncate on table "public"."profiles" to "authenticated";
-
-grant update on table "public"."profiles" to "authenticated";
-
-grant delete on table "public"."profiles" to "service_role";
-
-grant insert on table "public"."profiles" to "service_role";
-
-grant references on table "public"."profiles" to "service_role";
-
-grant select on table "public"."profiles" to "service_role";
-
-grant trigger on table "public"."profiles" to "service_role";
-
-grant truncate on table "public"."profiles" to "service_role";
-
-grant update on table "public"."profiles" to "service_role";
-
-
-  create policy "Public profiles are viewable by everyone."
-  on "public"."profiles"
-  as permissive
-  for select
-  to public
-using (true);
-
-
-
-  create policy "Users can insert their own profile."
-  on "public"."profiles"
-  as permissive
-  for insert
-  to public
-with check ((( SELECT auth.uid() AS uid) = id));
-
-
-
-  create policy "Users can update own profile."
-  on "public"."profiles"
-  as permissive
-  for update
-  to public
-using ((( SELECT auth.uid() AS uid) = id));
-
-
-CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
-
-  create policy "Anyone can upload an avatar."
-  on "storage"."objects"
-  as permissive
-  for insert
-  to public
-with check ((bucket_id = 'avatars'::text));
-
-
-
-  create policy "Avatar images are publicly accessible."
-  on "storage"."objects"
-  as permissive
-  for select
-  to public
-using ((bucket_id = 'avatars'::text));
-
-
-
+CREATE POLICY "Avatar images are publicly accessible"
+  ON "storage"."objects"
+  AS PERMISSIVE
+  FOR SELECT
+  TO public
+  USING ((bucket_id = 'avatars'::text));

@@ -1,8 +1,8 @@
-import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import {
   chipAnswerSchema,
   multyLineTextAnswerSchema,
 } from "../_shared/schemas/answer-schemas.ts";
+import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 
 /**
  * Deep clone template to avoid reference issues
@@ -143,6 +143,8 @@ export function buildResolvedDisputeModification(
 
 /**
  * Apply field modification to a specific field in the template
+ * Note: TypeScript cannot properly narrow discriminated union types when dynamically
+ * assigning values. We use type assertions since we validate the field type at runtime.
  */
 export function applyFieldModification(
   sections: ReviewTemplateInput[],
@@ -154,10 +156,36 @@ export function applyFieldModification(
     fields: section.fields.map((field) => {
       if (field.id !== fieldId) return field;
 
-      return {
-        ...field,
-        ...modification,
-      };
+      // Only apply properties that are defined in the modification
+      const modifiedField = { ...field } as typeof field;
+
+      if (modification.is_required !== undefined) {
+        modifiedField.is_required = modification.is_required;
+      }
+      if (modification.is_disabled !== undefined) {
+        modifiedField.is_disabled = modification.is_disabled;
+      }
+      if (modification.is_disputable !== undefined) {
+        modifiedField.is_disputable = modification.is_disputable;
+      }
+      if (modification.prefilled_answer_value !== undefined) {
+        modifiedField.prefilled_answer_value =
+          modification.prefilled_answer_value;
+      }
+
+      // Only apply these to multi-line-text fields
+      if (field.type === "multi-line-text") {
+        if (modification.additonal_option_count !== undefined) {
+          // @ts-expect-error - TypeScript cannot narrow discriminated union types here
+          modifiedField.additonal_option_count =
+            modification.additonal_option_count;
+        }
+        if (modification.options !== undefined) {
+          modifiedField.options = modification.options;
+        }
+      }
+
+      return modifiedField;
     }),
   }));
 }
@@ -183,5 +211,7 @@ export function populateAnswerValues(
     return newSection;
   });
 
-  return JSON.parse(JSON.stringify(sectionsWithValues)) as ReviewTemplateInput[];
+  return JSON.parse(
+    JSON.stringify(sectionsWithValues),
+  ) as ReviewTemplateInput[];
 }

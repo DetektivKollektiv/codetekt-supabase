@@ -10,7 +10,7 @@
 -- Dispute 1: Content Type Dispute on Case 1 (Ukraine article)
 -- Anna disputes that the article should be categorized as "opinion" instead of "nachrichtenartikel"
 -- Status: Unresolved (waiting for admin review)
-INSERT INTO public.case_disputes (
+INSERT INTO public.review_disputes (
   id,
   case_id,
   template_version,
@@ -47,7 +47,7 @@ INSERT INTO public.case_disputes (
 -- Dispute 2: Keyword Dispute on Case 1 - Admin Kept Original
 -- Max suggested adding "NATO" keyword, but admin decided original keywords are sufficient
 -- Status: Resolved (original_kept)
-INSERT INTO public.case_disputes (
+INSERT INTO public.review_disputes (
   id,
   case_id,
   template_version,
@@ -80,7 +80,7 @@ INSERT INTO public.case_disputes (
 -- Dispute 3: Content Type Dispute on Case 2 - Admin Changed Value
 -- Lisa disputed climate article categorization, admin agreed and changed to "opinion"
 -- Status: Resolved (changed)
-INSERT INTO public.case_disputes (
+INSERT INTO public.review_disputes (
   id,
   case_id,
   template_version,

@@ -1,12 +1,10 @@
-import { Database } from "./types/database.types.ts";
-
-type ReviewAggregationRow =
-  Database["public"]["Tables"]["review_aggregations"]["Row"];
+import { z } from "npm:zod@4.1.13";
+import { reviewAggregationSchema } from "./schemas/aggregation-schemas.ts";
 
 export const numericLabeledValues = [0, 1, 2, 3] as const;
 
 export type AggregationResult = {
-  aggregation: ReviewAggregationRow["data"];
+  aggregation: z.infer<typeof reviewAggregationSchema>;
   resultScore: number;
 };
 

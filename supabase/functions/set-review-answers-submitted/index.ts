@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { buildAggregation } from "../_shared/aggregation.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
+import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -162,6 +163,13 @@ Deno.serve(async (req) => {
             reviewed_by: r.reviewed_by,
           })),
         );
+
+        // Validate aggregation output against schema
+        const validationResult = reviewAggregationSchema.safeParse(aggregation);
+        if (!validationResult.success) {
+          console.error("Aggregation validation failed:", validationResult.error);
+          throw new Error("Aggregation output does not match schema");
+        }
 
         const reviewerIds = allSubmittedReviews.map((r) => r.reviewed_by);
 

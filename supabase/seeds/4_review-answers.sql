@@ -35,7 +35,7 @@ INSERT INTO public."review_answers_submitted" (
     "public_media_match": 3,
     "author_credentials": 2,
     "images_quality": 3,
-    "additional_rating": 4,
+    "additional_rating": 3,
     "additional_comment": "Die Überschrift ist etwas reißerisch formuliert, könnte neutraler sein."
   }'::jsonb,
   now() - interval '2 days',
@@ -165,7 +165,7 @@ INSERT INTO public."review_answers_in_progress" (
     "public_media_match": 3,
     "author_credentials": 2,
     "images_quality": 3,
-    "additional_rating": 4,
+    "additional_rating": 3,
     "additional_comment": "Die Überschrift könnte neutraler formuliert sein. Nach nochmaliger Prüfung ist sie jedoch noch akzeptabel."
   }'::jsonb,
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',

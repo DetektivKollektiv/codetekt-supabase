@@ -1,16 +1,9 @@
-import { ChipAnswer, MultyLineTextAnswer } from "../answers-values.ts";
+import { z } from "npm:zod@4.1.13";
+import {
+  aggregationFieldValueSchema,
+  reviewAggregationSchema,
+} from "../../schemas/aggregation-schemas.ts";
 
-export interface AggregationFieldValue {
-    counts: { 0: number; 1: number; 2: number; 3: number };
-    percentages: { 0: number; 1: number; 2: number; 3: number };
-    average: number;
-    warnings: string[];
-}
-
-export interface ReviewAggregation {
-    metadata: {
-        keywords: MultyLineTextAnswer;
-        content_type: ChipAnswer;
-    };
-    fields: Record<string, AggregationFieldValue>;
-}
+// Derive types from schemas (single source of truth)
+export type ReviewAggregation = z.infer<typeof reviewAggregationSchema>;
+export type AggregationFieldValue = z.infer<typeof aggregationFieldValueSchema>;

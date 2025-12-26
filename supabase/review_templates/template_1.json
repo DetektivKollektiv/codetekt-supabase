@@ -240,13 +240,6 @@
             "description": "gravierender Fehler",
             "color": "var(--red-500)",
             "value": 3
-          },
-          {
-            "id": "nothing",
-            "text": "Nein,",
-            "description": "alles geprüft",
-            "color": "var(--gray-400)",
-            "value": 4
           }
         ],
         "is_required": true
@@ -279,7 +272,7 @@
           {
             "field_id": "additional_rating",
             "operator": "<",
-            "value": 4
+            "value": 3
           }
         ]
       }

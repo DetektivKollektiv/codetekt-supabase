@@ -34,80 +34,162 @@ export type Database = {
   }
   public: {
     Tables: {
-      case_disputes: {
+      case_comment_likes: {
         Row: {
-          case_id: string
-          created_at: string | null
-          disputed_by: string
-          field_id: string
-          final_value: string | null
+          comment_id: string
+          created_at: string
           id: string
-          original_value: string
-          reason: string | null
-          resolution: string | null
-          resolved_at: string | null
-          resolved_by: string | null
-          suggested_value: string | null
-          template_version: number
+          user_id: string
         }
         Insert: {
-          case_id: string
-          created_at?: string | null
-          disputed_by: string
-          field_id: string
-          final_value?: string | null
+          comment_id: string
+          created_at?: string
           id?: string
-          original_value: string
-          reason?: string | null
-          resolution?: string | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          suggested_value?: string | null
-          template_version: number
+          user_id: string
         }
         Update: {
-          case_id?: string
-          created_at?: string | null
-          disputed_by?: string
-          field_id?: string
-          final_value?: string | null
+          comment_id?: string
+          created_at?: string
           id?: string
-          original_value?: string
-          reason?: string | null
-          resolution?: string | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          suggested_value?: string | null
-          template_version?: number
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "case_disputes_case_id_fkey"
+            foreignKeyName: "case_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "case_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_comment_moderations: {
+        Row: {
+          comment_id: string
+          id: string
+          moderated_at: string
+          moderated_by: string | null
+          reason: string
+        }
+        Insert: {
+          comment_id: string
+          id?: string
+          moderated_at?: string
+          moderated_by?: string | null
+          reason: string
+        }
+        Update: {
+          comment_id?: string
+          id?: string
+          moderated_at?: string
+          moderated_by?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_comment_moderations_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: true
+            referencedRelation: "case_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_comment_moderations_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_comment_reports: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reason: string
+          reported_by: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          reported_by: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "case_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_comment_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_comments: {
+        Row: {
+          author_id: string
+          case_id: string
+          content: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          case_id: string
+          content: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          case_id?: string
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_comments_case_id_fkey"
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "case_disputes_disputed_by_fkey"
-            columns: ["disputed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "case_disputes_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "case_disputes_template_version_fkey"
-            columns: ["template_version"]
-            isOneToOne: false
-            referencedRelation: "review_templates"
-            referencedColumns: ["version"]
           },
         ]
       }
@@ -155,28 +237,22 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          full_name: string | null
           id: string
+          is_admin: boolean
           updated_at: string | null
           username: string | null
-          website: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          full_name?: string | null
           id: string
+          is_admin?: boolean
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          full_name?: string | null
           id?: string
+          is_admin?: boolean
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Relationships: []
       }
@@ -309,6 +385,83 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_disputes: {
+        Row: {
+          case_id: string
+          created_at: string | null
+          disputed_by: string
+          field_id: string
+          final_value: string | null
+          id: string
+          original_value: string
+          reason: string | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          suggested_value: string | null
+          template_version: number
+        }
+        Insert: {
+          case_id: string
+          created_at?: string | null
+          disputed_by: string
+          field_id: string
+          final_value?: string | null
+          id?: string
+          original_value: string
+          reason?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          suggested_value?: string | null
+          template_version: number
+        }
+        Update: {
+          case_id?: string
+          created_at?: string | null
+          disputed_by?: string
+          field_id?: string
+          final_value?: string | null
+          id?: string
+          original_value?: string
+          reason?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          suggested_value?: string | null
+          template_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_disputes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_disputed_by_fkey"
+            columns: ["disputed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_template_version_fkey"
+            columns: ["template_version"]
+            isOneToOne: false
+            referencedRelation: "review_templates"
+            referencedColumns: ["version"]
           },
         ]
       }

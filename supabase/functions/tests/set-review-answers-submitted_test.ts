@@ -40,7 +40,7 @@ const createCompleteReviewData = (marker: string) => ({
   public_media_match: 2,
   author_credentials: 2,
   images_quality: 2,
-  additional_rating: 4,
+  additional_rating: 3,
   additional_comment: marker,
 });
 

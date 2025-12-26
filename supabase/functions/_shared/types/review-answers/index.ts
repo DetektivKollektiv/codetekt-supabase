@@ -1,16 +1,5 @@
-import {
-    ChipAnswer,
-    LikertScaleAnswer,
-    MultyLineTextAnswer,
-    TextAreaAnswer,
-    TrafficLightAnswer,
-} from "../answers-values.ts";
+import { z } from "npm:zod@4.1.13";
+import { reviewAnswerSchema } from "../../schemas/answer-schemas.ts";
 
-export interface ReviewAnswer {
-    [key: string]:
-        | MultyLineTextAnswer
-        | ChipAnswer
-        | TrafficLightAnswer
-        | LikertScaleAnswer
-        | TextAreaAnswer;
-}
+// Derive type from schema (single source of truth)
+export type ReviewAnswer = z.infer<typeof reviewAnswerSchema>;

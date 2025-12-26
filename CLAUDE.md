@@ -110,6 +110,17 @@ Community: case_comments (discussion, moderation, likes, reports)
   - Contains counts, percentages, averages, warnings, result_score (0-3 scale)
 - **case_disputes**: Admin queue for disputing case metadata fields
 
+**Views (Dispute Filtering):**
+- **cases_without_open_disputes**: View of cases excluding those with open disputes
+  - Filters out cases where `review_disputes.resolution IS NULL`
+  - Uses `security_invoker = on` for RLS inheritance
+  - Inherits public SELECT policy from `cases` table
+- **review_answers_in_progress_without_open_disputes**: View of in-progress reviews excluding disputed cases
+  - Filters out drafts where associated case has open disputes
+  - Uses `security_invoker = on` for RLS inheritance
+  - Inherits private SELECT policy from `review_answers_in_progress` table
+  - Useful for showing reviewers only cases they can actively work on
+
 **Comment System:**
 - **case_comments**: User comments on cases
   - Fields: `id`, `case_id`, `author_id`, `content`, `edited_at`, `created_at`, `updated_at`
@@ -541,6 +552,30 @@ supabase secrets set KEY_NAME=value
 - When adding features, maintain German UI text in review templates and user-facing content
 
 ## Frontend Integration Notes
+
+### Dispute-Filtered Views
+
+**Use Cases:**
+The views automatically filter out cases with open disputes, simplifying frontend queries:
+
+```typescript
+// Get all accessible cases (excludes those with open disputes)
+const { data: cases } = await supabase
+  .from('cases_without_open_disputes')
+  .select('*');
+
+// Get user's drafts for non-disputed cases only
+const { data: drafts } = await supabase
+  .from('review_answers_in_progress_without_open_disputes')
+  .select('*')
+  .eq('reviewed_by', userId);
+```
+
+**Benefits:**
+- No need for complex JOINs with `review_disputes` table
+- Centralized dispute filtering logic
+- Consistent behavior across frontend queries
+- RLS policies automatically inherited from base tables
 
 ### Comment System Frontend Queries
 

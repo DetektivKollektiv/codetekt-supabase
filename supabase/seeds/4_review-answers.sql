@@ -173,3 +173,29 @@ INSERT INTO public."review_answers_in_progress" (
   now() - interval '1 hour',
   now() - interval '30 minutes'
 );
+
+-- Example 3: Max Mueller's draft for Case 2 (climate policy article, no open disputes)
+INSERT INTO public."review_answers_in_progress" (
+  id,
+  case_id,
+  reviewed_by,
+  data,
+  submitted_review_answers_id,
+  has_unpublished_changes,
+  created_at,
+  updated_at
+) VALUES (
+  'ffffffff-ffff-ffff-ffff-ffffffffffff',
+  '22222222-2222-4222-8222-222222222222',
+  (SELECT id FROM auth.users WHERE email = 'max.mueller@example.com'),
+  '{
+    "keyword_type": ["Klimawandel", "CO2", "Emissionen"],
+    "grammar": 3,
+    "structure": 2,
+    "headline": 3
+  }'::jsonb,
+  NULL,
+  true,
+  now() - interval '2 hours',
+  now() - interval '45 minutes'
+);

@@ -1,8 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { buildAggregation } from "../_shared/aggregation.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
-import { buildAggregation } from "./aggregation.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";

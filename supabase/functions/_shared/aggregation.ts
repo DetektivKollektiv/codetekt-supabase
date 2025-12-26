@@ -1,4 +1,4 @@
-import { Database } from "../_shared/types/database.types.ts";
+import { Database } from "./types/database.types.ts";
 
 type ReviewAggregationRow =
   Database["public"]["Tables"]["review_aggregations"]["Row"];

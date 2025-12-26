@@ -64,7 +64,9 @@ type FieldModification = {
   is_required?: boolean;
   is_disabled?: boolean;
   is_disputable?: boolean;
-  prefilled_answer_value?: unknown;
+  additonal_option_count?: number; // For multi-line-text fields
+  options?: Array<{ id: string; text: string; is_disabled: boolean }>; // For multi-line-text
+  prefilled_answer_value?: unknown; // For chip/other fields
 };
 
 /**
@@ -79,12 +81,17 @@ export function buildKeywordsModification(
     return { is_required: true };
   }
 
-  // Subsequent reviewer
+  // Subsequent reviewer - aggregated keywords become disabled options
+  // User can add up to 3 additional keywords
   return {
     is_required: false,
-    is_disabled: true,
     is_disputable: true,
-    prefilled_answer_value: aggregatedKeywords,
+    additonal_option_count: 3,
+    options: aggregatedKeywords.map((keyword) => ({
+      id: keyword,
+      text: keyword,
+      is_disabled: true,
+    })),
   };
 }
 

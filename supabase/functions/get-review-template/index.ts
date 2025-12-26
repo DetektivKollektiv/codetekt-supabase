@@ -8,6 +8,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { Database } from "../_shared/types/database.types.ts";
+import { InProgressReviewAnswer } from "../_shared/schemas/review-schemas.ts";
+import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import {
   aggregateContentTypes,
   aggregateKeywords,
@@ -34,11 +36,17 @@ type CaseWithRelations = {
   review_templates: {
     template: unknown;
   } | null;
-  review_answers: {
-    status: string;
+  review_answers_in_progress: Array<{
+    id: string;
+    reviewed_by: string;
+    data: InProgressReviewAnswer;
+    submitted_review_answers_id: string | null;
+    has_unpublished_changes: boolean;
+  }> | null;
+  review_answers_submitted: Array<{
     reviewed_by: string;
     data: unknown;
-  }[] | null;
+  }> | null;
 };
 
 Deno.serve(async (req) => {
@@ -93,8 +101,14 @@ Deno.serve(async (req) => {
         review_templates!cases_template_version_fkey (
           template
         ),
-        review_answers!review_answers_case_id_fkey (
-          status,
+        review_answers_in_progress!review_answers_in_progress_case_id_fkey (
+          id,
+          reviewed_by,
+          data,
+          submitted_review_answers_id,
+          has_unpublished_changes
+        ),
+        review_answers_submitted!review_answers_submitted_case_id_fkey (
           reviewed_by,
           data
         )
@@ -103,6 +117,8 @@ Deno.serve(async (req) => {
       .single();
 
     // 4. Authorization Checks
+
+    // Check if case exists
     if (queryError || !caseData) {
       console.error("Case not found:", queryError);
       return new Response(
@@ -113,6 +129,7 @@ Deno.serve(async (req) => {
 
     const typedCaseData = caseData as unknown as CaseWithRelations;
 
+    // Check if template exists
     if (
       !typedCaseData.review_templates ||
       !typedCaseData.review_templates.template
@@ -124,33 +141,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user already submitted a review
-    const userSubmittedReview = typedCaseData.review_answers?.find(
-      (ra) => ra.reviewed_by === user.id && ra.status === "submitted",
+    // 5. Template Building Flow
+
+    // STEP 1: Clone base template
+    let template: ReviewTemplateInput[] = deepCloneTemplate(
+      typedCaseData.review_templates.template,
     );
 
-    if (userSubmittedReview) {
-      return new Response(
-        JSON.stringify({
-          error: "You have already submitted a review for this case",
-        }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    // 5. Template Processing
-    let template = deepCloneTemplate(typedCaseData.review_templates.template);
-
-    // Filter submitted reviews
-    const submittedReviews = (typedCaseData.review_answers || []).filter(
-      (ra) => ra.status === "submitted",
-    );
+    // STEP 2: Get all submitted reviews
+    const submittedReviews = typedCaseData.review_answers_submitted || [];
 
     console.log(
       `[get-review-template] Found ${submittedReviews.length} submitted reviews`,
     );
 
-    // Aggregate metadata separately
+    // STEP 3: Aggregate metadata from submitted reviews
     const aggregatedKeywords = aggregateKeywords(submittedReviews);
     const aggregatedContentTypes = aggregateContentTypes(submittedReviews);
 
@@ -161,7 +166,7 @@ Deno.serve(async (req) => {
       `[get-review-template] Aggregated content types: ${aggregatedContentTypes.length}`,
     );
 
-    // Build modifications based on reviewer status
+    // STEP 4: Build modifications based on reviewer status
     const keywordsMod = buildKeywordsModification(
       submittedReviews.length,
       aggregatedKeywords,
@@ -171,17 +176,17 @@ Deno.serve(async (req) => {
       aggregatedContentTypes,
     );
 
-    // Apply modifications separately for each field
+    // STEP 5: Apply modifications to metadata fields
     template = applyFieldModification(template, "keyword_type", keywordsMod);
     template = applyFieldModification(template, "content_type", contentTypeMod);
 
-    // Populate in-progress values if exists (in answer_value!)
-    const userInProgressReview = typedCaseData.review_answers?.find(
-      (ra) => ra.reviewed_by === user.id && ra.status === "in_progress",
+    // STEP 6: Populate user's draft values if exists
+    const userInProgressReview = typedCaseData.review_answers_in_progress?.find(
+      (ra) => ra.reviewed_by === user.id,
     );
 
     if (userInProgressReview) {
-      console.log(`[get-review-template] User has in-progress review`);
+      console.log(`[get-review-template] Populating in-progress values`);
       const inProgressData = userInProgressReview.data as Record<
         string,
         unknown

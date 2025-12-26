@@ -137,9 +137,9 @@ Deno.test({
   },
 });
 
-// Test: User who already submitted should get 403
+// Test: User who already submitted should still get template
 Deno.test({
-  name: "get-review-template - returns 403 if user already submitted review",
+  name: "get-review-template - returns template even if user already submitted review",
   sanitizeResources: false,
   sanitizeOps: false,
   fn: async () => {
@@ -170,11 +170,10 @@ Deno.test({
         },
       );
 
-      assert(
-        error || (data && data.error),
-        "Expected error for user who already submitted",
-      );
-      console.log("✓ Properly returned 403 for user with submitted review");
+      assert(!error, `Function invocation failed: ${error?.message}`);
+      assertExists(data, "Expected response data");
+      assert(Array.isArray(data), "Expected template to be an array");
+      console.log("✓ Returns template even for user with submitted review");
     } finally {
       await supabase.auth.signOut();
     }
@@ -310,6 +309,13 @@ Deno.test({
       assert(!authError, `Authentication failed: ${authError?.message}`);
       const accessToken = authData.session!.access_token;
 
+      // Clean up any existing in-progress reviews for this user/case
+      await supabase
+        .from("review_answers_in_progress")
+        .delete()
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", authData.session!.user.id);
+
       // Get template for case that already has submitted reviews
       const { data, error } = await supabase.functions.invoke(
         "get-review-template",
@@ -337,33 +343,38 @@ Deno.test({
       );
       assertExists(keywordField, "keyword_type field not found");
 
-      // Verify subsequent reviewer configuration
+      // Verify subsequent reviewer configuration for keywords
       assertEquals(
         keywordField.is_required,
         false,
         "keyword_type should not be required for subsequent reviewer",
       );
       assertEquals(
-        keywordField.is_disabled,
-        true,
-        "keyword_type should be disabled for subsequent reviewer",
-      );
-      assertEquals(
         keywordField.is_disputable,
         true,
         "keyword_type should be disputable for subsequent reviewer",
       );
+      assertEquals(
+        keywordField.additonal_option_count,
+        3,
+        "keyword_type should allow 3 additional keywords for subsequent reviewer",
+      );
       assertExists(
-        keywordField.prefilled_answer_value,
-        "keyword_type should have prefilled values",
+        keywordField.options,
+        "keyword_type should have options array",
       );
       assert(
-        Array.isArray(keywordField.prefilled_answer_value),
-        "prefilled keywords should be an array",
+        Array.isArray(keywordField.options),
+        "keyword_type options should be an array",
       );
       assert(
-        keywordField.prefilled_answer_value.length > 0,
-        "prefilled keywords should not be empty",
+        keywordField.options.length > 0,
+        "keyword_type options should not be empty",
+      );
+      // Verify options have is_disabled set to true
+      assert(
+        keywordField.options.every((opt: { is_disabled: boolean }) => opt.is_disabled === true),
+        "All aggregated keyword options should be disabled",
       );
 
       // Find content_type_question section
@@ -405,7 +416,7 @@ Deno.test({
 
       console.log("✓ Subsequent reviewer template correctly configured");
       console.log(
-        `  - Aggregated ${keywordField.prefilled_answer_value.length} keywords`,
+        `  - Aggregated ${keywordField.options.length} keywords as disabled options`,
       );
       console.log(
         `  - Aggregated ${contentTypeField.prefilled_answer_value.length} content types`,
@@ -458,12 +469,13 @@ Deno.test({
       };
 
       const { error: reviewError } = await supabase
-        .from("review_answers")
+        .from("review_answers_in_progress")
         .insert({
           case_id: newCaseId,
           reviewed_by: userId,
-          status: "in_progress",
           data: inProgressData,
+          has_unpublished_changes: true,
+          submitted_review_answers_id: null,
         });
 
       assert(
@@ -519,7 +531,7 @@ Deno.test({
       console.log("✓ In-progress review values correctly populated");
 
       // Cleanup
-      await supabase.from("review_answers").delete().eq("case_id", newCaseId);
+      await supabase.from("review_answers_in_progress").delete().eq("case_id", newCaseId);
       await supabase.from("cases").delete().eq("id", newCaseId);
     } finally {
       await supabase.auth.signOut();

@@ -177,8 +177,52 @@ Community: case_comments (discussion, moderation, likes, reports)
 Uses optimistic locking with `updated_at` timestamp to prevent overwriting concurrent edits. If draft is modified during publish, the function gracefully degrades to only linking the published review while preserving the newer draft's unpublished state.
 
 #### get-review-template
-**Status:** Placeholder (not yet implemented)
-**Likely Purpose:** Retrieve review template with conditional field evaluation
+**Location:** `supabase/functions/get-review-template/index.ts`
+
+**Purpose:** Retrieve review template with dynamic field modifications based on reviewer status, aggregated metadata, and dispute resolutions
+
+**Key Flow:**
+1. **Authentication** - Verify JWT, extract user ID
+2. **Input Validation** - Validate `case_id` using Zod schema
+3. **Data Fetching** - Single optimized query fetches:
+   - Case + template
+   - User's in-progress review (if exists)
+   - All submitted reviews for aggregation
+   - All disputes for the case
+4. **Dispute Checks**:
+   - **Open disputes** (resolution = NULL): Return 403 with error (blocks all access)
+   - **Resolved disputes** (resolution != NULL): Apply admin's final values as locked fields
+5. **Template Building** (6-step process):
+   - Clone base template
+   - Aggregate metadata from submitted reviews (keywords, content_types)
+   - Build modifications for first vs subsequent reviewer
+   - Apply metadata modifications (keywords, content_type)
+   - Apply resolved dispute modifications (overrides aggregated values)
+   - Populate user's in-progress draft values (if exists)
+6. **Return** - Modified template with all field configurations
+
+**Modules:**
+- `template-modifier.ts` - Template modification utilities (aggregation, field modifications)
+
+**Reviewer Status Logic:**
+
+*First Reviewer (0 submitted reviews):*
+- `keyword_type`: is_required=true, additonal_option_count=5
+- `content_type`: is_required=true
+
+*Subsequent Reviewer (1+ submitted reviews):*
+- `keyword_type`: is_required=false, is_disputable=true, additonal_option_count=3, aggregated keywords as disabled options
+- `content_type`: is_required=false, is_disabled=true, is_disputable=true, prefilled with aggregated values
+
+*Resolved Dispute (admin decision):*
+- Affected field: is_required=false, is_disputable=false, is_disabled=true, prefilled with admin's final_value
+- Overrides all other logic (highest priority)
+
+**Dispute Handling:**
+
+*Open Disputes:* Returns 403 Forbidden with `{ error: "Case has pending disputes", dispute_count: N }`
+
+*Resolved Disputes:* Admin's final_value applied as locked field configuration, preventing further edits or disputes
 
 ### Validation Architecture
 

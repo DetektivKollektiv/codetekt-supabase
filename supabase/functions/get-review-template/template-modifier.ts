@@ -117,6 +117,31 @@ export function buildContentTypeModification(
 }
 
 /**
+ * Build field modification for admin-resolved disputes
+ * The final_value is stored as JSON string in database and needs parsing
+ */
+export function buildResolvedDisputeModification(
+  fieldId: string,
+  finalValue: string,
+): FieldModification {
+  // Parse final_value from JSON string to array
+  let parsedValue: unknown;
+  try {
+    parsedValue = JSON.parse(finalValue);
+  } catch (err) {
+    console.error(`Failed to parse final_value for ${fieldId}:`, err);
+    parsedValue = null;
+  }
+
+  return {
+    is_required: false,
+    is_disputable: false,
+    is_disabled: true,
+    prefilled_answer_value: parsedValue,
+  };
+}
+
+/**
  * Apply field modification to a specific field in the template
  */
 export function applyFieldModification(

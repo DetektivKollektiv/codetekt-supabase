@@ -16,6 +16,7 @@ import {
   applyFieldModification,
   buildContentTypeModification,
   buildKeywordsModification,
+  buildResolvedDisputeModification,
   deepCloneTemplate,
   populateAnswerValues,
 } from "./template-modifier.ts";
@@ -46,6 +47,11 @@ type CaseWithRelations = {
   review_answers_submitted: Array<{
     reviewed_by: string;
     data: unknown;
+  }> | null;
+  review_disputes: Array<{
+    field_id: string;
+    resolution: string | null;
+    final_value: string | null;
   }> | null;
 };
 
@@ -111,6 +117,11 @@ Deno.serve(async (req) => {
         review_answers_submitted!review_answers_submitted_case_id_fkey (
           reviewed_by,
           data
+        ),
+        review_disputes!review_disputes_case_id_fkey (
+          field_id,
+          resolution,
+          final_value
         )
       `)
       .eq("id", case_id)
@@ -138,6 +149,22 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Template not found for case" }),
         { status: 404, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // Check for open disputes
+    const openDisputes = typedCaseData.review_disputes?.filter(
+      (dispute) => dispute.resolution === null,
+    );
+
+    if (openDisputes && openDisputes.length > 0) {
+      console.error(`Case has ${openDisputes.length} pending disputes`);
+      return new Response(
+        JSON.stringify({
+          error: "Case has pending disputes",
+          dispute_count: openDisputes.length,
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -179,6 +206,27 @@ Deno.serve(async (req) => {
     // STEP 5: Apply modifications to metadata fields
     template = applyFieldModification(template, "keyword_type", keywordsMod);
     template = applyFieldModification(template, "content_type", contentTypeMod);
+
+    // STEP 5.5: Apply resolved dispute modifications (overrides aggregated values)
+    const resolvedDisputes = typedCaseData.review_disputes?.filter(
+      (dispute) => dispute.resolution !== null && dispute.final_value !== null,
+    ) || [];
+
+    console.log(
+      `[get-review-template] Found ${resolvedDisputes.length} resolved disputes`,
+    );
+
+    for (const dispute of resolvedDisputes) {
+      const disputeMod = buildResolvedDisputeModification(
+        dispute.field_id,
+        dispute.final_value!,
+      );
+      template = applyFieldModification(template, dispute.field_id, disputeMod);
+
+      console.log(
+        `[get-review-template] Applied resolved dispute for field: ${dispute.field_id}`,
+      );
+    }
 
     // STEP 6: Populate user's draft values if exists
     const userInProgressReview = typedCaseData.review_answers_in_progress?.find(

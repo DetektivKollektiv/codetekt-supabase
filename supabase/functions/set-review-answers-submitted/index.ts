@@ -1,9 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { buildAggregation } from "../_shared/aggregation.ts";
+import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
-import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
+
+const MIN_REVIEWS_FOR_AGGREGATION = 2;
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -154,8 +156,11 @@ Deno.serve(async (req) => {
 
     let aggregated = false;
 
-    // Step 9: Calculate and save aggregation if 3+ reviews
-    if (allSubmittedReviews && allSubmittedReviews.length >= 3) {
+    // Step 9: Calculate and save aggregation if MIN_REVIEWS_FOR_AGGREGATION+ reviews
+    if (
+      allSubmittedReviews &&
+      allSubmittedReviews.length >= MIN_REVIEWS_FOR_AGGREGATION
+    ) {
       try {
         const { aggregation, resultScore } = buildAggregation(
           allSubmittedReviews.map((r) => ({
@@ -167,7 +172,10 @@ Deno.serve(async (req) => {
         // Validate aggregation output against schema
         const validationResult = reviewAggregationSchema.safeParse(aggregation);
         if (!validationResult.success) {
-          console.error("Aggregation validation failed:", validationResult.error);
+          console.error(
+            "Aggregation validation failed:",
+            validationResult.error,
+          );
           throw new Error("Aggregation output does not match schema");
         }
 

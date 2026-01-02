@@ -11,8 +11,8 @@
 --
 -- Replace 'your-project-ref' with your actual Supabase project reference.
 
--- Enable pg_net extension for async HTTP requests
-CREATE EXTENSION IF NOT EXISTS pg_net;
+-- Enable pg_net extension for async HTTP requests in extensions schema
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
 -- Helper function to retrieve project URL from vault
 CREATE OR REPLACE FUNCTION public.get_project_url()

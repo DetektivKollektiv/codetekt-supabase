@@ -1,11 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { buildAggregation } from "../_shared/aggregation.ts";
-import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
-
-const MIN_REVIEWS_FOR_AGGREGATION = 2;
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -148,69 +144,11 @@ Deno.serve(async (req) => {
       // Don't fail the request - the review was published successfully
     }
 
-    // Step 8: Query all submitted reviews for aggregation
-    const { data: allSubmittedReviews } = await supabaseServiceRole
-      .from("review_answers_submitted")
-      .select("data, reviewed_by")
-      .eq("case_id", inProgressReview.case_id);
-
-    let aggregated = false;
-
-    // Step 9: Calculate and save aggregation if MIN_REVIEWS_FOR_AGGREGATION+ reviews
-    if (
-      allSubmittedReviews &&
-      allSubmittedReviews.length >= MIN_REVIEWS_FOR_AGGREGATION
-    ) {
-      try {
-        const { aggregation, resultScore } = buildAggregation(
-          allSubmittedReviews.map((r) => ({
-            data: r.data,
-            reviewed_by: r.reviewed_by,
-          })),
-        );
-
-        // Validate aggregation output against schema
-        const validationResult = reviewAggregationSchema.safeParse(aggregation);
-        if (!validationResult.success) {
-          console.error(
-            "Aggregation validation failed:",
-            validationResult.error,
-          );
-          throw new Error("Aggregation output does not match schema");
-        }
-
-        const reviewerIds = allSubmittedReviews.map((r) => r.reviewed_by);
-
-        const { error: aggregationError } = await supabaseServiceRole
-          .from("review_aggregations")
-          .upsert({
-            case_id: inProgressReview.case_id,
-            data: aggregation as never,
-            result_score: resultScore,
-            reviewer_ids: reviewerIds,
-            calculated_at: new Date().toISOString(),
-          }, {
-            onConflict: "case_id",
-          });
-
-        if (aggregationError) {
-          console.error("Failed to save aggregation:", aggregationError);
-          // Don't fail the request - aggregation can be recalculated later
-        } else {
-          aggregated = true;
-        }
-      } catch (error) {
-        console.error("Error during aggregation:", error);
-        // Don't fail the request
-      }
-    }
-
-    // Step 10: Return success response
+    // Step 8: Return success response
     return new Response(
       JSON.stringify({
         saved: true,
         review_id: submittedReview.id,
-        aggregated,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );

@@ -242,6 +242,84 @@ export type Database = {
           },
         ]
       }
+      open_graph_data: {
+        Row: {
+          case_id: string
+          created_at: string
+          fetch_error: string | null
+          fetch_status: string | null
+          http_status_code: number | null
+          last_fetched_at: string | null
+          og_description: string | null
+          og_image: string | null
+          og_image_alt: string | null
+          og_image_height: number | null
+          og_image_width: number | null
+          og_locale: string | null
+          og_site_name: string | null
+          og_title: string | null
+          og_type: string | null
+          og_url: string | null
+          raw_data: Json | null
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          fetch_error?: string | null
+          fetch_status?: string | null
+          http_status_code?: number | null
+          last_fetched_at?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_image_alt?: string | null
+          og_image_height?: number | null
+          og_image_width?: number | null
+          og_locale?: string | null
+          og_site_name?: string | null
+          og_title?: string | null
+          og_type?: string | null
+          og_url?: string | null
+          raw_data?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          fetch_error?: string | null
+          fetch_status?: string | null
+          http_status_code?: number | null
+          last_fetched_at?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_image_alt?: string | null
+          og_image_height?: number | null
+          og_image_width?: number | null
+          og_locale?: string | null
+          og_site_name?: string | null
+          og_title?: string | null
+          og_type?: string | null
+          og_url?: string | null
+          raw_data?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_graph_data_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "open_graph_data_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           id: string

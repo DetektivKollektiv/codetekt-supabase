@@ -18,7 +18,6 @@ INSERT INTO public.review_disputes (
   original_value,
   disputed_by,
   reason,
-  suggested_value,
   created_at,
   resolved_by,
   resolution,
@@ -32,7 +31,6 @@ INSERT INTO public.review_disputes (
   '["nachrichtenartikel"]',
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',  -- Anna
   'Dieser Artikel ist klar tendenziös und sollte als Meinungsbeitrag kategorisiert werden.',
-  '["opinion"]',
   now() - interval '6 hours',
   NULL,  -- Not yet resolved
   NULL,
@@ -55,7 +53,6 @@ INSERT INTO public.review_disputes (
   original_value,
   disputed_by,
   reason,
-  suggested_value,
   created_at,
   resolved_by,
   resolution,
@@ -69,7 +66,6 @@ INSERT INTO public.review_disputes (
   '["Ukraine", "Russland", "Krieg", "Putin", "Zelensky"]',
   'cccccccc-cccc-cccc-cccc-cccccccccccc',  -- Max
   'Das Stichwort ''NATO'' fehlt komplett, obwohl es mehrfach im Artikel erwähnt wird.',
-  '["Ukraine", "Russland", "Krieg", "Putin", "Zelensky", "NATO"]',
   now() - interval '1 day',
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- Gorm (admin)
   'original_kept',
@@ -88,7 +84,6 @@ INSERT INTO public.review_disputes (
   original_value,
   disputed_by,
   reason,
-  suggested_value,
   created_at,
   resolved_by,
   resolution,
@@ -102,7 +97,6 @@ INSERT INTO public.review_disputes (
   '["nachrichtenartikel"]',
   'dddddddd-dddd-dddd-dddd-dddddddddddd',  -- Lisa
   'Dies ist eindeutig ein Meinungsbeitrag, keine neutrale Nachricht.',
-  '["opinion"]',
   now() - interval '2 days',
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- Gorm (admin)
   'changed',

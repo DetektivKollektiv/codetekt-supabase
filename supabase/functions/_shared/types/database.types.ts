@@ -191,6 +191,13 @@ export type Database = {
             referencedRelation: "cases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "case_comments_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cases: {
@@ -286,6 +293,13 @@ export type Database = {
             referencedRelation: "cases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_aggregations_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
+          },
         ]
       }
       review_answers_in_progress: {
@@ -325,6 +339,13 @@ export type Database = {
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases_without_open_disputes"
             referencedColumns: ["id"]
           },
           {
@@ -380,6 +401,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "review_answers_submitted_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "review_answers_submitted_reviewed_by_fkey"
             columns: ["reviewed_by"]
             isOneToOne: false
@@ -401,7 +429,6 @@ export type Database = {
           resolution: string | null
           resolved_at: string | null
           resolved_by: string | null
-          suggested_value: string | null
           template_version: number
         }
         Insert: {
@@ -416,7 +443,6 @@ export type Database = {
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
-          suggested_value?: string | null
           template_version: number
         }
         Update: {
@@ -431,7 +457,6 @@ export type Database = {
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
-          suggested_value?: string | null
           template_version?: number
         }
         Relationships: [
@@ -440,6 +465,13 @@ export type Database = {
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_disputes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases_without_open_disputes"
             referencedColumns: ["id"]
           },
           {
@@ -496,9 +528,113 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      cases_without_open_disputes: {
+        Row: {
+          content: string | null
+          content_type: string | null
+          id: string | null
+          submitted_at: string | null
+          submitted_by: string | null
+          template_version: number | null
+        }
+        Insert: {
+          content?: string | null
+          content_type?: string | null
+          id?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          template_version?: number | null
+        }
+        Update: {
+          content?: string | null
+          content_type?: string | null
+          id?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          template_version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_template_version_fkey"
+            columns: ["template_version"]
+            isOneToOne: false
+            referencedRelation: "review_templates"
+            referencedColumns: ["version"]
+          },
+        ]
+      }
+      review_answers_in_progress_without_open_disputes: {
+        Row: {
+          case_id: string | null
+          created_at: string | null
+          data: Json | null
+          has_unpublished_changes: boolean | null
+          id: string | null
+          reviewed_by: string | null
+          submitted_review_answers_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          has_unpublished_changes?: boolean | null
+          id?: string | null
+          reviewed_by?: string | null
+          submitted_review_answers_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          has_unpublished_changes?: boolean | null
+          id?: string | null
+          reviewed_by?: string | null
+          submitted_review_answers_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_answers_in_progress_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_answers_in_progress_submitted_review_answers_id_fkey"
+            columns: ["submitted_review_answers_id"]
+            isOneToOne: false
+            referencedRelation: "review_answers_submitted"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      get_project_url: { Args: never; Returns: string }
       has_admin_resolution: {
         Args: { p_case_id: string; p_field_id: string }
         Returns: boolean

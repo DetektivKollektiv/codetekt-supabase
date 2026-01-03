@@ -18,7 +18,6 @@ create table "public"."review_disputes" (
   "original_value" text not null,
   "disputed_by" uuid not null references public.profiles(id),
   "reason" text,
-  "suggested_value" text,
   "created_at" timestamp with time zone default now(),
   
   -- Admin-Resolution

@@ -75,10 +75,19 @@ CREATE POLICY "Everyone can view moderations"
   ON case_comment_moderations FOR SELECT
   USING (true);
 
-CREATE POLICY "Only admins can moderate"
-  ON case_comment_moderations FOR ALL
-  USING ((SELECT is_admin FROM profiles WHERE id = auth.uid()))
-  WITH CHECK ((SELECT is_admin FROM profiles WHERE id = auth.uid()));
+-- Split ALL into separate policies to avoid redundant SELECT policy
+CREATE POLICY "Admins can insert moderations"
+  ON case_comment_moderations FOR INSERT
+  WITH CHECK ((SELECT is_admin FROM profiles WHERE id = (SELECT auth.uid())));
+
+CREATE POLICY "Admins can update moderations"
+  ON case_comment_moderations FOR UPDATE
+  USING ((SELECT is_admin FROM profiles WHERE id = (SELECT auth.uid())))
+  WITH CHECK ((SELECT is_admin FROM profiles WHERE id = (SELECT auth.uid())));
+
+CREATE POLICY "Admins can delete moderations"
+  ON case_comment_moderations FOR DELETE
+  USING ((SELECT is_admin FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- ============================================================================
 -- RLS Policies for case_comments (AFTER moderations table exists)
@@ -92,23 +101,23 @@ CREATE POLICY "Anyone can view comments"
 CREATE POLICY "Authenticated users can create comments"
   ON case_comments FOR INSERT
   WITH CHECK (
-    auth.uid() IS NOT NULL
-    AND author_id = auth.uid()
+    (SELECT auth.uid()) IS NOT NULL
+    AND author_id = (SELECT auth.uid())
   );
 
 CREATE POLICY "Authors can edit own non-moderated comments"
   ON case_comments FOR UPDATE
   USING (
-    author_id = auth.uid()
+    author_id = (SELECT auth.uid())
     AND NOT EXISTS (
-      SELECT 1 FROM case_comment_moderations 
+      SELECT 1 FROM case_comment_moderations
       WHERE comment_id = case_comments.id
     )
   )
   WITH CHECK (
-    author_id = auth.uid()
+    author_id = (SELECT auth.uid())
     AND NOT EXISTS (
-      SELECT 1 FROM case_comment_moderations 
+      SELECT 1 FROM case_comment_moderations
       WHERE comment_id = case_comments.id
     )
   );
@@ -116,9 +125,9 @@ CREATE POLICY "Authors can edit own non-moderated comments"
 CREATE POLICY "Authors can delete own non-moderated comments"
   ON case_comments FOR DELETE
   USING (
-    author_id = auth.uid()
+    author_id = (SELECT auth.uid())
     AND NOT EXISTS (
-      SELECT 1 FROM case_comment_moderations 
+      SELECT 1 FROM case_comment_moderations
       WHERE comment_id = case_comments.id
     )
   );
@@ -151,13 +160,13 @@ CREATE POLICY "Everyone can view likes"
 CREATE POLICY "Authenticated users can add likes"
   ON case_comment_likes FOR INSERT
   WITH CHECK (
-    auth.uid() IS NOT NULL
-    AND user_id = auth.uid()
+    (SELECT auth.uid()) IS NOT NULL
+    AND user_id = (SELECT auth.uid())
   );
 
 CREATE POLICY "Users can remove own likes"
   ON case_comment_likes FOR DELETE
-  USING (user_id = auth.uid());
+  USING (user_id = (SELECT auth.uid()));
 
 -- ============================================================================
 -- TABLE: case_comment_reports
@@ -181,17 +190,17 @@ CREATE INDEX idx_case_comment_reports_reported_by ON case_comment_reports(report
 -- RLS Policies
 ALTER TABLE case_comment_reports ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can view all reports"
+-- Merged SELECT policy to avoid multiple permissive policies
+CREATE POLICY "View reports policy"
   ON case_comment_reports FOR SELECT
-  USING ((SELECT is_admin FROM profiles WHERE id = auth.uid()));
-
-CREATE POLICY "Users can view own reports"
-  ON case_comment_reports FOR SELECT
-  USING (reported_by = auth.uid());
+  USING (
+    (SELECT is_admin FROM profiles WHERE id = (SELECT auth.uid()))
+    OR reported_by = (SELECT auth.uid())
+  );
 
 CREATE POLICY "Authenticated users can report comments"
   ON case_comment_reports FOR INSERT
   WITH CHECK (
-    auth.uid() IS NOT NULL
-    AND reported_by = auth.uid()
+    (SELECT auth.uid()) IS NOT NULL
+    AND reported_by = (SELECT auth.uid())
   );

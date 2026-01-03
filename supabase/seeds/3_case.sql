@@ -9,7 +9,7 @@ INSERT INTO public.cases (
   (
     '11111111-1111-4111-8111-111111111111',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',  -- <- Gorm
-    'https://example.com/artikel-ukraine-krieg-2024',
+    'https://www.mdr.de/nachrichten/welt/osteuropa/politik/ukraine-krieg-tschechien-botschafter-eklat-rusische-propaganda100.html',
     'url',
     1,
     now() - interval '2 days'

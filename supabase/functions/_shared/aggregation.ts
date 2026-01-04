@@ -14,9 +14,10 @@ export type SubmittedAnswer = {
 };
 
 /**
- * Extracts metadata from submitted review answers.
+ * Extracts and aggregates metadata from submitted review answers.
  *
- * Collects keywords and content_type from the first answer.
+ * - Keywords: Merges unique keywords from all reviews
+ * - Content type: Taken from the first answer
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
  * @returns Metadata object with keywords and content_type
@@ -25,8 +26,19 @@ export function buildAggregationMetadata(
   submitted: SubmittedAnswer[],
 ): { keywords: string[] | null; content_type: string[] | null } {
   const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
+
+  // Merge keywords from all reviews
+  const allKeywords = new Set<string>();
+  for (const { data } of submitted) {
+    const answerRecord = data as Record<string, unknown>;
+    const keywords = answerRecord?.keywords as string[] | null | undefined;
+    if (keywords && Array.isArray(keywords)) {
+      keywords.forEach((keyword) => allKeywords.add(keyword));
+    }
+  }
+
   return {
-    keywords: (firstData?.keywords as string[] | null | undefined) ?? null,
+    keywords: allKeywords.size > 0 ? Array.from(allKeywords) : null,
     content_type: (firstData?.content_type as string[] | null | undefined) ??
       null,
   };

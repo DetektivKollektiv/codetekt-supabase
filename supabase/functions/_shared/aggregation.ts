@@ -9,8 +9,10 @@ export type AggregationResult = {
   resultScore: number;
 };
 
-export type SubmittedReview =
-  Database["public"]["Tables"]["review_answers_submitted"]["Row"];
+export type SubmittedReview = Pick<
+  Database["public"]["Tables"]["review_answers_submitted"]["Row"],
+  "data" | "reviewed_by"
+>;
 
 /**
  * Extracts and aggregates metadata from submitted review answers.

@@ -22,7 +22,7 @@ export const aggregationFieldValueSchema = z.object({
 // Review aggregation schema
 export const reviewAggregationSchema = z.object({
   metadata: z.object({
-    keywords: multyLineTextAnswerSchema,
+    keyword_type: multyLineTextAnswerSchema,
     content_type: chipAnswerSchema,
   }),
   fields: z.record(z.string(), aggregationFieldValueSchema),

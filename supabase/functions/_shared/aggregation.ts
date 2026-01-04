@@ -1,5 +1,6 @@
 import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "./schemas/aggregation-schemas.ts";
+import { Database } from "./types/database.types.ts";
 
 export const numericLabeledValues = [0, 1, 2, 3] as const;
 
@@ -8,37 +9,35 @@ export type AggregationResult = {
   resultScore: number;
 };
 
-export type SubmittedAnswer = {
-  data: unknown;
-  reviewed_by: string;
-};
+export type SubmittedReview =
+  Database["public"]["Tables"]["review_answers_submitted"]["Row"];
 
 /**
  * Extracts and aggregates metadata from submitted review answers.
  *
- * - Keywords: Merges unique keywords from all reviews
+ * - Keywords (keyword_type): Merges unique keywords from all reviews
  * - Content type: Taken from the first answer
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
- * @returns Metadata object with keywords and content_type
+ * @returns Metadata object with keyword_type and content_type
  */
 export function buildAggregationMetadata(
-  submitted: SubmittedAnswer[],
-): { keywords: string[] | null; content_type: string[] | null } {
+  submitted: SubmittedReview[],
+): { keyword_type: string[] | null; content_type: string[] | null } {
   const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
 
   // Merge keywords from all reviews
   const allKeywords = new Set<string>();
   for (const { data } of submitted) {
     const answerRecord = data as Record<string, unknown>;
-    const keywords = answerRecord?.keywords as string[] | null | undefined;
+    const keywords = answerRecord?.keyword_type as string[] | null | undefined;
     if (keywords && Array.isArray(keywords)) {
       keywords.forEach((keyword) => allKeywords.add(keyword));
     }
   }
 
   return {
-    keywords: allKeywords.size > 0 ? Array.from(allKeywords) : null,
+    keyword_type: allKeywords.size > 0 ? Array.from(allKeywords) : null,
     content_type: (firstData?.content_type as string[] | null | undefined) ??
       null,
   };
@@ -57,7 +56,7 @@ export function buildAggregationMetadata(
  * @returns Fields object with aggregated statistics
  */
 export function buildAggregationFields(
-  submitted: SubmittedAnswer[],
+  submitted: SubmittedReview[],
 ): Record<
   string,
   {
@@ -136,7 +135,7 @@ export function buildAggregationFields(
  * Builds statistical aggregation from multiple submitted review answers.
  *
  * Combines metadata extraction and field aggregation:
- * - Extracts metadata (keywords, content_type) from first answer
+ * - Extracts metadata (keyword_type merged from all reviews, content_type from first answer)
  * - Aggregates numeric fields with counts, percentages, averages, warnings
  * - Computes overall result score
  *
@@ -144,7 +143,7 @@ export function buildAggregationFields(
  * @returns Aggregation object and result score
  */
 export function buildAggregation(
-  submitted: SubmittedAnswer[],
+  submitted: SubmittedReview[],
 ): AggregationResult {
   const metadata = buildAggregationMetadata(submitted);
   const fields = buildAggregationFields(submitted);

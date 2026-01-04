@@ -78,12 +78,7 @@ Deno.serve(async (req) => {
     let resultScore: number;
 
     try {
-      const aggregationResult = buildAggregation(
-        allSubmittedReviews.map((r) => ({
-          data: r.data,
-          reviewed_by: r.reviewed_by,
-        })),
-      );
+      const aggregationResult = buildAggregation(allSubmittedReviews);
 
       aggregation = aggregationResult.aggregation;
       resultScore = aggregationResult.resultScore;

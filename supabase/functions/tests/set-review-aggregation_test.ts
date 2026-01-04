@@ -1,4 +1,5 @@
 // supabase/functions/tests/set-review-aggregation_test.ts
+// Run with: deno test --allow-net --allow-env --allow-read supabase/functions/tests/set-review-aggregation_test.ts
 import { assert, assertEquals, assertExists } from "jsr:@std/assert@1";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -415,6 +416,277 @@ Deno.test({
       );
     } finally {
       // Cleanup: Delete test case (cascade deletes reviews and aggregation)
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});
+
+// Test 8: Resolved Disputes Override Aggregated Metadata
+Deno.test({
+  name:
+    "set-review-aggregation - resolved disputes override aggregated metadata",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    // Create a test case
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/dispute-test",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError, `Failed to create test case: ${caseError?.message}`);
+    assertExists(newCase, "Test case not created");
+
+    try {
+      // Add two submitted reviews with initial metadata
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            grammar: 3,
+            structure: 3,
+            headline: 3,
+            objectivity: 3,
+            perspectives: 3,
+            external_sources: 3,
+            claims_match_sources: 3,
+            public_media_match: 3,
+            author_credentials: 3,
+            images_quality: 3,
+            additional_rating: 3,
+            keyword_type: ["Politik", "Deutschland"],
+            content_type: ["nachrichtenartikel"],
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            grammar: 2,
+            structure: 2,
+            headline: 2,
+            objectivity: 2,
+            perspectives: 2,
+            external_sources: 2,
+            claims_match_sources: 2,
+            public_media_match: 2,
+            author_credentials: 2,
+            images_quality: 2,
+            additional_rating: 3,
+            keyword_type: ["Deutschland", "Bundestag"],
+            content_type: ["nachrichtenartikel"],
+          },
+        },
+      ];
+
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(
+        !reviewsError,
+        `Failed to create reviews: ${reviewsError?.message}`,
+      );
+
+      // First aggregation - no disputes
+      const { response: response1, data: data1 } = await invokeAggregation(
+        newCase.id,
+      );
+
+      assertEquals(response1.status, 200);
+      assertEquals(data1.success, true);
+
+      // Verify initial aggregation
+      const { data: agg1 } = await supabase
+        .from("review_aggregations")
+        .select("data")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertExists(agg1, "First aggregation not found");
+      const metadata1 = agg1.data.metadata;
+
+      // Verify aggregated keywords include all unique keywords
+      assert(
+        Array.isArray(metadata1.keyword_type),
+        "keyword_type should be an array",
+      );
+      assertEquals(
+        metadata1.keyword_type.sort(),
+        ["Bundestag", "Deutschland", "Politik"].sort(),
+        "Initial keywords should be merged from all reviews",
+      );
+      assertEquals(
+        metadata1.content_type,
+        ["nachrichtenartikel"],
+        "Initial content_type should be from first review",
+      );
+
+      console.log("✓ Initial aggregation without disputes verified");
+
+      // Create resolved disputes using service role
+      // Dispute 1: Change keyword_type
+      const { error: dispute1Error } = await supabase
+        .from("review_disputes")
+        .insert({
+          case_id: newCase.id,
+          template_version: 1,
+          field_id: "keyword_type",
+          original_value: JSON.stringify([
+            "Politik",
+            "Deutschland",
+            "Bundestag",
+          ]),
+          disputed_by: TEST_USER_CUNEYT,
+          reason: "Wichtige Schlagwörter fehlen",
+          resolved_by: TEST_USER_GORM, // Admin
+          resolution: "changed",
+          final_value: JSON.stringify([
+            "Politik",
+            "Deutschland",
+            "Bundesregierung",
+          ]), // Changed keywords
+          resolved_at: new Date().toISOString(),
+        });
+
+      assert(
+        !dispute1Error,
+        `Failed to create keyword dispute: ${dispute1Error?.message}`,
+      );
+
+      // Dispute 2: Change content_type
+      const { error: dispute2Error } = await supabase
+        .from("review_disputes")
+        .insert({
+          case_id: newCase.id,
+          template_version: 1,
+          field_id: "content_type",
+          original_value: JSON.stringify(["nachrichtenartikel"]),
+          disputed_by: TEST_USER_CUNEYT,
+          reason: "Dies ist ein Kommentar",
+          resolved_by: TEST_USER_GORM, // Admin
+          resolution: "changed",
+          final_value: JSON.stringify(["kommentar"]), // Changed content type
+          resolved_at: new Date().toISOString(),
+        });
+
+      assert(
+        !dispute2Error,
+        `Failed to create content_type dispute: ${dispute2Error?.message}`,
+      );
+
+      console.log("✓ Created two resolved disputes (both changed)");
+
+      // Second aggregation - with disputes
+      const { response: response2, data: data2 } = await invokeAggregation(
+        newCase.id,
+      );
+
+      assertEquals(response2.status, 200);
+      assertEquals(data2.success, true);
+
+      // Verify aggregation now reflects admin's final values
+      const { data: agg2 } = await supabase
+        .from("review_aggregations")
+        .select("data")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertExists(agg2, "Second aggregation not found");
+      const metadata2 = agg2.data.metadata;
+
+      // Verify keyword_type uses admin's final_value (not aggregated keywords)
+      assertEquals(
+        metadata2.keyword_type.sort(),
+        ["Bundesregierung", "Deutschland", "Politik"].sort(),
+        "Keywords should reflect admin's final_value from dispute",
+      );
+
+      // Verify content_type uses admin's final_value
+      assertEquals(
+        metadata2.content_type,
+        ["kommentar"],
+        "Content type should reflect admin's final_value from dispute",
+      );
+
+      console.log(
+        "✓ Aggregation with resolved disputes verified - admin decisions override aggregated values",
+      );
+
+      // Test 'original_kept' resolution
+      // Delete the keyword dispute and create one with 'original_kept'
+      await supabase
+        .from("review_disputes")
+        .delete()
+        .eq("case_id", newCase.id)
+        .eq("field_id", "keyword_type");
+
+      const { error: dispute3Error } = await supabase
+        .from("review_disputes")
+        .insert({
+          case_id: newCase.id,
+          template_version: 1,
+          field_id: "keyword_type",
+          original_value: JSON.stringify([
+            "Politik",
+            "Deutschland",
+            "Bundestag",
+          ]),
+          disputed_by: TEST_USER_CUNEYT,
+          reason: "Keywords prüfen",
+          resolved_by: TEST_USER_GORM,
+          resolution: "original_kept",
+          final_value: JSON.stringify([
+            "Bundestag",
+            "Deutschland",
+            "Politik",
+          ]), // Keep original
+          resolved_at: new Date().toISOString(),
+        });
+
+      assert(
+        !dispute3Error,
+        `Failed to create original_kept dispute: ${dispute3Error?.message}`,
+      );
+
+      // Third aggregation
+      const { response: response3, data: data3 } = await invokeAggregation(
+        newCase.id,
+      );
+
+      assertEquals(response3.status, 200);
+      assertEquals(data3.success, true);
+
+      const { data: agg3 } = await supabase
+        .from("review_aggregations")
+        .select("data")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertExists(agg3, "Third aggregation not found");
+      const metadata3 = agg3.data.metadata;
+
+      // Verify keyword_type uses admin's final_value even for 'original_kept'
+      assertEquals(
+        metadata3.keyword_type.sort(),
+        ["Bundestag", "Deutschland", "Politik"].sort(),
+        "Keywords should still use admin's final_value for 'original_kept'",
+      );
+
+      console.log(
+        "✓ 'original_kept' resolution also applies admin's final_value",
+      );
+    } finally {
+      // Cleanup: Delete test case (cascade deletes reviews, disputes, and aggregation)
       await supabase.from("cases").delete().eq("id", newCase.id);
     }
   },

@@ -14,21 +14,47 @@ export type SubmittedAnswer = {
 };
 
 /**
- * Builds statistical aggregation from multiple submitted review answers.
+ * Extracts metadata from submitted review answers.
+ *
+ * Collects keywords and content_type from the first answer.
+ *
+ * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @returns Metadata object with keywords and content_type
+ */
+export function buildAggregationMetadata(
+  submitted: SubmittedAnswer[],
+): { keywords: string[] | null; content_type: string[] | null } {
+  const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
+  return {
+    keywords: (firstData?.keywords as string[] | null | undefined) ?? null,
+    content_type: (firstData?.content_type as string[] | null | undefined) ??
+      null,
+  };
+}
+
+/**
+ * Builds statistical aggregation for numeric fields from multiple submitted review answers.
  *
  * Aggregates numeric fields (traffic-light and likert-scale responses):
  * - Counts occurrences of each value (0-3)
  * - Calculates percentages
  * - Computes averages
  * - Identifies warnings (average < 2)
- * - Computes overall result score
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
- * @returns Aggregation object and result score
+ * @returns Fields object with aggregated statistics
  */
-export function buildAggregation(
+export function buildAggregationFields(
   submitted: SubmittedAnswer[],
-): AggregationResult {
+): Record<
+  string,
+  {
+    counts: { 0: number; 1: number; 2: number; 3: number };
+    percentages: { 0: number; 1: number; 2: number; 3: number };
+    average: number;
+    warnings: string[];
+  }
+> {
   const fields: Record<
     string,
     {
@@ -38,14 +64,6 @@ export function buildAggregation(
       warnings: string[];
     }
   > = {};
-
-  // Collect metadata from first answer if present
-  const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
-  const metadata = {
-    keywords: (firstData?.keywords as string[] | null | undefined) ?? null,
-    content_type: (firstData?.content_type as string[] | null | undefined) ??
-      null,
-  };
 
   for (const { data } of submitted) {
     const answerRecord = data as Record<string, unknown>;
@@ -98,6 +116,26 @@ export function buildAggregation(
       }
     }
   }
+
+  return fields;
+}
+
+/**
+ * Builds statistical aggregation from multiple submitted review answers.
+ *
+ * Combines metadata extraction and field aggregation:
+ * - Extracts metadata (keywords, content_type) from first answer
+ * - Aggregates numeric fields with counts, percentages, averages, warnings
+ * - Computes overall result score
+ *
+ * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @returns Aggregation object and result score
+ */
+export function buildAggregation(
+  submitted: SubmittedAnswer[],
+): AggregationResult {
+  const metadata = buildAggregationMetadata(submitted);
+  const fields = buildAggregationFields(submitted);
 
   const averages = Object.values(fields).map((f) => f.average);
   const resultScore = averages.length

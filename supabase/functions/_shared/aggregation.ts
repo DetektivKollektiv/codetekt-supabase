@@ -14,17 +14,25 @@ export type SubmittedReview = Pick<
   "data" | "reviewed_by"
 >;
 
+export type ResolvedDispute = Pick<
+  Database["public"]["Tables"]["review_disputes"]["Row"],
+  "field_id" | "final_value"
+>;
+
 /**
  * Extracts and aggregates metadata from submitted review answers.
  *
  * - Keywords (keyword_type): Merges unique keywords from all reviews
  * - Content type: Taken from the first answer
+ * - Resolved disputes: Admin's final_value overrides aggregated values
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
  * @returns Metadata object with keyword_type and content_type
  */
 export function buildAggregationMetadata(
   submitted: SubmittedReview[],
+  resolvedDisputes?: ResolvedDispute[],
 ): { keyword_type: string[] | null; content_type: string[] | null } {
   const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
 
@@ -38,10 +46,41 @@ export function buildAggregationMetadata(
     }
   }
 
+  // Build aggregated values
+  let finalKeywordType: string[] | null = allKeywords.size > 0
+    ? Array.from(allKeywords)
+    : null;
+  let finalContentType: string[] | null =
+    (firstData?.content_type as string[] | null | undefined) ?? null;
+
+  // Apply resolved dispute overrides
+  if (resolvedDisputes && resolvedDisputes.length > 0) {
+    for (const dispute of resolvedDisputes) {
+      if (!dispute.final_value) continue;
+
+      try {
+        const parsedValue = JSON.parse(dispute.final_value);
+
+        if (dispute.field_id === "keyword_type" && Array.isArray(parsedValue)) {
+          finalKeywordType = parsedValue;
+        } else if (
+          dispute.field_id === "content_type" && Array.isArray(parsedValue)
+        ) {
+          finalContentType = parsedValue;
+        }
+      } catch (error) {
+        console.error(
+          `Failed to parse final_value for dispute field_id="${dispute.field_id}":`,
+          error,
+        );
+        // Fall back to aggregated value (already set above)
+      }
+    }
+  }
+
   return {
-    keyword_type: allKeywords.size > 0 ? Array.from(allKeywords) : null,
-    content_type: (firstData?.content_type as string[] | null | undefined) ??
-      null,
+    keyword_type: finalKeywordType,
+    content_type: finalContentType,
   };
 }
 
@@ -138,16 +177,19 @@ export function buildAggregationFields(
  *
  * Combines metadata extraction and field aggregation:
  * - Extracts metadata (keyword_type merged from all reviews, content_type from first answer)
+ * - Applies resolved dispute overrides to metadata (admin's final values take precedence)
  * - Aggregates numeric fields with counts, percentages, averages, warnings
  * - Computes overall result score
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
  * @returns Aggregation object and result score
  */
 export function buildAggregation(
   submitted: SubmittedReview[],
+  resolvedDisputes?: ResolvedDispute[],
 ): AggregationResult {
-  const metadata = buildAggregationMetadata(submitted);
+  const metadata = buildAggregationMetadata(submitted, resolvedDisputes);
   const fields = buildAggregationFields(submitted);
 
   const averages = Object.values(fields).map((f) => f.average);

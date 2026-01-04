@@ -56,6 +56,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Step 3.5: Query resolved disputes for metadata fields
+    const { data: resolvedDisputes, error: disputeError } =
+      await supabaseServiceRole
+        .from("review_disputes")
+        .select("field_id, final_value")
+        .eq("case_id", case_id)
+        .not("resolution", "is", null)
+        .not("final_value", "is", null)
+        .in("field_id", ["keyword_type", "content_type"]);
+
+    if (disputeError) {
+      console.error("Failed to query resolved disputes:", disputeError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to query resolved disputes",
+          details: disputeError.message,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     // Step 4: Enforce minimum review threshold
     if (
       !allSubmittedReviews ||
@@ -78,7 +99,10 @@ Deno.serve(async (req) => {
     let resultScore: number;
 
     try {
-      const aggregationResult = buildAggregation(allSubmittedReviews);
+      const aggregationResult = buildAggregation(
+        allSubmittedReviews,
+        resolvedDisputes || undefined,
+      );
 
       aggregation = aggregationResult.aggregation;
       resultScore = aggregationResult.resultScore;

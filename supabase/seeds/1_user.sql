@@ -63,13 +63,14 @@ INSERT INTO auth.identities (
   current_timestamp
 );
 
--- Profile wurde via Trigger erstellt, jetzt updaten
-UPDATE public.profiles
+-- Profile wurde via Trigger erstellt, jetzt via Upsert absichern
+INSERT INTO public.profiles (id, username, is_admin, updated_at)
+VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'gormlabenz', true, current_timestamp)
+ON CONFLICT (id) DO UPDATE
 SET
-  username = 'gormlabenz',
-  is_admin = true, -- Erster User ist Admin
-  updated_at = current_timestamp
-WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  username = EXCLUDED.username,
+  is_admin = EXCLUDED.is_admin,
+  updated_at = EXCLUDED.updated_at;
 
 -- ============================================
 -- Test User 2: anna.schmidt@example.com / testpassword123
@@ -133,11 +134,13 @@ INSERT INTO auth.identities (
   current_timestamp
 );
 
-UPDATE public.profiles
+INSERT INTO public.profiles (id, username, is_admin, updated_at)
+VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'annaschmidt', false, current_timestamp)
+ON CONFLICT (id) DO UPDATE
 SET
-  username = 'annaschmidt',
-  updated_at = current_timestamp
-WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+  username = EXCLUDED.username,
+  is_admin = EXCLUDED.is_admin,
+  updated_at = EXCLUDED.updated_at;
 
 -- ============================================
 -- Test User 3: max.mueller@example.com / testpassword123
@@ -201,11 +204,13 @@ INSERT INTO auth.identities (
   current_timestamp
 );
 
-UPDATE public.profiles
+INSERT INTO public.profiles (id, username, is_admin, updated_at)
+VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'maxmueller', false, current_timestamp)
+ON CONFLICT (id) DO UPDATE
 SET
-  username = 'maxmueller',
-  updated_at = current_timestamp
-WHERE id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+  username = EXCLUDED.username,
+  is_admin = EXCLUDED.is_admin,
+  updated_at = EXCLUDED.updated_at;
 
 -- ============================================
 -- Test User 4: lisa.weber@example.com / testpassword123
@@ -269,8 +274,10 @@ INSERT INTO auth.identities (
   current_timestamp
 );
 
-UPDATE public.profiles
+INSERT INTO public.profiles (id, username, is_admin, updated_at)
+VALUES ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'lisaweber', false, current_timestamp)
+ON CONFLICT (id) DO UPDATE
 SET
-  username = 'lisaweber',
-  updated_at = current_timestamp
-WHERE id = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+  username = EXCLUDED.username,
+  is_admin = EXCLUDED.is_admin,
+  updated_at = EXCLUDED.updated_at;

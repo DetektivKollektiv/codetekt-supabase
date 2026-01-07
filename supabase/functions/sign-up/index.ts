@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: "Invalid input", issues: parsed.error.issues }),
+        JSON.stringify({ error: "Ungültige Eingabe", issues: parsed.error.issues }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     if (checkError) {
       console.error("Error checking username:", checkError);
       return new Response(
-        JSON.stringify({ error: "Database error while checking username" }),
+        JSON.stringify({ error: "Datenbankfehler beim Prüfen des Benutzernamens" }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
 
     if (existingProfile) {
       return new Response(
-        JSON.stringify({ error: "Username already taken" }),
+        JSON.stringify({ error: "Benutzername bereits vergeben" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
     if (signUpError || !authData.user) {
       console.error("Sign up error:", signUpError);
       return new Response(
-        JSON.stringify({ error: signUpError?.message || "Sign up failed" }),
+        JSON.stringify({ error: signUpError?.message || "Registrierung fehlgeschlagen" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return new Response(
         JSON.stringify({
-          error: "Failed to set username. Please try again.",
+          error: "Benutzername konnte nicht gesetzt werden. Bitte versuchen Sie es erneut.",
         }),
         {
           status: 500,
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
       console.error("Error signing in after signup:", signInError);
       return new Response(
         JSON.stringify({
-          error: "Account created but auto-login failed. Please sign in.",
+          error: "Konto erstellt, aber automatische Anmeldung fehlgeschlagen. Bitte melden Sie sich an.",
         }),
         {
           status: 200,
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Interner Serverfehler" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

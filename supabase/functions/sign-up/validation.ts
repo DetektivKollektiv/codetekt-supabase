@@ -1,18 +1,18 @@
 import { z } from "npm:zod@3.24.1";
 
 export const signUpSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: z.string().email("Ungültiges E-Mail-Format"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(100, "Password is too long"),
+    .min(8, "Passwort muss mindestens 8 Zeichen lang sein")
+    .max(100, "Passwort ist zu lang"),
   username: z
     .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(50, "Username is too long")
+    .min(3, "Benutzername muss mindestens 3 Zeichen lang sein")
+    .max(50, "Benutzername ist zu lang")
     .regex(
       /^[a-zA-Z0-9_-]+$/,
-      "Username can only contain letters, numbers, underscores, and hyphens",
+      "Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten",
     ),
 });
 

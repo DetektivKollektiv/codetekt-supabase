@@ -1,36 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { z } from "npm:zod@4.1.13";
 import { DOMParser } from "jsr:@b-fuze/deno-dom";
 import { Database } from "../_shared/types/database.types.ts";
-
-const requestSchema = z.object({
-  case_id: z.string().uuid("Invalid case_id: must be a valid UUID"),
-});
-
-const urlSchema = z.string().url("Invalid URL format");
-
-const ogDataSchema = z.object({
-  ogTitle: z.string().optional(),
-  ogDescription: z.string().optional(),
-  ogUrl: z.string().url().optional(),
-  ogType: z.string().optional(),
-  ogSiteName: z.string().optional(),
-  ogLocale: z.string().optional(),
-  ogImage: z.union([
-    z.string().url(),
-    z.array(z.object({
-      url: z.string().url(),
-      width: z.string().optional(),
-      height: z.string().optional(),
-      type: z.string().optional(),
-      alt: z.string().optional(),
-    }))
-  ]).optional(),
-  success: z.boolean().optional(),
-  charset: z.string().optional(),
-  requestUrl: z.string().url().optional(),
-}).passthrough();
+import {
+  openGraphDataSchema,
+  setOpenGraphDataRequestSchema,
+  urlSchema,
+} from "../_shared/schemas/index.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -103,7 +79,7 @@ Deno.serve(async (req) => {
   try {
     // Step 1: Parse and validate request payload
     const json = await req.json().catch(() => null);
-    const parsed = requestSchema.safeParse(json);
+    const parsed = setOpenGraphDataRequestSchema.safeParse(json);
 
     if (!parsed.success) {
       return new Response(
@@ -214,7 +190,7 @@ Deno.serve(async (req) => {
 
     // Step 7: Validate OG data structure (informational only)
     if (ogData && fetchStatus !== "failed") {
-      const validation = ogDataSchema.safeParse(ogData);
+      const validation = openGraphDataSchema.safeParse(ogData);
 
       if (!validation.success) {
         console.warn("OG data validation failed:", validation.error);

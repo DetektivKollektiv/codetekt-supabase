@@ -6,11 +6,14 @@ export const contentTypeSchema = z.enum(["url", "text"], {
 });
 
 // Schema for creating a new case
+// Note: template_version is optional and will be auto-set by database trigger to latest version
+// Note: submitted_at is auto-set by database default to now()
 export const createCaseSchema = z.object({
   content: z.string().min(1, "content is required"),
   content_type: contentTypeSchema,
-  template_version: z.number().int().positive("template_version must be a positive integer"),
   submitted_by: z.string().uuid("submitted_by must be a valid UUID"),
+  template_version: z.number().int().positive("template_version must be a positive integer").optional(),
+  submitted_at: z.string().datetime().optional(),
 });
 
 // Schema for updating an existing case

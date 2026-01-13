@@ -14,6 +14,37 @@ create table "public"."cases" (
 
 alter table "public"."cases" enable row level security;
 
+-- ============================================
+-- TRIGGER: Auto-set template_version to latest
+-- ============================================
+
+create or replace function public.set_case_template_version()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  -- Always set template_version to the latest (highest version number)
+  NEW.template_version := (
+    select max(version)
+    from public.review_templates
+  );
+
+  -- Ensure a template exists
+  if NEW.template_version is null then
+    raise exception 'No review templates found. Cannot create case without a template.';
+  end if;
+
+  return NEW;
+end;
+$$;
+
+create trigger set_case_template_version_trigger
+  before insert on public.cases
+  for each row
+  execute function public.set_case_template_version();
+
 create unique index cases_pkey on public.cases using btree (id);
 alter table "public"."cases" add constraint "cases_pkey" primary key using index "cases_pkey";
 

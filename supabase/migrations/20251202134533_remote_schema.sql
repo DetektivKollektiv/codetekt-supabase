@@ -6,7 +6,8 @@ CREATE TABLE "public"."profiles" (
   "id" uuid NOT NULL,
   "updated_at" timestamp with time zone,
   "username" text,
-  "is_admin" boolean NOT NULL DEFAULT false
+  "is_admin" boolean NOT NULL DEFAULT false,
+  "get_notifications" boolean NOT NULL DEFAULT true
 );
 
 ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;

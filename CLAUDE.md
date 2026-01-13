@@ -99,6 +99,10 @@ Community: case_comments (discussion, moderation, likes, reports)
   - `is_admin`: Boolean flag for admin privileges (default: false)
 - **review_templates**: Versioned questionnaires stored as JSONB, immutable versions
 - **cases**: Content submissions, references specific template version
+  - Fields: `id`, `submitted_by`, `content`, `content_type`, `template_version`, `submitted_at`
+  - `template_version`: Auto-set by BEFORE INSERT trigger to latest version (max version number)
+  - `submitted_at`: Auto-set by default to now()
+  - Trigger: `set_case_template_version_trigger` ensures all cases use the latest template
 
 **Review System:**
 - **review_answers_in_progress**: Draft reviews (private to author)

@@ -217,28 +217,28 @@
             "id": "positive",
             "text": "Ja,",
             "description": "etwas positives",
-            "color": "var(--green-500)",
+            "color": "var(--brand-green)",
             "value": 0
           },
           {
             "id": "minor_issue",
             "text": "Ja,",
             "description": "kleiner Mangel",
-            "color": "var(--yellow-500)",
+            "color": "var(--brand-yellow)",
             "value": 1
           },
           {
             "id": "major_issue",
             "text": "Ja,",
             "description": "großer Mangel",
-            "color": "var(--orange-500)",
+            "color": "var(--brand-orange)",
             "value": 2
           },
           {
             "id": "critical_error",
             "text": "Ja,",
             "description": "gravierender Fehler",
-            "color": "var(--red-500)",
+            "color": "var(--brand-coral)",
             "value": 3
           }
         ],

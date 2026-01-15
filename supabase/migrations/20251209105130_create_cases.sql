@@ -3,8 +3,12 @@
 -- Eingereichte Fälle zur Überprüfung
 -- ============================================
 
+-- Create sequence for case numbers
+create sequence if not exists public.cases_case_number_seq start with 1 increment by 1;
+
 create table "public"."cases" (
   "id" uuid not null default gen_random_uuid(),
+  "case_number" integer not null default nextval('public.cases_case_number_seq'),
   "submitted_by" uuid not null references public.profiles(id),
   "content" text not null,
   "content_type" text not null check (content_type in ('url', 'text')),
@@ -49,6 +53,7 @@ create unique index cases_pkey on public.cases using btree (id);
 alter table "public"."cases" add constraint "cases_pkey" primary key using index "cases_pkey";
 
 -- Index für schnelle Lookups
+create unique index cases_case_number_idx on public.cases using btree (case_number);
 create index cases_submitted_by_idx on public.cases using btree (submitted_by);
 create index cases_template_version_idx on public.cases using btree (template_version);
 

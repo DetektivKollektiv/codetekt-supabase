@@ -1,8 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
-import { buildAggregation } from "../_shared/aggregation.ts";
+import { buildAggregation, SubmittedReview } from "../_shared/aggregation.ts";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
+import { submittedReviewAnswerSchema } from "../_shared/schemas/review-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 
 const MIN_REVIEWS_FOR_AGGREGATION = 2;
@@ -15,6 +16,7 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 Deno.serve(async (req) => {
+  console.log("=== HOT RELOAD TEST: Function version 2026-01-17-TEST ===");
   try {
     // Step 1: Parse and validate request payload
     const json = await req.json().catch(() => null);
@@ -77,30 +79,58 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 4: Enforce minimum review threshold
-    if (
-      !allSubmittedReviews ||
-      allSubmittedReviews.length < MIN_REVIEWS_FOR_AGGREGATION
-    ) {
+    // Step 4: Validate each review and filter out invalid ones
+    console.log(`=== VALIDATING ${allSubmittedReviews?.length ?? 0} REVIEWS ===`);
+    const validatedReviews: SubmittedReview[] = [];
+    const invalidReviews: {
+      reviewed_by: string;
+      errors: z.core.$ZodIssueBase[];
+    }[] = [];
+
+    for (const review of allSubmittedReviews ?? []) {
+      console.log(`Validating review by ${review.reviewed_by}:`, JSON.stringify(review.data));
+      const validationResult = submittedReviewAnswerSchema.safeParse(review.data);
+      if (validationResult.success) {
+        console.log(`✓ Review by ${review.reviewed_by} is VALID`);
+        validatedReviews.push(review);
+      } else {
+        console.warn(
+          `✗ Review by ${review.reviewed_by} FAILED validation:`,
+          JSON.stringify(validationResult.error.issues, null, 2),
+        );
+        invalidReviews.push({
+          reviewed_by: review.reviewed_by,
+          errors: validationResult.error.issues,
+        });
+      }
+    }
+    
+    console.log(`=== VALIDATION COMPLETE: ${validatedReviews.length} valid, ${invalidReviews.length} invalid ===`);
+
+    // Step 5: Enforce minimum review threshold on validated reviews
+    if (validatedReviews.length < MIN_REVIEWS_FOR_AGGREGATION) {
       return new Response(
         JSON.stringify({
-          error: "Insufficient reviews for aggregation",
+          error: "Insufficient valid reviews for aggregation",
           details:
-            `Case has ${allSubmittedReviews?.length ?? 0} reviews, minimum ${MIN_REVIEWS_FOR_AGGREGATION} required`,
-          review_count: allSubmittedReviews?.length ?? 0,
+            `Case has ${validatedReviews.length} valid reviews (${invalidReviews.length} invalid), minimum ${MIN_REVIEWS_FOR_AGGREGATION} required`,
+          total_review_count: allSubmittedReviews?.length ?? 0,
+          valid_review_count: validatedReviews.length,
+          invalid_review_count: invalidReviews.length,
           required_count: MIN_REVIEWS_FOR_AGGREGATION,
+          invalid_reviews: invalidReviews,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    // Step 5: Build aggregation
+    // Step 6: Build aggregation
     let aggregation: z.infer<typeof reviewAggregationSchema>;
     let resultScore: number;
 
     try {
       const aggregationResult = buildAggregation(
-        allSubmittedReviews,
+        validatedReviews,
         resolvedDisputes || undefined,
       );
 
@@ -117,7 +147,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 6: Validate aggregation output
+    // Step 7: Validate aggregation output
     const validationResult = reviewAggregationSchema.safeParse(aggregation);
 
     if (!validationResult.success) {
@@ -131,10 +161,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 7: Extract reviewer IDs
-    const reviewerIds = allSubmittedReviews.map((r) => r.reviewed_by);
+    // Step 8: Extract reviewer IDs (only from validated reviews)
+    const reviewerIds = validatedReviews.map((r) => r.reviewed_by);
 
-    // Step 8: Upsert aggregation to database
+    // Step 9: Upsert aggregation to database
     const { error: upsertError } = await supabaseServiceRole
       .from("review_aggregations")
       .upsert({
@@ -158,7 +188,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 9: Return success response
+    // Step 10: Return success response
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { "Content-Type": "application/json" } },

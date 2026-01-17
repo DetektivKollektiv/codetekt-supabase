@@ -2,7 +2,7 @@ import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "./schemas/aggregation-schemas.ts";
 import { Database } from "./types/database.types.ts";
 
-export const numericLabeledValues = [0, 1, 2, 3] as const;
+export const numericLabeledValues = [0, 1, 2, 3, 4] as const;
 
 export type AggregationResult = {
   aggregation: z.infer<typeof reviewAggregationSchema>;
@@ -101,8 +101,8 @@ export function buildAggregationFields(
 ): Record<
   string,
   {
-    counts: { 0: number; 1: number; 2: number; 3: number };
-    percentages: { 0: number; 1: number; 2: number; 3: number };
+    counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
+    percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
     average: number;
     warnings: string[];
   }
@@ -110,8 +110,8 @@ export function buildAggregationFields(
   const fields: Record<
     string,
     {
-      counts: { 0: number; 1: number; 2: number; 3: number };
-      percentages: { 0: number; 1: number; 2: number; 3: number };
+      counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
+      percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
       average: number;
       warnings: string[];
     }
@@ -134,16 +134,16 @@ export function buildAggregationFields(
       // Initialize accumulator
       if (!fields[fieldId]) {
         fields[fieldId] = {
-          counts: { 0: 0, 1: 0, 2: 0, 3: 0 },
-          percentages: { 0: 0, 1: 0, 2: 0, 3: 0 },
+          counts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
+          percentages: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
           average: 0,
           warnings: [],
         };
       }
 
       const field = fields[fieldId];
-      // Restrict to 0..3 as defined in AggregationFieldValue
-      const bucket = Math.max(0, Math.min(3, value)) as 0 | 1 | 2 | 3;
+      // Restrict to 0..4 as defined in AggregationFieldValue
+      const bucket = Math.max(0, Math.min(4, value)) as 0 | 1 | 2 | 3 | 4;
       field.counts[bucket] += 1;
     }
   }

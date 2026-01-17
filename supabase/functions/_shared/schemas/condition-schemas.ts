@@ -10,13 +10,20 @@ export const comparisonConditionSchema = z.object({
 
 export const equalsConditionSchema = z.object({
   field_id: z.string(),
-  operator: z.literal("equals"),
+  operator: z.literal("==="),
   value: z.union([z.string(), z.number(), z.boolean()]),
+});
+
+export const inConditionSchema = z.object({
+  field_id: z.string(),
+  operator: z.literal("in"),
+  values: z.array(z.union([z.string(), z.number(), z.boolean()])),
 });
 
 export const conditionSchema = z.union([
   comparisonConditionSchema,
   equalsConditionSchema,
+  inConditionSchema,
 ]);
 
-export type ConditionInput = z.infer<typeof conditionSchema>;
+export type Condition = z.infer<typeof conditionSchema>;

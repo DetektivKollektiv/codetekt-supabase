@@ -1,5 +1,8 @@
 import { z } from "npm:zod@4.1.13";
-import { chipAnswerSchema, multyLineTextAnswerSchema } from "./answer-schemas.ts";
+import {
+  chipAnswerSchema,
+  multiLineTextAnswerSchema,
+} from "./answer-schemas.ts";
 
 // Schema for aggregated field values
 export const aggregationFieldValueSchema = z.object({
@@ -22,7 +25,7 @@ export const aggregationFieldValueSchema = z.object({
 // Review aggregation schema
 export const reviewAggregationSchema = z.object({
   metadata: z.object({
-    keyword_type: multyLineTextAnswerSchema,
+    keyword_type: multiLineTextAnswerSchema,
     content_type: chipAnswerSchema,
   }),
   fields: z.record(z.string(), aggregationFieldValueSchema),

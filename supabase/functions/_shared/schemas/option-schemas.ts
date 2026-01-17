@@ -7,15 +7,8 @@ export const chipOptionSchema = z.object({
   text: z.string(),
 });
 
-export const traficLightOptionSchema = z.object({
+export const trafficLightOptionSchema = z.object({
   id: z.string(),
-  question: z.string(),
-});
-
-export const likertScaleOptionSchema = z.object({
-  id: z.string(),
-  text: z.string(),
-  description: z.string(),
   color: z.string(),
   value: z.union([
     z.literal(0),
@@ -26,10 +19,25 @@ export const likertScaleOptionSchema = z.object({
   ]),
 });
 
+export const likertScaleOptionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  description: z.string(),
+  color: z.string(),
+  value: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+});
+
 export const textAreaOptionSchema = z.object({
   id: z.string(),
   placeholder: z.string(),
   max_length: z.number(),
+});
+
+export const textOptionSchema = z.object({
+  id: z.string(),
+  placeholder: z.string(),
+  max_length: z.number(),
+  min_length: z.number().optional(),
 });
 
 export const multiLineTextOptionSchema = z.object({

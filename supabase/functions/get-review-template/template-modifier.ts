@@ -1,6 +1,6 @@
 import {
   chipAnswerSchema,
-  multyLineTextAnswerSchema,
+  multiLineTextAnswerSchema,
 } from "../_shared/schemas/answer-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 
@@ -25,7 +25,7 @@ export function aggregateKeywords(
     const keywords = data.keyword_type;
 
     // Validate with schema
-    const parsed = multyLineTextAnswerSchema.safeParse(keywords);
+    const parsed = multiLineTextAnswerSchema.safeParse(keywords);
     if (parsed.success && parsed.data) {
       parsed.data.forEach((kw) => keywordSet.add(kw));
     }

@@ -7,307 +7,560 @@ VALUES (
   1,
   '[
   {
-    "id": "keywords_question",
+    "id": "title_question",
+    "fields": [
+      {
+        "id": "title",
+        "type": "text",
+        "options": [
+          {
+            "id": "title_field",
+            "max_length": 500,
+            "min_length": 5,
+            "placeholder": "Gib einen Titel ein..."
+          }
+        ],
+        "question": "Finde einen prägnanten Titel für den Fall",
+        "is_required": true
+      }
+    ],
     "metadata": {
-      "title": "Stichwörter",
-      "text": "Du hast die Bearbeitung dieses Falls gestartet. Bitte lies dir alle Aussagen durch und bewerte sie sorgfältig.",
-      "help_url": "",
+      "text": "Bitte gebe diesem Fall einen eindeutigen Titel. Dieser sollte den Inhalt des Falls kurz und prägnant zusammenfassen, damit er später leicht wiedergefunden werden kann.",
+      "title": "Titel",
+      "help_url": "/help/title",
       "indent_level": 0
-    },
+    }
+  },
+  {
+    "id": "keywords_question",
     "fields": [
       {
         "id": "keyword_type",
         "type": "multi-line-text",
-        "question": "Fehlen Stichwörter?",
         "options": [],
-        "additonal_option_count": 5,
+        "question": "Fehlen Stichwörter?",
         "max_length": 50,
+        "is_required": true,
         "placeholder": "Stichwort hinzufügen...",
-        "is_required": true
+        "additonal_option_count": 5
       }
-    ]
+    ],
+    "metadata": {
+      "text": "Du hast die Bearbeitung dieses Falls gestartet. Bitte lies dir alle Aussagen durch und bewerte sie sorgfältig.",
+      "title": "Stichwörter",
+      "help_url": "",
+      "indent_level": 0
+    }
   },
   {
     "id": "content_type_question",
-    "metadata": {
-      "title": "Inhaltstyp",
-      "text": "Du hast die Bearbeitung dieses Falls gestartet. Bitte lies dir alle Aussagen durch und bewerte sie sorgfältig.",
-      "help_url": "",
-      "indent_level": 0
-    },
     "fields": [
       {
         "id": "content_type",
         "type": "chip",
-        "question": "Worum handelt es sich bei dem Fall?",
         "options": [
-          { "id": "nachrichtenartikel", "text": "Nachrichtenartikel" },
-          { "id": "chat_post", "text": "Chatnachricht/Social Media Post" },
-          { "id": "satire", "text": "Satire" },
-          { "id": "fake_website", "text": "Fake-Website" },
-          { "id": "opinion", "text": "Meinungsbeitrag/Kommentar" },
-          { "id": "werbung", "text": "Werbung" },
-          { "id": "pressemitteilung", "text": "Pressemitteilung" },
-          { "id": "video", "text": "Video" },
-          { "id": "bild", "text": "Bild" },
-          { "id": "other", "text": "Other" }
+          {
+            "id": "satire",
+            "text": "Satire"
+          },
+          {
+            "id": "neutral",
+            "text": "Neutral"
+          },
+          {
+            "id": "text_message",
+            "text": "Textnachricht"
+          },
+          {
+            "id": "opinion",
+            "text": "Meinung"
+          }
         ],
-        "prefilled_answer_value": null,
-        "is_required": true,
+        "question": "Worum handelt es sich bei dem Fall?",
         "is_disabled": false,
+        "is_required": true,
         "is_disputable": false
       }
-    ]
-  },
-
-  {
-    "id": "content_criteria_question",
+    ],
     "metadata": {
-      "title": "Inhalte",
-      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "text": "Du hast die Bearbeitung dieses Falls gestartet. Bitte lies dir alle Aussagen durch und bewerte sie sorgfältig.",
+      "title": "Inhaltstyp",
       "help_url": "",
       "indent_level": 0
-    },
-    "fields": [
-      {
-        "id": "grammar",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "grammar_opt",
-            "question": "Die Grammatik und Rechtschreibung des Artikels sind fehlerfrei."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "structure",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "structure_opt",
-            "question": "Der Artikel ist keine Eilnachricht. Er besteht aus mehreren Paragraphen."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "headline",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "headline_opt",
-            "question": "Die Überschrift passt zum Inhalt des Artikels."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "objectivity",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "objectivity_opt",
-            "question": "Der Artikel ist objektiv geschrieben und frei von Hetze, Generalisierungen, Panikmache oder Ähnlichem."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "perspectives",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "perspectives_opt",
-            "question": "Im Artikel werden unterschiedliche Positionen dargestellt."
-          }
-        ],
-        "is_required": true
-      }
-    ]
+    }
   },
-
   {
-    "id": "source_criteria_question",
-    "metadata": {
-      "title": "Quelle",
-      "text": "Bewerte die folgenden Aussagen sorgfältig.",
-      "help_url": "",
-      "indent_level": 0
-    },
+    "id": "content_question",
     "fields": [
       {
-        "id": "external_sources",
+        "id": "content_accuracy",
         "type": "traffic-light",
+        "question": "Im Artikel werden unterschiedliche Positionen dargestellt.",
         "options": [
           {
-            "id": "external_sources_opt",
-            "question": "Im Artikel werden für alle Behauptungen externe Quellen genannt."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "claims_match_sources",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "claims_match_sources_opt",
-            "question": "Die Behauptungen des Artikels decken sich vollständig mit denen der Originalquellen."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "public_media_match",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "public_media_match_opt",
-            "question": "Die Behauptungen des Artikels decken sich mit der Berichterstattung öffentlich-rechtlicher Medien und/oder Fachmedien."
-          }
-        ],
-        "is_required": true
-      },
-      {
-        "id": "author_credentials",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "author_credentials_opt",
-            "question": "Der Artikel ist von einer fachkundigen Person oder einer*m beruflichen Journalist*in geschrieben."
-          }
-        ],
-        "is_required": true
-      }
-    ]
-  },
-
-  {
-    "id": "images_question",
-    "metadata": {
-      "title": "Bilder",
-      "text": "Bewerte die Bilder im Artikel.",
-      "help_url": "",
-      "indent_level": 0
-    },
-    "fields": [
-      {
-        "id": "images_quality",
-        "type": "traffic-light",
-        "options": [
-          {
-            "id": "images_quality_opt",
-            "question": "Die Bilder sind relevant und unterstützen den Inhalt."
-          }
-        ],
-        "is_required": true
-      }
-    ]
-  },
-
-  {
-    "id": "evaluation_criteria_question",
-    "metadata": {
-      "title": "Bewertungskriterien",
-      "text": "Hinweis: Im Rahmen dieses Tests, kann nur ein *sonstiger* Punkt angegeben werden. Falls du mehrere Punkte angeben willst, wähle bitte den gravierendsten aus. Später wird es die Möglichkeit geben, hier auch mehrere Punkte aufzuführen.",
-      "help_url": "",
-      "indent_level": 0
-    },
-    "fields": [
-      {
-        "id": "additional_rating",
-        "type": "likert-scale",
-        "question": "Ist dir sonst noch etwas aufgefallen, das in die Bewertung einfliessen sollte?",
-        "options": [
-          {
-            "id": "positive",
-            "text": "Ja,",
-            "description": "etwas positives",
-            "color": "var(--brand-green)",
-            "value": 0
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
           },
           {
-            "id": "minor_issue",
-            "text": "Ja,",
-            "description": "kleiner Mangel",
-            "color": "var(--brand-yellow)",
-            "value": 1
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
           },
           {
-            "id": "major_issue",
-            "text": "Ja,",
-            "description": "großer Mangel",
-            "color": "var(--brand-orange)",
-            "value": 2
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
           },
           {
-            "id": "critical_error",
-            "text": "Ja,",
-            "description": "gravierender Fehler",
-            "color": "var(--brand-coral)",
-            "value": 3
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
           },
           {
-            "id": "nothing",
-            "text": "Nein,",
-            "description": "alles geprüft",
-            "color": "var(--gray-400)",
-            "value": 4
-          }
-        ],
-        "is_required": true
-      }
-    ]
-  },
-
-  {
-    "id": "additional_comment_question",
-    "metadata": {
-      "title": "Zusatz",
-      "text": "Versuche den Faktor möglichst kurz und knapp zu beschreiben. Du hast gleich noch mehr Platz für einen ausführlichen Fallbewertungskommentar.",
-      "help_url": "",
-      "indent_level": 1
-    },
-    "fields": [
-      {
-        "id": "additional_comment",
-        "type": "text-area",
-        "question": "Was ist dir aufgefallen?",
-        "options": [
-          {
-            "id": "comment_field",
-            "placeholder": "Type your answer here...",
-            "max_length": 500
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
           }
         ],
         "is_required": [
           {
-            "field_id": "additional_rating",
-            "operator": "<",
-            "value": 4
+            "value": "neutral",
+            "field_id": "content_type",
+            "operator": "==="
           }
         ],
         "is_shown": [
           {
-            "field_id": "additional_rating",
-            "operator": "<",
-            "value": 4
+            "value": "neutral",
+            "field_id": "content_type",
+            "operator": "==="
+          }
+        ]
+      },
+      {
+        "id": "content_sources",
+        "type": "traffic-light",
+        "question": "Der Artikel ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content_language",
+        "type": "traffic-light",
+        "question": "Die Grammatik und Rechtschreibung der Nachricht sind fehlerfrei.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content_clarity",
+        "type": "traffic-light",
+        "question": "Es wird angegeben, wenn Informationen unsicher, vorläufig oder umstritten sind.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content_references",
+        "type": "traffic-light",
+        "question": "Es werden keine entscheidenden und relevanten Informationen ausgelassen, die das Gesamtbild verändern würden.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content_logic",
+        "type": "traffic-light",
+        "question": "Der Artikel enthält keine offensichtliche logische Fehlschlüsse oder argumentative Sprünge.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "content_advertising",
+        "type": "traffic-light",
+        "question": "Der Artikel ist frei von Sponsoring, Advertorial-Charakter und vebirgt keine versteckte Werbeabsicht.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--brand-red))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-neutral-0))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": [
+              "neutral",
+              "opinion",
+              "text_message"
+            ]
           }
         ]
       }
-    ]
-  },
-
-  {
-    "id": "submit_question",
+    ],
     "metadata": {
-      "title": "Fall abschließen",
-      "text": "Überprüfe deine Angaben und schließe den Fall ab.",
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Inhalt",
       "help_url": "",
       "indent_level": 0
-    },
-    "fields": []
+    }
+  },
+  {
+    "id": "evaluation_criteria_question",
+    "fields": [
+      {
+        "id": "additional_rating",
+        "type": "likert-scale",
+        "options": [
+          {
+            "id": "positive",
+            "text": "Ja,",
+            "color": "hsl(var(--brand-green))",
+            "value": 0,
+            "description": "etwas positives"
+          },
+          {
+            "id": "minor_issue",
+            "text": "Ja,",
+            "color": "hsl(var(--brand-yellow))",
+            "value": 1,
+            "description": "kleiner Mangel"
+          },
+          {
+            "id": "critical_error",
+            "text": "Ja,",
+            "color": "hsl(var(--brand-red))",
+            "value": 2,
+            "description": "gravierender Fehler"
+          },
+          {
+            "id": "nothing",
+            "text": "Nein,",
+            "color": "hsl(var(--brand-neutral-0))",
+            "value": 3,
+            "description": "alles geprüft"
+          }
+        ],
+        "question": "Ist dir sonst noch etwas aufgefallen, das in die Bewertung einfliessen sollte?",
+        "is_required": true
+      }
+    ],
+    "metadata": {
+      "text": "Hinweis: Im Rahmen dieses Tests, kann nur ein *sonstiger* Punkt angegeben werden. Falls du mehrere Punkte angeben willst, wähle bitte den gravierendsten aus. Später wird es die Möglichkeit geben, hier auch mehrere Punkte aufzuführen.",
+      "title": "Bewertungskriterien",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "additional_comment_question",
+    "fields": [
+      {
+        "id": "additional_comment",
+        "type": "text-area",
+        "options": [
+          {
+            "id": "comment_field",
+            "max_length": 500,
+            "placeholder": "Type your answer here..."
+          }
+        ],
+        "is_shown": [
+          {
+            "value": 4,
+            "field_id": "additional_rating",
+            "operator": "<"
+          }
+        ],
+        "question": "Was ist dir aufgefallen?",
+        "is_required": [
+          {
+            "value": 4,
+            "field_id": "additional_rating",
+            "operator": "<"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "text": "Versuche den Faktor möglichst kurz und knapp zu beschreiben. Du hast gleich noch mehr Platz für einen ausführlichen Fallbewertungskommentar.",
+      "title": "Zusatz",
+      "help_url": "",
+      "indent_level": 1
+    }
+  },
+  {
+    "id": "submit_question",
+    "fields": [],
+    "metadata": {
+      "text": "Überprüfe deine Angaben und schließe den Fall ab.",
+      "title": "Fall abschließen",
+      "help_url": "",
+      "indent_level": 0
+    }
   }
 ]
 '::jsonb,

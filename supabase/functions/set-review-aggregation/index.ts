@@ -16,7 +16,6 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 Deno.serve(async (req) => {
-  console.log("=== HOT RELOAD TEST: Function version 2026-01-17-TEST ===");
   try {
     // Step 1: Parse and validate request payload
     const json = await req.json().catch(() => null);
@@ -80,7 +79,6 @@ Deno.serve(async (req) => {
     }
 
     // Step 4: Validate each review and filter out invalid ones
-    console.log(`=== VALIDATING ${allSubmittedReviews?.length ?? 0} REVIEWS ===`);
     const validatedReviews: SubmittedReview[] = [];
     const invalidReviews: {
       reviewed_by: string;
@@ -88,15 +86,15 @@ Deno.serve(async (req) => {
     }[] = [];
 
     for (const review of allSubmittedReviews ?? []) {
-      console.log(`Validating review by ${review.reviewed_by}:`, JSON.stringify(review.data));
-      const validationResult = submittedReviewAnswerSchema.safeParse(review.data);
+      const validationResult = submittedReviewAnswerSchema.safeParse(
+        review.data,
+      );
       if (validationResult.success) {
-        console.log(`✓ Review by ${review.reviewed_by} is VALID`);
         validatedReviews.push(review);
       } else {
         console.warn(
-          `✗ Review by ${review.reviewed_by} FAILED validation:`,
-          JSON.stringify(validationResult.error.issues, null, 2),
+          `Review by ${review.reviewed_by} failed validation:`,
+          validationResult.error.issues,
         );
         invalidReviews.push({
           reviewed_by: review.reviewed_by,
@@ -104,8 +102,6 @@ Deno.serve(async (req) => {
         });
       }
     }
-    
-    console.log(`=== VALIDATION COMPLETE: ${validatedReviews.length} valid, ${invalidReviews.length} invalid ===`);
 
     // Step 5: Enforce minimum review threshold on validated reviews
     if (validatedReviews.length < MIN_REVIEWS_FOR_AGGREGATION) {

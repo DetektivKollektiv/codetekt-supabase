@@ -139,7 +139,8 @@ Deno.test({
 
 // Test: User who already submitted should still get template
 Deno.test({
-  name: "get-review-template - returns template even if user already submitted review",
+  name:
+    "get-review-template - returns template even if user already submitted review",
   sanitizeResources: false,
   sanitizeOps: false,
   fn: async () => {
@@ -255,7 +256,10 @@ Deno.test({
       const contentTypeSection = data.find((s: { id: string }) =>
         s.id === "content_type_question"
       );
-      assertExists(contentTypeSection, "content_type_question section not found");
+      assertExists(
+        contentTypeSection,
+        "content_type_question section not found",
+      );
 
       // Find content_type field
       const contentTypeField = contentTypeSection.fields.find((
@@ -403,7 +407,9 @@ Deno.test({
       );
       // Verify options have is_disabled set to true
       assert(
-        keywordField.options.every((opt: { is_disabled: boolean }) => opt.is_disabled === true),
+        keywordField.options.every((opt: { is_disabled: boolean }) =>
+          opt.is_disabled === true
+        ),
         "All aggregated keyword options should be disabled",
       );
 
@@ -411,7 +417,10 @@ Deno.test({
       const contentTypeSection = data.find((s: { id: string }) =>
         s.id === "content_type_question"
       );
-      assertExists(contentTypeSection, "content_type_question section not found");
+      assertExists(
+        contentTypeSection,
+        "content_type_question section not found",
+      );
 
       // Find content_type field
       const contentTypeField = contentTypeSection.fields.find((
@@ -530,12 +539,17 @@ Deno.test({
 
       // The template has old field names but we're testing in-progress answer loading
       // Skip this test as template structure doesn't match schema yet
-      console.log("✓ In-progress review test skipped (template needs updating to match schema)");
+      console.log(
+        "✓ In-progress review test skipped (template needs updating to match schema)",
+      );
 
       console.log("✓ In-progress review values correctly populated");
 
       // Cleanup
-      await supabase.from("review_answers_in_progress").delete().eq("case_id", newCaseId);
+      await supabase.from("review_answers_in_progress").delete().eq(
+        "case_id",
+        newCaseId,
+      );
       await supabase.from("cases").delete().eq("id", newCaseId);
     } finally {
       await supabase.auth.signOut();
@@ -596,7 +610,10 @@ Deno.test({
       for (const section of data) {
         assertExists(section.id, "Section should have id");
         assertExists(section.metadata, "Section should have metadata");
-        assertExists(section.metadata.title, "Section metadata should have title");
+        assertExists(
+          section.metadata.title,
+          "Section metadata should have title",
+        );
         assertExists(section.fields, "Section should have fields array");
         assert(
           Array.isArray(section.fields),
@@ -613,7 +630,10 @@ Deno.test({
       console.log("✓ Template structure is valid");
       console.log(`  - ${data.length} sections`);
       console.log(
-        `  - ${data.reduce((acc: number, s: { fields: unknown[] }) => acc + s.fields.length, 0)} total fields`,
+        `  - ${
+          data.reduce((acc: number, s: { fields: unknown[] }) =>
+            acc + s.fields.length, 0)
+        } total fields`,
       );
 
       // Cleanup
@@ -783,7 +803,7 @@ Deno.test({
 
       // Case 11111111 has open disputes, should fail
       assertExists(data, "Expected response data");
-      
+
       // Either succeeds or fails due to open disputes (both indicate validation ran)
       console.log("✓ Aggregation function validates review schema");
     } finally {
@@ -794,7 +814,8 @@ Deno.test({
 
 // Test: Aggregation successfully processes valid reviews with 0-4 range
 Deno.test({
-  name: "set-review-aggregation - successfully aggregates reviews with 0-4 traffic light range",
+  name:
+    "set-review-aggregation - successfully aggregates reviews with 0-4 traffic light range",
   sanitizeResources: false,
   sanitizeOps: false,
   fn: async () => {
@@ -815,7 +836,9 @@ Deno.test({
       if (error || (data && data.error)) {
         console.log("  Note: Aggregation requires minimum valid reviews");
         console.log(`  Response: ${JSON.stringify(data || error)}`);
-        console.log("✓ Aggregation validation ran successfully (0-4 range configured)");
+        console.log(
+          "✓ Aggregation validation ran successfully (0-4 range configured)",
+        );
         return;
       }
 
@@ -832,22 +855,31 @@ Deno.test({
 
         assert(!aggError, `Failed to fetch aggregation: ${aggError?.message}`);
         assertExists(aggregationData, "Aggregation should be saved");
-        assertExists(aggregationData.data.fields, "Should have aggregated fields");
+        assertExists(
+          aggregationData.data.fields,
+          "Should have aggregated fields",
+        );
 
         // Check that fields have 0-4 structure (counts and percentages for 0,1,2,3,4)
         const firstField = Object.values(aggregationData.data.fields)[0] as {
           counts: Record<string, number>;
           percentages: Record<string, number>;
         };
-        
+
         assertExists(firstField.counts, "Should have counts object");
         assertExists(firstField.percentages, "Should have percentages object");
-        
+
         // Verify 0-4 keys exist
         assert("0" in firstField.counts, "Should have count for value 0");
         assert("4" in firstField.counts, "Should have count for value 4");
-        assert("0" in firstField.percentages, "Should have percentage for value 0");
-        assert("4" in firstField.percentages, "Should have percentage for value 4");
+        assert(
+          "0" in firstField.percentages,
+          "Should have percentage for value 0",
+        );
+        assert(
+          "4" in firstField.percentages,
+          "Should have percentage for value 4",
+        );
 
         console.log("✓ Successfully aggregated with 0-4 range structure");
         console.log(`  - Result score: ${aggregationData.result_score}`);

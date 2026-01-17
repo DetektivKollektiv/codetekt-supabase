@@ -1,8 +1,16 @@
+import { z } from "npm:zod@4.1.13";
 import {
   chipAnswerSchema,
   multiLineTextAnswerSchema,
 } from "../_shared/schemas/answer-schemas.ts";
+import {
+  chipFieldSchema,
+  multiLineTextFieldSchema,
+} from "../_shared/schemas/field-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
+
+type ChipField = z.infer<typeof chipFieldSchema>;
+type MultiLineTextField = z.infer<typeof multiLineTextFieldSchema>;
 
 /**
  * Deep clone template to avoid reference issues
@@ -58,32 +66,25 @@ export function aggregateContentTypes(
 }
 
 /**
- * Field modification type
+ * Modify keywords field based on reviewer status
  */
-type FieldModification = {
-  is_required?: boolean;
-  is_disabled?: boolean;
-  is_disputable?: boolean;
-  additonal_option_count?: number; // For multi-line-text fields
-  options?: Array<{ id: string; text: string; is_disabled: boolean }>; // For multi-line-text
-  prefilled_answer_value?: unknown; // For chip/other fields
-};
-
-/**
- * Build keywords field modification based on reviewer status
- */
-export function buildKeywordsModification(
+export function modifyKeywordsField(
+  field: MultiLineTextField,
   submittedReviewCount: number,
   aggregatedKeywords: string[],
-): FieldModification {
+): MultiLineTextField {
   if (submittedReviewCount === 0) {
-    // First reviewer
-    return { is_required: true };
+    // First reviewer - field is required
+    return {
+      ...field,
+      is_required: true,
+    };
   }
 
   // Subsequent reviewer - aggregated keywords become disabled options
   // User can add up to 3 additional keywords
   return {
+    ...field,
     is_required: false,
     is_disputable: true,
     additonal_option_count: 3,
@@ -96,97 +97,70 @@ export function buildKeywordsModification(
 }
 
 /**
- * Build content type field modification based on reviewer status
+ * Modify content type field based on reviewer status
  */
-export function buildContentTypeModification(
+export function modifyContentTypeField(
+  field: ChipField,
   submittedReviewCount: number,
   aggregatedContentTypes: string[],
-): FieldModification {
+): ChipField {
   if (submittedReviewCount === 0) {
-    // First reviewer
-    return { is_required: true };
+    // First reviewer - field is required
+    return {
+      ...field,
+      is_required: true,
+    };
   }
 
-  // Subsequent reviewer
+  // Subsequent reviewer - prefill with aggregated values and disable
   return {
+    ...field,
     is_required: false,
     is_disabled: true,
     is_disputable: true,
-    prefilled_answer_value: aggregatedContentTypes,
+    answer_value: aggregatedContentTypes,
   };
 }
 
 /**
- * Build field modification for admin-resolved disputes
+ * Modify any field with admin-resolved dispute value
  * The final_value is stored as JSON string in database and needs parsing
  */
-export function buildResolvedDisputeModification(
-  fieldId: string,
+export function modifyFieldWithResolvedDispute<T extends { id: string }>(
+  field: T,
   finalValue: string,
-): FieldModification {
-  // Parse final_value from JSON string to array
+): T {
+  // Parse final_value from JSON string
   let parsedValue: unknown;
   try {
     parsedValue = JSON.parse(finalValue);
   } catch (err) {
-    console.error(`Failed to parse final_value for ${fieldId}:`, err);
+    console.error(`Failed to parse final_value for ${field.id}:`, err);
     parsedValue = null;
   }
 
   return {
+    ...field,
     is_required: false,
     is_disputable: false,
     is_disabled: true,
-    prefilled_answer_value: parsedValue,
-  };
+    answer_value: parsedValue,
+  } as T;
 }
 
 /**
- * Apply field modification to a specific field in the template
- * Note: TypeScript cannot properly narrow discriminated union types when dynamically
- * assigning values. We use type assertions since we validate the field type at runtime.
+ * Apply field modification by replacing a specific field in the template
  */
-export function applyFieldModification(
+export function replaceField(
   sections: ReviewTemplateInput[],
   fieldId: string,
-  modification: FieldModification,
+  modifiedField: ChipField | MultiLineTextField,
 ): ReviewTemplateInput[] {
   return sections.map((section) => ({
     ...section,
-    fields: section.fields.map((field) => {
-      if (field.id !== fieldId) return field;
-
-      // Only apply properties that are defined in the modification
-      const modifiedField = { ...field } as typeof field;
-
-      if (modification.is_required !== undefined) {
-        modifiedField.is_required = modification.is_required;
-      }
-      if (modification.is_disabled !== undefined) {
-        modifiedField.is_disabled = modification.is_disabled;
-      }
-      if (modification.is_disputable !== undefined) {
-        modifiedField.is_disputable = modification.is_disputable;
-      }
-      if (modification.prefilled_answer_value !== undefined) {
-        modifiedField.prefilled_answer_value =
-          modification.prefilled_answer_value;
-      }
-
-      // Only apply these to multi-line-text fields
-      if (field.type === "multi-line-text") {
-        if (modification.additonal_option_count !== undefined) {
-          // @ts-expect-error - TypeScript cannot narrow discriminated union types here
-          modifiedField.additonal_option_count =
-            modification.additonal_option_count;
-        }
-        if (modification.options !== undefined) {
-          modifiedField.options = modification.options;
-        }
-      }
-
-      return modifiedField;
-    }),
+    fields: section.fields.map((field) =>
+      field.id === fieldId ? modifiedField : field
+    ),
   }));
 }
 

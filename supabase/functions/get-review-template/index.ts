@@ -7,19 +7,26 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
-import { Database } from "../_shared/types/database.types.ts";
+import {
+  chipFieldSchema,
+  multiLineTextFieldSchema,
+} from "../_shared/schemas/field-schemas.ts";
 import { InProgressReviewAnswer } from "../_shared/schemas/review-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
+import { Database } from "../_shared/types/database.types.ts";
 import {
   aggregateContentTypes,
   aggregateKeywords,
-  applyFieldModification,
-  buildContentTypeModification,
-  buildKeywordsModification,
-  buildResolvedDisputeModification,
   deepCloneTemplate,
+  modifyContentTypeField,
+  modifyFieldWithResolvedDispute,
+  modifyKeywordsField,
   populateAnswerValues,
+  replaceField,
 } from "./template-modifier.ts";
+
+type ChipField = z.infer<typeof chipFieldSchema>;
+type MultiLineTextField = z.infer<typeof multiLineTextFieldSchema>;
 
 // Request validation schema
 const requestSchema = z.object({
@@ -37,22 +44,28 @@ type CaseWithRelations = {
   review_templates: {
     template: unknown;
   } | null;
-  review_answers_in_progress: Array<{
-    id: string;
-    reviewed_by: string;
-    data: InProgressReviewAnswer;
-    submitted_review_answers_id: string | null;
-    has_unpublished_changes: boolean;
-  }> | null;
-  review_answers_submitted: Array<{
-    reviewed_by: string;
-    data: unknown;
-  }> | null;
-  review_disputes: Array<{
-    field_id: string;
-    resolution: string | null;
-    final_value: string | null;
-  }> | null;
+  review_answers_in_progress:
+    | Array<{
+      id: string;
+      reviewed_by: string;
+      data: InProgressReviewAnswer;
+      submitted_review_answers_id: string | null;
+      has_unpublished_changes: boolean;
+    }>
+    | null;
+  review_answers_submitted:
+    | Array<{
+      reviewed_by: string;
+      data: unknown;
+    }>
+    | null;
+  review_disputes:
+    | Array<{
+      field_id: string;
+      resolution: string | null;
+      final_value: string | null;
+    }>
+    | null;
 };
 
 Deno.serve(async (req) => {
@@ -193,21 +206,36 @@ Deno.serve(async (req) => {
       `[get-review-template] Aggregated content types: ${aggregatedContentTypes.length}`,
     );
 
-    // STEP 4: Build modifications based on reviewer status
-    const keywordsMod = buildKeywordsModification(
-      submittedReviews.length,
-      aggregatedKeywords,
-    );
-    const contentTypeMod = buildContentTypeModification(
-      submittedReviews.length,
-      aggregatedContentTypes,
-    );
+    // STEP 4: Modify metadata fields based on reviewer status
+    // Find and modify keywords field
+    for (const section of template) {
+      const keywordsField = section.fields.find(
+        (f) => f.id === "keyword_type" && f.type === "multi-line-text",
+      );
+      if (keywordsField && keywordsField.type === "multi-line-text") {
+        const modifiedField = modifyKeywordsField(
+          keywordsField,
+          submittedReviews.length,
+          aggregatedKeywords,
+        );
+        template = replaceField(template, "keyword_type", modifiedField);
+      }
 
-    // STEP 5: Apply modifications to metadata fields
-    template = applyFieldModification(template, "keyword_type", keywordsMod);
-    template = applyFieldModification(template, "content_type", contentTypeMod);
+      // Find and modify content type field
+      const contentTypeField = section.fields.find(
+        (f) => f.id === "content_type" && f.type === "chip",
+      );
+      if (contentTypeField && contentTypeField.type === "chip") {
+        const modifiedField = modifyContentTypeField(
+          contentTypeField,
+          submittedReviews.length,
+          aggregatedContentTypes,
+        );
+        template = replaceField(template, "content_type", modifiedField);
+      }
+    }
 
-    // STEP 5.5: Apply resolved dispute modifications (overrides aggregated values)
+    // STEP 5: Apply resolved dispute modifications (overrides aggregated values)
     const resolvedDisputes = typedCaseData.review_disputes?.filter(
       (dispute) => dispute.resolution !== null && dispute.final_value !== null,
     ) || [];
@@ -217,15 +245,26 @@ Deno.serve(async (req) => {
     );
 
     for (const dispute of resolvedDisputes) {
-      const disputeMod = buildResolvedDisputeModification(
-        dispute.field_id,
-        dispute.final_value!,
-      );
-      template = applyFieldModification(template, dispute.field_id, disputeMod);
+      // Find the field to modify
+      for (const section of template) {
+        const field = section.fields.find((f) => f.id === dispute.field_id);
+        if (field) {
+          const modifiedField = modifyFieldWithResolvedDispute(
+            field,
+            dispute.final_value!,
+          );
+          template = replaceField(
+            template,
+            dispute.field_id,
+            modifiedField as ChipField | MultiLineTextField,
+          );
 
-      console.log(
-        `[get-review-template] Applied resolved dispute for field: ${dispute.field_id}`,
-      );
+          console.log(
+            `[get-review-template] Applied resolved dispute for field: ${dispute.field_id}`,
+          );
+          break;
+        }
+      }
     }
 
     // STEP 6: Populate user's draft values if exists

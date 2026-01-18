@@ -1,6 +1,42 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+/**
+ * SIGN-UP EDGE FUNCTION
+ *
+ * Handles user registration with email, password, and username.
+ * Creates authenticated user account and returns session for immediate login.
+ *
+ * Process flow:
+ * 1. Validates input (email, password, username)
+ * 2. Checks username availability (must be unique)
+ * 3. Creates user account using admin client (service role key)
+ * 4. Auto-confirms email (email_confirm: true)
+ * 5. Updates profile with username (profile created by handle_new_user trigger)
+ * 6. Signs in user to create session
+ * 7. Returns user and session data for immediate authentication
+ *
+ * Error handling and cleanup:
+ * - Username collision: Returns error before creating account
+ * - Profile update failure: Deletes created user account (rollback)
+ * - Sign-in failure after signup: Returns success but prompts manual login
+ *
+ * CORS support:
+ * - Handles OPTIONS preflight requests
+ * - Allows cross-origin requests (Access-Control-Allow-Origin: *)
+ * - Supports authorization, x-client-info, apikey, content-type headers
+ *
+ * Requirements:
+ * - Valid email format
+ * - Password meeting validation requirements
+ * - Unique username (checked against profiles table)
+ *
+ * Returns:
+ * - Success: user object and session data (access_token, refresh_token)
+ * - Error: validation errors, username collision, or server errors
+ *
+ * Database updates:
+ * - Creates user in auth.users (via admin.createUser)
+ * - Updates profiles table with username (profile auto-created by trigger)
+ * - Rollback: Deletes user if profile update fails
+ */
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";

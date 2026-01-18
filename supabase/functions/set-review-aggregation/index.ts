@@ -5,10 +5,13 @@
  * Uses service role key to access all reviews regardless of RLS policies.
  *
  * Aggregation process:
+ * - Fetches case and associated review template
  * - Fetches all submitted reviews for the specified case
  * - Validates each review against the schema (filters out invalid reviews)
- * - Applies resolved dispute values for metadata fields (keywords, content_type)
+ * - Applies resolved dispute values for metadata fields (title, keywords, content_type)
  * - Calculates consensus values and confidence scores for all fields
+ * - Organizes aggregated fields by questions matching template structure
+ * - Generates quality tags for each aggregated field
  * - Computes overall result score based on field agreements
  * - Stores aggregation with reviewer IDs and timestamp
  *
@@ -16,9 +19,11 @@
  * - Minimum 2 valid reviews required for aggregation
  * - Invalid reviews are logged but don't block aggregation
  * - Resolved disputes override review values for metadata fields
+ * - Template must exist and be valid
  *
  * Returns:
  * - Success response when aggregation is saved
+ * - Error if case or template not found
  * - Error if insufficient valid reviews (< 2)
  * - Error if aggregation validation fails
  * - Error if database operations fail
@@ -31,10 +36,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
-import { buildAggregation, SubmittedReview } from "../_shared/aggregation.ts";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 import { submittedReviewAnswerSchema } from "../_shared/schemas/review-schemas.ts";
+import { reviewTemplateSchema } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
+import { buildAggregation, SubmittedReview } from "./aggregation.ts";
 
 const MIN_REVIEWS_FOR_AGGREGATION = 2;
 
@@ -69,6 +75,61 @@ Deno.serve(async (req) => {
       supabaseServiceRoleKey,
     );
 
+    // Step 2.5: Fetch case to get template_version
+    const { data: caseData, error: caseError } = await supabaseServiceRole
+      .from("cases")
+      .select("template_version")
+      .eq("id", case_id)
+      .single();
+
+    if (caseError || !caseData) {
+      console.error("Failed to fetch case:", caseError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to fetch case",
+          details: caseError?.message || "Case not found",
+        }),
+        { status: 404, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // Step 2.6: Fetch template
+    const { data: templateData, error: templateError } =
+      await supabaseServiceRole
+        .from("review_templates")
+        .select("template")
+        .eq("version", caseData.template_version)
+        .single();
+
+    if (templateError || !templateData) {
+      console.error("Failed to fetch template:", templateError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to fetch template",
+          details: templateError?.message || "Template not found",
+        }),
+        { status: 404, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // Step 2.7: Validate template
+    const templateValidation = z.array(reviewTemplateSchema).safeParse(
+      templateData.template,
+    );
+
+    if (!templateValidation.success) {
+      console.error("Template validation failed:", templateValidation.error);
+      return new Response(
+        JSON.stringify({
+          error: "Template validation failed",
+          details: templateValidation.error.issues,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const template = templateValidation.data;
+
     // Step 3: Query all submitted reviews for the case
     const { data: allSubmittedReviews, error: queryError } =
       await supabaseServiceRole
@@ -95,7 +156,7 @@ Deno.serve(async (req) => {
         .eq("case_id", case_id)
         .not("resolution", "is", null)
         .not("final_value", "is", null)
-        .in("field_id", ["keyword_type", "content_type"]);
+        .in("field_id", ["title", "keyword_type", "content_type"]);
 
     if (disputeError) {
       console.error("Failed to query resolved disputes:", disputeError);
@@ -157,6 +218,7 @@ Deno.serve(async (req) => {
     try {
       const aggregationResult = buildAggregation(
         validatedReviews,
+        template,
         resolvedDisputes || undefined,
       );
 

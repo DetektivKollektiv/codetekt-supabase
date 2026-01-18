@@ -85,7 +85,59 @@ Deno.test({
       "reviewer_ids length mismatch",
     );
 
-    console.log("✓ Successfully aggregated 2+ reviews");
+    // Verify new aggregation structure
+    assertExists(aggregation.data.questions, "questions array not set");
+    assert(
+      Array.isArray(aggregation.data.questions),
+      "questions should be an array",
+    );
+    assert(
+      aggregation.data.questions.length > 0,
+      "questions array should not be empty",
+    );
+    assertExists(aggregation.data.metadata, "metadata not set");
+    assertExists(aggregation.data.metadata.title, "metadata.title not set");
+    assertExists(
+      aggregation.data.metadata.keyword_type,
+      "metadata.keyword_type not set",
+    );
+    assertExists(
+      aggregation.data.metadata.content_type,
+      "metadata.content_type not set",
+    );
+
+    // Verify question structure
+    const firstQuestion = aggregation.data.questions[0];
+    assertExists(firstQuestion.id, "question.id not set");
+    assertExists(firstQuestion.metadata, "question.metadata not set");
+    assertExists(firstQuestion.fields, "question.fields not set");
+    assert(
+      Array.isArray(firstQuestion.fields),
+      "question.fields should be an array",
+    );
+
+    // Verify field structure
+    if (firstQuestion.fields.length > 0) {
+      const firstField = firstQuestion.fields[0];
+      assertExists(firstField.id, "field.id not set");
+      assertExists(firstField.type, "field.type not set");
+      assertExists(firstField.question, "field.question not set");
+      assertExists(firstField.counts, "field.counts not set");
+      assertExists(firstField.percentages, "field.percentages not set");
+      assertExists(firstField.average, "field.average not set");
+      assertExists(
+        firstField.tags,
+        "field.tags not set (should replace warnings)",
+      );
+      assert(
+        typeof firstField.tags === "object",
+        "field.tags should be an object",
+      );
+      assertExists(firstField.tags["0"], "field.tags should have value for 0");
+      assertExists(firstField.tags["4"], "field.tags should have value for 4");
+    }
+
+    console.log("✓ Successfully aggregated 2+ reviews with new structure");
   },
 });
 
@@ -524,11 +576,36 @@ Deno.test({
         ["nachrichtenartikel"],
         "Initial content_type should be from first review",
       );
+      assertExists(
+        metadata1.title,
+        "metadata.title should be set from first review",
+      );
 
       console.log("✓ Initial aggregation without disputes verified");
 
       // Create resolved disputes using service role
-      // Dispute 1: Change keyword_type
+      // Dispute 1: Change title
+      const { error: titleDisputeError } = await supabase
+        .from("review_disputes")
+        .insert({
+          case_id: newCase.id,
+          template_version: 1,
+          field_id: "title",
+          original_value: JSON.stringify("Test Title"),
+          disputed_by: TEST_USER_CUNEYT,
+          reason: "Besserer Titel",
+          resolved_by: TEST_USER_GORM, // Admin
+          resolution: "changed",
+          final_value: JSON.stringify("Admin Approved Title"),
+          resolved_at: new Date().toISOString(),
+        });
+
+      assert(
+        !titleDisputeError,
+        `Failed to create title dispute: ${titleDisputeError?.message}`,
+      );
+
+      // Dispute 2: Change keyword_type
       const { error: dispute1Error } = await supabase
         .from("review_disputes")
         .insert({
@@ -557,7 +634,7 @@ Deno.test({
         `Failed to create keyword dispute: ${dispute1Error?.message}`,
       );
 
-      // Dispute 2: Change content_type
+      // Dispute 3: Change content_type
       const { error: dispute2Error } = await supabase
         .from("review_disputes")
         .insert({
@@ -578,7 +655,7 @@ Deno.test({
         `Failed to create content_type dispute: ${dispute2Error?.message}`,
       );
 
-      console.log("✓ Created two resolved disputes (both changed)");
+      console.log("✓ Created three resolved disputes (all changed)");
 
       // Second aggregation - with disputes
       const { response: response2, data: data2 } = await invokeAggregation(
@@ -597,6 +674,13 @@ Deno.test({
 
       assertExists(agg2, "Second aggregation not found");
       const metadata2 = agg2.data.metadata;
+
+      // Verify title uses admin's final_value
+      assertEquals(
+        metadata2.title,
+        "Admin Approved Title",
+        "Title should reflect admin's final_value from dispute",
+      );
 
       // Verify keyword_type uses admin's final_value (not aggregated keywords)
       assertEquals(

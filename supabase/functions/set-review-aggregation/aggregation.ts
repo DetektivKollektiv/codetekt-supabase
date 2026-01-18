@@ -1,6 +1,8 @@
 import { z } from "npm:zod@4.1.13";
-import { reviewAggregationSchema } from "./schemas/aggregation-schemas.ts";
-import { Database } from "./types/database.types.ts";
+import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
+import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
+import { Database } from "../_shared/types/database.types.ts";
+import { DEFAULT_FIELD_TAGS } from "./field-tags.ts";
 
 export const numericLabeledValues = [0, 1, 2, 3, 4] as const;
 
@@ -22,18 +24,23 @@ export type ResolvedDispute = Pick<
 /**
  * Extracts and aggregates metadata from submitted review answers.
  *
+ * - Title: Taken from the first answer
  * - Keywords (keyword_type): Merges unique keywords from all reviews
  * - Content type: Taken from the first answer
  * - Resolved disputes: Admin's final_value overrides aggregated values
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
  * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
- * @returns Metadata object with keyword_type and content_type
+ * @returns Metadata object with title, keyword_type and content_type
  */
 export function buildAggregationMetadata(
   submitted: SubmittedReview[],
   resolvedDisputes?: ResolvedDispute[],
-): { keyword_type: string[] | null; content_type: string[] | null } {
+): {
+  title: string | null;
+  keyword_type: string[] | null;
+  content_type: string[] | null;
+} {
   const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
 
   // Merge keywords from all reviews
@@ -47,6 +54,8 @@ export function buildAggregationMetadata(
   }
 
   // Build aggregated values
+  let finalTitle: string | null =
+    (firstData?.title as string | null | undefined) ?? null;
   let finalKeywordType: string[] | null = allKeywords.size > 0
     ? Array.from(allKeywords)
     : null;
@@ -61,7 +70,11 @@ export function buildAggregationMetadata(
       try {
         const parsedValue = JSON.parse(dispute.final_value);
 
-        if (dispute.field_id === "keyword_type" && Array.isArray(parsedValue)) {
+        if (dispute.field_id === "title" && typeof parsedValue === "string") {
+          finalTitle = parsedValue;
+        } else if (
+          dispute.field_id === "keyword_type" && Array.isArray(parsedValue)
+        ) {
           finalKeywordType = parsedValue;
         } else if (
           dispute.field_id === "content_type" && Array.isArray(parsedValue)
@@ -79,6 +92,7 @@ export function buildAggregationMetadata(
   }
 
   return {
+    title: finalTitle,
     keyword_type: finalKeywordType,
     content_type: finalContentType,
   };
@@ -88,13 +102,13 @@ export function buildAggregationMetadata(
  * Builds statistical aggregation for numeric fields from multiple submitted review answers.
  *
  * Aggregates numeric fields (traffic-light and likert-scale responses):
- * - Counts occurrences of each value (0-3)
+ * - Counts occurrences of each value (0-4)
  * - Calculates percentages
  * - Computes averages
- * - Identifies warnings (average < 2)
+ * - Adds quality tags based on field type
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
- * @returns Fields object with aggregated statistics
+ * @returns Fields object with aggregated statistics keyed by field_id
  */
 export function buildAggregationFields(
   submitted: SubmittedReview[],
@@ -104,7 +118,7 @@ export function buildAggregationFields(
     counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
     percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
     average: number;
-    warnings: string[];
+    tags: { 0: string; 1: string; 2: string; 3: string; 4: string };
   }
 > {
   const fields: Record<
@@ -113,7 +127,7 @@ export function buildAggregationFields(
       counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
       percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
       average: number;
-      warnings: string[];
+      tags: { 0: string; 1: string; 2: string; 3: string; 4: string };
     }
   > = {};
 
@@ -137,7 +151,13 @@ export function buildAggregationFields(
           counts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
           percentages: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
           average: 0,
-          warnings: [],
+          tags: DEFAULT_FIELD_TAGS[fieldId] || {
+            0: "Sehr gut",
+            1: "Gut",
+            2: "Mangelhaft",
+            3: "Ungenügend",
+            4: "Nicht zutreffend",
+          },
         };
       }
 
@@ -163,9 +183,6 @@ export function buildAggregationFields(
         0,
       );
       field.average = sum / total;
-      if (field.average < 2) {
-        field.warnings.push("Warning");
-      }
     }
   }
 
@@ -176,29 +193,57 @@ export function buildAggregationFields(
  * Builds statistical aggregation from multiple submitted review answers.
  *
  * Combines metadata extraction and field aggregation:
- * - Extracts metadata (keyword_type merged from all reviews, content_type from first answer)
+ * - Extracts metadata (title from first answer, keyword_type merged, content_type from first answer)
  * - Applies resolved dispute overrides to metadata (admin's final values take precedence)
- * - Aggregates numeric fields with counts, percentages, averages, warnings
+ * - Aggregates numeric fields with counts, percentages, averages, tags
+ * - Organizes fields by questions matching template structure
  * - Computes overall result score
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @param template - Review template to match structure and get metadata
  * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
  * @returns Aggregation object and result score
  */
 export function buildAggregation(
   submitted: SubmittedReview[],
+  template: ReviewTemplateInput[],
   resolvedDisputes?: ResolvedDispute[],
 ): AggregationResult {
   const metadata = buildAggregationMetadata(submitted, resolvedDisputes);
-  const fields = buildAggregationFields(submitted);
+  const aggregatedFields = buildAggregationFields(submitted);
 
-  const averages = Object.values(fields).map((f) => f.average);
+  // Build questions array matching template structure
+  const questions = template
+    .filter((question) => question.fields.length > 0) // Only include questions with fields
+    .map((question) => {
+      // Filter fields that have aggregated data (numeric fields only)
+      const fields = question.fields
+        .filter((field) => aggregatedFields[field.id])
+        .map((field) => ({
+          id: field.id,
+          type: field.type,
+          question: field.question,
+          ...aggregatedFields[field.id],
+        }));
+
+      // Only return question if it has aggregated fields
+      if (fields.length === 0) return null;
+
+      return {
+        id: question.id,
+        metadata: question.metadata,
+        fields,
+      };
+    })
+    .filter((q) => q !== null); // Remove questions with no aggregated fields
+
+  const averages = Object.values(aggregatedFields).map((f) => f.average);
   const resultScore = averages.length ? Math.min(...averages) : 0;
 
   return {
     aggregation: {
+      questions,
       metadata,
-      fields,
     },
     resultScore,
   };

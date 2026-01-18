@@ -1,6 +1,22 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+/**
+ * GET REVIEW TEMPLATE EDGE FUNCTION
+ *
+ * Returns a personalized review template for a case based on:
+ * - User's reviewer status (first reviewer vs. subsequent reviewers)
+ * - Aggregated metadata from existing submitted reviews (title, keywords, content types)
+ * - Resolved disputes (admin's final values lock fields and disable editing)
+ * - User's in-progress review data (pre-populates answer values)
+ *
+ * Blocks access if:
+ * - Case has open/pending disputes (including on metadata fields like title)
+ * - User is not authenticated
+ * - Case or template not found
+ *
+ * Template modifications:
+ * - First reviewer: All metadata fields (title, keywords, content types) required and editable
+ * - Subsequent reviewers: Metadata fields pre-filled with aggregated values, disputable but disabled
+ * - Resolved disputes: Fields locked with admin's final value, non-disputable
+ */
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -10,6 +26,7 @@ import { z } from "npm:zod@4.1.13";
 import {
   chipFieldSchema,
   multiLineTextFieldSchema,
+  textFieldSchema,
 } from "../_shared/schemas/field-schemas.ts";
 import { InProgressReviewAnswer } from "../_shared/schemas/review-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
@@ -17,16 +34,19 @@ import { Database } from "../_shared/types/database.types.ts";
 import {
   aggregateContentTypes,
   aggregateKeywords,
+  aggregateTitle,
   deepCloneTemplate,
   modifyContentTypeField,
   modifyFieldWithResolvedDispute,
   modifyKeywordsField,
+  modifyTitleField,
   populateAnswerValues,
   replaceField,
 } from "./template-modifier.ts";
 
 type ChipField = z.infer<typeof chipFieldSchema>;
 type MultiLineTextField = z.infer<typeof multiLineTextFieldSchema>;
+type TextField = z.infer<typeof textFieldSchema>;
 
 // Request validation schema
 const requestSchema = z.object({
@@ -165,7 +185,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check for open disputes
+    // Check for open disputes (especially on metadata fields like title)
     const openDisputes = typedCaseData.review_disputes?.filter(
       (dispute) => dispute.resolution === null,
     );
@@ -198,17 +218,38 @@ Deno.serve(async (req) => {
     // STEP 3: Aggregate metadata from submitted reviews
     const aggregatedKeywords = aggregateKeywords(submittedReviews);
     const aggregatedContentTypes = aggregateContentTypes(submittedReviews);
+    const aggregatedTitle = aggregateTitle(submittedReviews);
 
     console.log(
       `[get-review-template] Aggregated keywords: ${aggregatedKeywords.length}`,
     );
     console.log(
-      `[get-review-template] Aggregated content types: ${aggregatedContentTypes.length}`,
+      `[get-review-template] Aggregated content types: ${
+        aggregatedContentTypes ? aggregatedContentTypes.length : 0
+      }`,
+    );
+    console.log(
+      `[get-review-template] Aggregated title: ${
+        aggregatedTitle ? "found" : "none"
+      }`,
     );
 
     // STEP 4: Modify metadata fields based on reviewer status
-    // Find and modify keywords field
+    // Find and modify title field
     for (const section of template) {
+      const titleField = section.fields.find(
+        (f) => f.id === "title" && f.type === "text",
+      );
+      if (titleField && titleField.type === "text") {
+        const modifiedField = modifyTitleField(
+          titleField,
+          submittedReviews.length,
+          aggregatedTitle,
+        );
+        template = replaceField(template, "title", modifiedField);
+      }
+
+      // Find and modify keywords field
       const keywordsField = section.fields.find(
         (f) => f.id === "keyword_type" && f.type === "multi-line-text",
       );
@@ -256,7 +297,7 @@ Deno.serve(async (req) => {
           template = replaceField(
             template,
             dispute.field_id,
-            modifiedField as ChipField | MultiLineTextField,
+            modifiedField as ChipField | MultiLineTextField | TextField,
           );
 
           console.log(

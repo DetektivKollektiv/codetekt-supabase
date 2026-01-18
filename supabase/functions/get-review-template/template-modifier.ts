@@ -2,15 +2,18 @@ import { z } from "npm:zod@4.1.13";
 import {
   chipAnswerSchema,
   multiLineTextAnswerSchema,
+  textAnswerSchema,
 } from "../_shared/schemas/answer-schemas.ts";
 import {
   chipFieldSchema,
   multiLineTextFieldSchema,
+  textFieldSchema,
 } from "../_shared/schemas/field-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 
 type ChipField = z.infer<typeof chipFieldSchema>;
 type MultiLineTextField = z.infer<typeof multiLineTextFieldSchema>;
+type TextField = z.infer<typeof textFieldSchema>;
 
 /**
  * Deep clone template to avoid reference issues
@@ -43,26 +46,47 @@ export function aggregateKeywords(
 }
 
 /**
- * Aggregate content types from all submitted reviews
- * Returns deduplicated array of content types
+ * Get content types from the first submitted review
+ * Returns content types array from the first review, or null if not found
  */
 export function aggregateContentTypes(
   submittedReviews: Array<{ data: unknown }>,
-): string[] {
-  const contentTypeSet = new Set<string>();
+): string[] | null {
+  if (submittedReviews.length === 0) return null;
 
-  for (const review of submittedReviews) {
-    const data = review.data as Record<string, unknown>;
-    const contentTypes = data.content_type;
+  const firstReview = submittedReviews[0];
+  const data = firstReview.data as Record<string, unknown>;
+  const contentTypes = data.content_type;
 
-    // Validate with schema
-    const parsed = chipAnswerSchema.safeParse(contentTypes);
-    if (parsed.success && parsed.data) {
-      parsed.data.forEach((ct) => contentTypeSet.add(ct));
-    }
+  // Validate with schema
+  const parsed = chipAnswerSchema.safeParse(contentTypes);
+  if (parsed.success && parsed.data) {
+    return parsed.data;
   }
 
-  return Array.from(contentTypeSet);
+  return null;
+}
+
+/**
+ * Aggregate title from the first submitted review
+ * Returns the title from the first review, or null if not found
+ */
+export function aggregateTitle(
+  submittedReviews: Array<{ data: unknown }>,
+): string | null {
+  if (submittedReviews.length === 0) return null;
+
+  const firstReview = submittedReviews[0];
+  const data = firstReview.data as Record<string, unknown>;
+  const title = data.title;
+
+  // Validate with schema
+  const parsed = textAnswerSchema.safeParse(title);
+  if (parsed.success && parsed.data) {
+    return parsed.data;
+  }
+
+  return null;
 }
 
 /**
@@ -81,19 +105,15 @@ export function modifyKeywordsField(
     };
   }
 
-  // Subsequent reviewer - aggregated keywords become disabled options
-  // User can add up to 3 additional keywords
+  // Subsequent reviewer - set initial_answer_value with aggregated keywords
+  // Field is locked and only disputable after initial review
   return {
     ...field,
     is_required: false,
+    is_disabled: true,
     is_disputable: true,
-    additonal_option_count: 3,
-    options: aggregatedKeywords.map((keyword) => ({
-      id: keyword,
-      text: keyword,
-      is_disabled: true,
-    })),
-  };
+    initial_answer_value: aggregatedKeywords,
+  } as MultiLineTextField;
 }
 
 /**
@@ -102,7 +122,7 @@ export function modifyKeywordsField(
 export function modifyContentTypeField(
   field: ChipField,
   submittedReviewCount: number,
-  aggregatedContentTypes: string[],
+  aggregatedContentTypes: string[] | null,
 ): ChipField {
   if (submittedReviewCount === 0) {
     // First reviewer - field is required
@@ -112,14 +132,42 @@ export function modifyContentTypeField(
     };
   }
 
-  // Subsequent reviewer - prefill with aggregated values and disable
+  // Subsequent reviewer - set initial_answer_value with content types from first reviewer
+  // Field remains disabled but shows initial values from first reviewer
   return {
     ...field,
     is_required: false,
     is_disabled: true,
     is_disputable: true,
-    answer_value: aggregatedContentTypes,
-  };
+    initial_answer_value: aggregatedContentTypes,
+  } as ChipField;
+}
+
+/**
+ * Modify title field based on reviewer status
+ */
+export function modifyTitleField(
+  field: TextField,
+  submittedReviewCount: number,
+  aggregatedTitle: string | null,
+): TextField {
+  if (submittedReviewCount === 0) {
+    // First reviewer - field is required
+    return {
+      ...field,
+      is_required: true,
+    };
+  }
+
+  // Subsequent reviewer - set initial_answer_value with title from first reviewer
+  // Field remains disabled but shows initial value from first reviewer
+  return {
+    ...field,
+    is_required: false,
+    is_disabled: true,
+    is_disputable: true,
+    initial_answer_value: aggregatedTitle,
+  } as TextField;
 }
 
 /**
@@ -144,7 +192,7 @@ export function modifyFieldWithResolvedDispute<T extends { id: string }>(
     is_required: false,
     is_disputable: false,
     is_disabled: true,
-    answer_value: parsedValue,
+    initial_answer_value: parsedValue,
   } as T;
 }
 
@@ -154,7 +202,7 @@ export function modifyFieldWithResolvedDispute<T extends { id: string }>(
 export function replaceField(
   sections: ReviewTemplateInput[],
   fieldId: string,
-  modifiedField: ChipField | MultiLineTextField,
+  modifiedField: ChipField | MultiLineTextField | TextField,
 ): ReviewTemplateInput[] {
   return sections.map((section) => ({
     ...section,

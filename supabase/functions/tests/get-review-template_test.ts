@@ -274,16 +274,16 @@ Deno.test({
         "content_type should be required for first reviewer",
       );
 
-      // Verify no prefilled values (can be undefined or null from template)
+      // Verify no initial_answer_value for metadata fields (first reviewer)
       assert(
-        keywordField.prefilled_answer_value === undefined ||
-          keywordField.prefilled_answer_value === null,
-        "keyword_type should not have prefilled values for first reviewer",
+        keywordField.initial_answer_value === undefined ||
+          keywordField.initial_answer_value === null,
+        "keyword_type should not have initial_answer_value for first reviewer",
       );
       assert(
-        contentTypeField.prefilled_answer_value === undefined ||
-          contentTypeField.prefilled_answer_value === null,
-        "content_type should not have prefilled values for first reviewer",
+        contentTypeField.initial_answer_value === undefined ||
+          contentTypeField.initial_answer_value === null,
+        "content_type should not have initial_answer_value for first reviewer",
       );
 
       console.log("✓ First reviewer template correctly configured");
@@ -363,11 +363,29 @@ Deno.test({
       const isFirstReviewer = keywordField.is_required === true;
 
       if (!isFirstReviewer) {
-        // Subsequent reviewer - aggregated values
+        // Subsequent reviewer - metadata fields have initial_answer_value
         assertEquals(
           keywordField.is_required,
           false,
           "keyword_type should not be required for subsequent reviewer",
+        );
+        assertEquals(
+          keywordField.is_disabled,
+          true,
+          "keyword_type should be disabled for subsequent reviewer",
+        );
+        assertEquals(
+          keywordField.is_disputable,
+          true,
+          "keyword_type should be disputable for subsequent reviewer",
+        );
+        assertExists(
+          keywordField.initial_answer_value,
+          "keyword_type should have initial_answer_value with aggregated keywords",
+        );
+        assert(
+          Array.isArray(keywordField.initial_answer_value),
+          "initial_answer_value for keywords should be an array",
         );
       } else {
         // First reviewer - no aggregated values
@@ -383,35 +401,6 @@ Deno.test({
         console.log("✓ Template correctly configured (first reviewer mode)");
         return;
       }
-      assertEquals(
-        keywordField.is_disputable,
-        true,
-        "keyword_type should be disputable for subsequent reviewer",
-      );
-      assertEquals(
-        keywordField.additonal_option_count,
-        3,
-        "keyword_type should allow 3 additional keywords for subsequent reviewer",
-      );
-      assertExists(
-        keywordField.options,
-        "keyword_type should have options array",
-      );
-      assert(
-        Array.isArray(keywordField.options),
-        "keyword_type options should be an array",
-      );
-      assert(
-        keywordField.options.length > 0,
-        "keyword_type options should not be empty",
-      );
-      // Verify options have is_disabled set to true
-      assert(
-        keywordField.options.every((opt: { is_disabled: boolean }) =>
-          opt.is_disabled === true
-        ),
-        "All aggregated keyword options should be disabled",
-      );
 
       // Find content_type_question section
       const contentTypeSection = data.find((s: { id: string }) =>
@@ -445,20 +434,20 @@ Deno.test({
         "content_type should be disputable for subsequent reviewer",
       );
       assertExists(
-        contentTypeField.prefilled_answer_value,
-        "content_type should have prefilled values",
+        contentTypeField.initial_answer_value,
+        "content_type should have initial_answer_value",
       );
       assert(
-        Array.isArray(contentTypeField.prefilled_answer_value),
-        "prefilled content_type should be an array",
+        Array.isArray(contentTypeField.initial_answer_value),
+        "initial_answer_value for content_type should be an array",
       );
 
       console.log("✓ Subsequent reviewer template correctly configured");
       console.log(
-        `  - Aggregated ${keywordField.options.length} keywords as disabled options`,
+        `  - Aggregated ${keywordField.initial_answer_value.length} keywords in initial_answer_value`,
       );
       console.log(
-        `  - Aggregated ${contentTypeField.prefilled_answer_value.length} content types`,
+        `  - Aggregated ${contentTypeField.initial_answer_value.length} content types in initial_answer_value`,
       );
     } finally {
       await supabase.auth.signOut();
@@ -762,17 +751,17 @@ Deno.test({
         "content_type should be disabled after admin resolution",
       );
       assertExists(
-        contentTypeField.prefilled_answer_value,
-        "content_type should have prefilled value from dispute resolution",
+        contentTypeField.initial_answer_value,
+        "content_type should have initial_answer_value from dispute resolution",
       );
       assert(
-        Array.isArray(contentTypeField.prefilled_answer_value),
-        "prefilled value should be an array",
+        Array.isArray(contentTypeField.initial_answer_value),
+        "initial_answer_value should be an array",
       );
 
       // Verify it contains "opinion" (the resolved value from seed)
       assert(
-        contentTypeField.prefilled_answer_value.includes("opinion"),
+        contentTypeField.initial_answer_value.includes("opinion"),
         "Should contain admin's resolved value 'opinion'",
       );
 

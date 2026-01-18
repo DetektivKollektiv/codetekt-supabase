@@ -72,6 +72,30 @@ export const multiLineTextFieldSchema = baseFieldSchema.extend({
   placeholder: z.string(),
 });
 
+// Base metadata field schema with initial_answer_value
+export const baseMetadataFieldSchema = z.object({
+  initial_answer_value: z.unknown().optional(),
+});
+
+// Metadata field schemas - merge base metadata with specific field types
+export const titleMetadataFieldSchema = textFieldSchema.merge(
+  baseMetadataFieldSchema.extend({
+    initial_answer_value: textAnswerSchema.optional(),
+  }),
+);
+
+export const keywordTypeMetadataFieldSchema = multiLineTextFieldSchema.merge(
+  baseMetadataFieldSchema.extend({
+    initial_answer_value: multiLineTextAnswerSchema.optional(),
+  }),
+);
+
+export const contentTypeMetadataFieldSchema = chipFieldSchema.merge(
+  baseMetadataFieldSchema.extend({
+    initial_answer_value: chipAnswerSchema.optional(),
+  }),
+);
+
 // Discriminated union of all field types
 export const fieldSchema = z.discriminatedUnion("type", [
   chipFieldSchema,
@@ -83,3 +107,10 @@ export const fieldSchema = z.discriminatedUnion("type", [
 ]);
 
 export type Field = z.infer<typeof fieldSchema>;
+export type TitleMetadataField = z.infer<typeof titleMetadataFieldSchema>;
+export type KeywordTypeMetadataField = z.infer<
+  typeof keywordTypeMetadataFieldSchema
+>;
+export type ContentTypeMetadataField = z.infer<
+  typeof contentTypeMetadataFieldSchema
+>;

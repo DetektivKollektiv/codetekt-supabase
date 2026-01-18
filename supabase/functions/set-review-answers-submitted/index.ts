@@ -1,3 +1,47 @@
+/**
+ * SET REVIEW ANSWERS SUBMITTED EDGE FUNCTION
+ *
+ * Publishes a reviewer's draft answers as a final submitted review.
+ * Promotes in-progress draft to the submitted reviews table with strict validation.
+ *
+ * Process flow:
+ * 1. Authenticates user and verifies draft ownership
+ * 2. Fetches in-progress review by in_progress_id
+ * 3. Validates data against strict submission schema (all required fields must be filled)
+ * 4. Uses service role to write to protected review_answers_submitted table
+ * 5. Updates in-progress tracking with optimistic locking (race condition protection)
+ * 6. Links submitted review ID back to in-progress record
+ *
+ * Race condition handling:
+ * - Captures updated_at timestamp before submission
+ * - Uses optimistic locking when updating in-progress record
+ * - If concurrent modification detected, preserves newer draft state
+ * - Fallback: only links submitted_review_answers_id without clearing has_unpublished_changes
+ *
+ * Validation differences from in-progress:
+ * - All required fields must be filled (strict schema)
+ * - No partial submissions allowed
+ * - Validation errors block submission
+ *
+ * Requirements:
+ * - User must be authenticated
+ * - User must own the draft (verified by reviewed_by field)
+ * - Draft must exist with valid in_progress_id
+ * - All required review fields must be completed
+ *
+ * Returns:
+ * - Success response with saved: true and review_id
+ * - Error if authentication fails
+ * - Error if draft not found or user doesn't own it
+ * - Error if validation fails (incomplete review)
+ * - Error if database operations fail
+ *
+ * Database updates:
+ * - Upserts to review_answers_submitted (on conflict: case_id, reviewed_by)
+ * - Updates review_answers_in_progress: sets submitted_review_answers_id, clears has_unpublished_changes
+ * - Uses service role key for writing to protected submitted table
+ */
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { Database } from "../_shared/types/database.types.ts";

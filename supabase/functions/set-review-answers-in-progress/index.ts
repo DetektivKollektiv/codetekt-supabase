@@ -1,6 +1,35 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+/**
+ * SET REVIEW ANSWERS IN-PROGRESS EDGE FUNCTION
+ *
+ * Saves a reviewer's draft answers while they're working on a case review.
+ * Allows incremental progress tracking and auto-save functionality.
+ *
+ * Validation:
+ * - Validates request payload (case_id, data object)
+ * - Validates review data against in-progress schema (all fields optional)
+ * - Only saves fields that are provided (partial updates supported)
+ *
+ * Behavior:
+ * - Upserts to review_answers_in_progress table (per user per case)
+ * - Sets has_unpublished_changes flag to true
+ * - Updates timestamp on each save
+ * - Does not require all fields to be filled (draft state)
+ *
+ * Requirements:
+ * - User must be authenticated
+ * - Valid case_id required
+ * - Data must conform to in-progress schema structure
+ *
+ * Returns:
+ * - Success response with saved: true
+ * - Error if authentication fails
+ * - Error if validation fails
+ * - Error if database operation fails
+ *
+ * Database updates:
+ * - Upserts to review_answers_in_progress (on conflict: case_id, reviewed_by)
+ * - Stores: case_id, reviewed_by, data, has_unpublished_changes, updated_at
+ */
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";

@@ -8,14 +8,24 @@
  * - User's in-progress review data (pre-populates answer values)
  *
  * Blocks access if:
- * - Case has open/pending disputes (including on metadata fields like title)
+ * - Case has open/pending disputes on any field
  * - User is not authenticated
  * - Case or template not found
  *
- * Template modifications:
- * - First reviewer: All metadata fields (title, keywords, content types) required and editable
- * - Subsequent reviewers: Metadata fields pre-filled with aggregated values, disputable but disabled
- * - Resolved disputes: Fields locked with admin's final value, non-disputable
+ * Metadata field behavior:
+ * - First reviewer:
+ *   - All metadata fields (title, keywords, content_type) are required and editable
+ *   - No initial_answer_value set
+ *
+ * - Subsequent reviewers:
+ *   - Title: initial_answer_value set from first reviewer's submission
+ *   - Content type: initial_answer_value set from first reviewer's submission
+ *   - Keywords: initial_answer_value set with all keywords from all reviewers (deduplicated)
+ *   - All metadata fields: is_required=false, is_disabled=true, is_disputable=true
+ *
+ * - Resolved disputes (any field):
+ *   - initial_answer_value set to admin's final_value
+ *   - is_required=false, is_disabled=true, is_disputable=false (locked, non-disputable)
  */
 
 // Setup type definitions for built-in Supabase Runtime APIs

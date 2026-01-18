@@ -57,9 +57,9 @@ Deno.test("set-review-answers-in-progress - saves partial review data", async ()
     const payload = {
       case_id: testCaseId,
       data: {
-        grammar: 2,
-        structure: 3,
-        headline: 1,
+        content_accuracy: 2,
+        content_sources: 3,
+        content_language: 1,
       },
     };
 
@@ -87,21 +87,42 @@ Deno.test("set-review-answers-in-progress - saves partial review data", async ()
     // Step 5: Verify data was persisted in in_progress table
     const { data: dbData, error: dbError } = await supabase
       .from("review_answers_in_progress")
-      .select("data, has_unpublished_changes, updated_at, submitted_review_answers_id")
+      .select(
+        "data, has_unpublished_changes, updated_at, submitted_review_answers_id",
+      )
       .eq("case_id", testCaseId)
       .eq("reviewed_by", userId)
       .single();
 
-    assert(!dbError, `Failed to query review_answers_in_progress: ${dbError?.message}`);
+    assert(
+      !dbError,
+      `Failed to query review_answers_in_progress: ${dbError?.message}`,
+    );
     assertExists(dbData, "No in-progress review found in database");
 
-    assertEquals(dbData.has_unpublished_changes, true, "has_unpublished_changes should be true");
+    assertEquals(
+      dbData.has_unpublished_changes,
+      true,
+      "has_unpublished_changes should be true",
+    );
     assertExists(dbData.updated_at, "updated_at should be set");
 
     const inProgressData = dbData.data as Record<string, unknown>;
-    assertEquals(inProgressData.grammar, 2, "Grammar rating not persisted");
-    assertEquals(inProgressData.structure, 3, "Structure rating not persisted");
-    assertEquals(inProgressData.headline, 1, "Headline rating not persisted");
+    assertEquals(
+      inProgressData.content_accuracy,
+      2,
+      "content_accuracy rating not persisted",
+    );
+    assertEquals(
+      inProgressData.content_sources,
+      3,
+      "content_sources rating not persisted",
+    );
+    assertEquals(
+      inProgressData.content_language,
+      1,
+      "content_language rating not persisted",
+    );
 
     console.log("✓ Partial review successfully saved to in_progress table");
   } finally {
@@ -152,7 +173,11 @@ Deno.test("set-review-answers-in-progress - saves empty review data", async () =
 
     assert(!dbError, "Failed to query in_progress table");
     assertExists(dbData, "Review not found");
-    assertEquals(dbData.has_unpublished_changes, true, "has_unpublished_changes should be true");
+    assertEquals(
+      dbData.has_unpublished_changes,
+      true,
+      "has_unpublished_changes should be true",
+    );
 
     console.log("✓ Empty review data successfully saved");
   } finally {
@@ -179,8 +204,8 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
     const payload1 = {
       case_id: testCaseId,
       data: {
-        grammar: 1,
-        structure: 2,
+        content_accuracy: 1,
+        content_sources: 2,
       },
     };
 
@@ -205,7 +230,11 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
 
     assertExists(db1, "First submission not found");
     const firstData = db1.data as Record<string, unknown>;
-    assertEquals(firstData.grammar, 1, "First grammar value incorrect");
+    assertEquals(
+      firstData.content_accuracy,
+      1,
+      "First content_accuracy value incorrect",
+    );
 
     const firstUpdatedAt = db1.updated_at;
 
@@ -216,9 +245,9 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
     const payload2 = {
       case_id: testCaseId,
       data: {
-        grammar: 3,
-        structure: 2,
-        headline: 3,
+        content_accuracy: 3,
+        content_sources: 2,
+        content_language: 3,
       },
     };
 
@@ -243,13 +272,21 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
 
     assertExists(db2, "Second submission not found");
     const secondData = db2.data as Record<string, unknown>;
-    assertEquals(secondData.grammar, 3, "Grammar was not updated");
-    assertEquals(secondData.headline, 3, "Headline was not added");
+    assertEquals(
+      secondData.content_accuracy,
+      3,
+      "content_accuracy was not updated",
+    );
+    assertEquals(
+      secondData.content_language,
+      3,
+      "content_language was not added",
+    );
 
     // Verify updated_at changed
     assert(
       db2.updated_at !== firstUpdatedAt,
-      "updated_at should change on update"
+      "updated_at should change on update",
     );
 
     console.log("✓ Review successfully updated via upsert");
@@ -347,11 +384,11 @@ Deno.test({
       assert(!authError, `Authentication failed: ${authError?.message}`);
       const accessToken = authData.session!.access_token;
 
-      // Invalid grammar value (string instead of number)
+      // Invalid content_accuracy value (string instead of number)
       const payload = {
         case_id: testCaseId,
         data: {
-          grammar: "invalid",
+          content_accuracy: "invalid",
         },
       };
 
@@ -366,7 +403,10 @@ Deno.test({
       );
 
       // Should return validation error (400) not function error
-      assert(error || (data && data.error), "Expected validation error for invalid data type");
+      assert(
+        error || (data && data.error),
+        "Expected validation error for invalid data type",
+      );
       console.log("✓ Properly rejected invalid data type");
     } finally {
       await supabase.auth.signOut();
@@ -393,7 +433,7 @@ Deno.test("set-review-answers-in-progress - always sets has_unpublished_changes 
     const payload = {
       case_id: testCaseId,
       data: {
-        grammar: 2,
+        content_accuracy: 2,
       },
     };
 
@@ -419,7 +459,7 @@ Deno.test("set-review-answers-in-progress - always sets has_unpublished_changes 
     assertEquals(
       dbData.has_unpublished_changes,
       true,
-      "has_unpublished_changes should always be true on save"
+      "has_unpublished_changes should always be true on save",
     );
 
     console.log("✓ has_unpublished_changes correctly set to true");

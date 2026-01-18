@@ -28,18 +28,16 @@ const createTestClient = () => {
 
 // Helper to create complete review data
 const createCompleteReviewData = (marker: string) => ({
+  title: "Test Review Title",
   keyword_type: ["Ukraine", "Test"],
   content_type: ["nachrichtenartikel"],
-  grammar: 2,
-  structure: 2,
-  headline: 2,
-  objectivity: 2,
-  perspectives: 2,
-  external_sources: 2,
-  claims_match_sources: 2,
-  public_media_match: 2,
-  author_credentials: 2,
-  images_quality: 2,
+  content_accuracy: 2,
+  content_sources: 2,
+  content_language: 2,
+  content_clarity: 2,
+  content_references: 2,
+  content_logic: 2,
+  content_advertising: 2,
   additional_rating: 3,
   additional_comment: marker,
 });
@@ -238,8 +236,8 @@ Deno.test({
       const incompletePayload = {
         case_id: testCaseId,
         data: {
-          grammar: 2,
-          structure: 2,
+          content_accuracy: 2,
+          content_sources: 2,
           // Missing many required fields
         },
       };
@@ -295,8 +293,7 @@ Deno.test({
 
 // Test 5: Fails when user doesn't own the draft
 Deno.test({
-  name:
-    "set-review-answers-submitted - fails when user doesn't own the draft",
+  name: "set-review-answers-submitted - fails when user doesn't own the draft",
   sanitizeResources: false,
   sanitizeOps: false,
   fn: async () => {

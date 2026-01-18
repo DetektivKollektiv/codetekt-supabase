@@ -193,9 +193,7 @@ export function buildAggregation(
   const fields = buildAggregationFields(submitted);
 
   const averages = Object.values(fields).map((f) => f.average);
-  const resultScore = averages.length
-    ? Math.min(...averages)
-    : 0;
+  const resultScore = averages.length ? Math.min(...averages) : 0;
 
   return {
     aggregation: {

@@ -1,3 +1,33 @@
+/**
+ * SET REVIEW AGGREGATION EDGE FUNCTION
+ *
+ * Aggregates all submitted reviews for a case into a single consensus result.
+ * Uses service role key to access all reviews regardless of RLS policies.
+ *
+ * Aggregation process:
+ * - Fetches all submitted reviews for the specified case
+ * - Validates each review against the schema (filters out invalid reviews)
+ * - Applies resolved dispute values for metadata fields (keywords, content_type)
+ * - Calculates consensus values and confidence scores for all fields
+ * - Computes overall result score based on field agreements
+ * - Stores aggregation with reviewer IDs and timestamp
+ *
+ * Requirements:
+ * - Minimum 2 valid reviews required for aggregation
+ * - Invalid reviews are logged but don't block aggregation
+ * - Resolved disputes override review values for metadata fields
+ *
+ * Returns:
+ * - Success response when aggregation is saved
+ * - Error if insufficient valid reviews (< 2)
+ * - Error if aggregation validation fails
+ * - Error if database operations fail
+ *
+ * Database updates:
+ * - Upserts to review_aggregations table (on conflict: case_id)
+ * - Stores: aggregated data, result_score, reviewer_ids, calculated_at timestamp
+ */
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";

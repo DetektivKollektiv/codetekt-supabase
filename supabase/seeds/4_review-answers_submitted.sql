@@ -33,7 +33,9 @@ VALUES
     "content_advertising": 1,
 
     "additional_rating": 1,
-    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt."
+    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",
+    
+    "comment": "Die Quelle ist seriös und die Fakten scheinen korrekt zu sein."
   }'::jsonb,
   now() - interval '6 days',
   now() - interval '6 days',
@@ -57,7 +59,9 @@ VALUES
     "content_advertising": 2,
 
     "additional_rating": 2,
-    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt."
+    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",
+
+    "comment": "Die Quelle ist seriös und die Fakten scheinen korrekt zu sein."
   }'::jsonb,
   now() - interval '5 days',
   now() - interval '5 days',

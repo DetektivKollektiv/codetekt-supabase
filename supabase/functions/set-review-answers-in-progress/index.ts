@@ -14,6 +14,7 @@
  * - Sets has_unpublished_changes flag to true
  * - Updates timestamp on each save
  * - Does not require all fields to be filled (draft state)
+ * - If comment field is provided with length > 0, inserts into case_comments table
  *
  * Requirements:
  * - User must be authenticated
@@ -29,6 +30,7 @@
  * Database updates:
  * - Upserts to review_answers_in_progress (on conflict: case_id, reviewed_by)
  * - Stores: case_id, reviewed_by, data, has_unpublished_changes, updated_at
+ * - Optionally inserts to case_comments if comment provided
  */
 
 // Setup type definitions for built-in Supabase Runtime APIs
@@ -105,7 +107,24 @@ Deno.serve(async (req) => {
     return new Response("Failed to save review answer", { status: 500 });
   }
 
-  // Step 5: Return success response
+  // Step 5: Handle comment insertion if provided
+  const comment = validatedData.comment;
+  if (comment && typeof comment === "string" && comment.trim().length > 0) {
+    const { error: commentError } = await supabase
+      .from("case_comments")
+      .insert({
+        case_id,
+        author_id: user.id,
+        content: comment.trim(),
+      });
+
+    if (commentError) {
+      console.error("Failed to insert case comment:", commentError);
+      // Don't fail the entire request - the review was saved successfully
+    }
+  }
+
+  // Step 6: Return success response
   return new Response(
     JSON.stringify({ saved: true }),
     { headers: { "Content-Type": "application/json" } },

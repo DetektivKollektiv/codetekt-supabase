@@ -467,3 +467,158 @@ Deno.test("set-review-answers-in-progress - always sets has_unpublished_changes 
     await supabase.auth.signOut();
   }
 });
+
+// Test: Comment insertion when provided with length > 0
+Deno.test("set-review-answers-in-progress - inserts comment into case_comments when provided", async () => {
+  const supabase = createTestClient();
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth
+      .signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+
+    assert(!authError, `Authentication failed: ${authError?.message}`);
+    const accessToken = authData.session!.access_token;
+    const userId = authData.session!.user.id;
+
+    // Generate unique comment text
+    const commentText = `Test comment ${crypto.randomUUID()}`;
+
+    // Submit data with comment
+    const payload = {
+      case_id: testCaseId,
+      data: {
+        content_accuracy: 2,
+        content_sources: 3,
+        comment: commentText,
+      },
+    };
+
+    // Get count of comments before submission
+    const { count: beforeCount } = await supabase
+      .from("case_comments")
+      .select("*", { count: "exact", head: true })
+      .eq("case_id", testCaseId)
+      .eq("author_id", userId);
+
+    const { data, error } = await supabase.functions.invoke(
+      "set-review-answers-in-progress",
+      {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+
+    assert(!error, `Submission failed: ${error?.message}`);
+    assertEquals(data.saved, true);
+
+    // Verify comment was inserted into case_comments table
+    const { data: comments, error: commentsError } = await supabase
+      .from("case_comments")
+      .select("*")
+      .eq("case_id", testCaseId)
+      .eq("author_id", userId)
+      .eq("content", commentText)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    assert(
+      !commentsError,
+      `Failed to query comments: ${commentsError?.message}`,
+    );
+    assertExists(comments, "Comments should be returned");
+    assertEquals(
+      comments.length,
+      1,
+      "Should have inserted exactly one comment",
+    );
+
+    const insertedComment = comments[0];
+    assertEquals(
+      insertedComment.case_id,
+      testCaseId,
+      "Comment case_id should match",
+    );
+    assertEquals(
+      insertedComment.author_id,
+      userId,
+      "Comment author_id should match",
+    );
+    assertEquals(
+      insertedComment.content,
+      commentText,
+      "Comment content should match",
+    );
+    assertExists(
+      insertedComment.created_at,
+      "Comment should have created_at timestamp",
+    );
+
+    console.log("✓ Comment successfully inserted into case_comments table");
+  } finally {
+    await supabase.auth.signOut();
+  }
+});
+
+// Test: Empty or whitespace-only comment should not be inserted
+Deno.test("set-review-answers-in-progress - does not insert empty or whitespace-only comment", async () => {
+  const supabase = createTestClient();
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth
+      .signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+
+    assert(!authError, `Authentication failed: ${authError?.message}`);
+    const accessToken = authData.session!.access_token;
+    const userId = authData.session!.user.id;
+
+    // Get count of comments before submission
+    const { count: beforeCount } = await supabase
+      .from("case_comments")
+      .select("*", { count: "exact", head: true })
+      .eq("case_id", testCaseId)
+      .eq("author_id", userId);
+
+    // Submit data with whitespace-only comment
+    const payload = {
+      case_id: testCaseId,
+      data: {
+        content_accuracy: 1,
+        comment: "   ",
+      },
+    };
+
+    const { data, error } = await supabase.functions.invoke(
+      "set-review-answers-in-progress",
+      {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+
+    assert(!error, `Submission failed: ${error?.message}`);
+    assertEquals(data.saved, true);
+
+    // Verify comment count didn't increase
+    const { count: afterCount } = await supabase
+      .from("case_comments")
+      .select("*", { count: "exact", head: true })
+      .eq("case_id", testCaseId)
+      .eq("author_id", userId);
+
+    assertEquals(
+      afterCount,
+      beforeCount,
+      "Comment count should not increase for whitespace-only comment",
+    );
+
+    console.log("✓ Whitespace-only comment correctly ignored");
+  } finally {
+    await supabase.auth.signOut();
+  }
+});

@@ -385,3 +385,480 @@ Deno.test({
     }
   },
 });
+
+// Test 8: Conditional validation - content_type "neutral" requires content_accuracy
+Deno.test({
+  name:
+    "set-review-answers-submitted - content_type neutral requires content_accuracy",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      // Data with neutral content type but missing content_accuracy
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: "Test",
+          keyword_type: ["test"],
+          content_type: ["neutral"],
+          // content_accuracy missing - should fail
+          content_sources: 2,
+          content_language: 2,
+          content_clarity: 2,
+          content_references: 2,
+          content_logic: 2,
+          content_advertising: 2,
+          additional_rating: 3,
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { error } = await supabase.functions.invoke(
+        "set-review-answers-submitted",
+        {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      assert(error, "Expected validation error for missing content_accuracy");
+      console.log(
+        "✓ Properly rejected neutral content without content_accuracy",
+      );
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 9: Conditional validation - content_type "opinion" requires content_sources
+Deno.test({
+  name:
+    "set-review-answers-submitted - content_type opinion requires content_sources",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      // Data with opinion content type but missing content_sources
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: "Test",
+          keyword_type: ["test"],
+          content_type: ["opinion"],
+          // content_sources missing - should fail
+          content_language: 2,
+          content_clarity: 2,
+          content_references: 2,
+          content_logic: 2,
+          content_advertising: 2,
+          additional_rating: 3,
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { error } = await supabase.functions.invoke(
+        "set-review-answers-submitted",
+        {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      assert(error, "Expected validation error for missing content_sources");
+      console.log(
+        "✓ Properly rejected opinion content without content_sources",
+      );
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 10: Conditional validation - content_type "text_message" requires all content fields
+Deno.test({
+  name:
+    "set-review-answers-submitted - content_type text_message requires all content fields",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      // Data with text_message content type but missing content_clarity
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: "Test",
+          keyword_type: ["test"],
+          content_type: ["text_message"],
+          content_language: 2,
+          // content_clarity missing - should fail
+          content_references: 2,
+          content_logic: 2,
+          content_advertising: 2,
+          additional_rating: 3,
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { error } = await supabase.functions.invoke(
+        "set-review-answers-submitted",
+        {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      assert(error, "Expected validation error for missing content_clarity");
+      console.log(
+        "✓ Properly rejected text_message without all content fields",
+      );
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 11: Conditional validation - content_type "nachrichtenartikel" doesn't require optional content fields
+Deno.test({
+  name:
+    "set-review-answers-submitted - content_type nachrichtenartikel allows missing optional fields",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      const marker = `nachrichtenartikel-test-${crypto.randomUUID()}`;
+
+      // Data with nachrichtenartikel - no optional content fields required
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: "Test Article",
+          keyword_type: ["test"],
+          content_type: ["nachrichtenartikel"],
+          // No content_accuracy, content_sources, etc. - should succeed
+          additional_rating: 3,
+          additional_comment: marker,
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { data: publishData, error: publishError } = await supabase
+        .functions
+        .invoke("set-review-answers-submitted", {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+      assert(
+        !publishError,
+        `Should succeed for nachrichtenartikel: ${publishError?.message}`,
+      );
+      assertEquals(publishData.saved, true);
+      console.log(
+        "✓ Successfully published nachrichtenartikel without optional fields",
+      );
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 12: Conditional validation - additional_rating < 3 requires additional_comment
+Deno.test({
+  name:
+    "set-review-answers-submitted - additional_rating < 3 requires additional_comment",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      // Data with low rating but missing comment
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: "Test",
+          keyword_type: ["test"],
+          content_type: ["nachrichtenartikel"],
+          additional_rating: 2, // Low rating
+          // additional_comment missing - should fail
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { error } = await supabase.functions.invoke(
+        "set-review-answers-submitted",
+        {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      assert(error, "Expected validation error for missing additional_comment");
+      console.log("✓ Properly rejected low rating without comment");
+
+      // Clean up: publish a valid version to reset state
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: {
+          case_id: testCaseId,
+          data: createCompleteReviewData(`cleanup-${crypto.randomUUID()}`),
+        },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 13: Conditional validation - additional_rating >= 3 doesn't require additional_comment
+Deno.test({
+  name:
+    "set-review-answers-submitted - additional_rating >= 3 allows missing comment",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      const marker = `high-rating-test-${crypto.randomUUID()}`;
+
+      // Data with high rating, no comment required - use complete data structure
+      const completeData = createCompleteReviewData(marker);
+      // Remove the additional_comment field entirely
+      delete (completeData as { additional_comment?: string })
+        .additional_comment;
+
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          ...completeData,
+          additional_rating: 3, // High rating (3 is max for likert scale), no comment required
+        },
+      };
+
+      const { data: saveResponse, error: saveError } = await supabase.functions
+        .invoke("set-review-answers-in-progress", {
+          body: payload,
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+      if (saveError) {
+        console.error("Save error:", saveError);
+        // Try to get the error details from the response
+        try {
+          const errorBody = await (saveError.context as Response).json();
+          console.error("Error body:", JSON.stringify(errorBody, null, 2));
+        } catch (e) {
+          console.error("Could not parse error body");
+        }
+      }
+      assert(!saveError, `Failed to save in-progress: ${saveError?.message}`);
+      assertEquals(saveResponse.saved, true, "Should have saved successfully");
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id, data")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      // Verify we got the right data
+      const inProgressData = inProgress!.data as Record<string, unknown>;
+      assertEquals(inProgressData.additional_rating, 3, "Should have rating 3");
+
+      const { data: publishData, error: publishError } = await supabase
+        .functions
+        .invoke("set-review-answers-submitted", {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+      assert(
+        !publishError,
+        `Should succeed with high rating: ${publishError?.message}`,
+      );
+      assertEquals(publishData.saved, true);
+      console.log("✓ Successfully published high rating without comment");
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});
+
+// Test 14: Conditional validation - multiple content types require all relevant fields
+Deno.test({
+  name:
+    "set-review-answers-submitted - multiple content types (neutral + opinion) require combined fields",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createTestClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth
+        .signInWithPassword({ email: testEmail, password: testPassword });
+
+      assert(!authError, `Authentication failed: ${authError?.message}`);
+      const accessToken = authData.session!.access_token;
+      const userId = authData.session!.user.id;
+
+      const marker = `multi-type-test-${crypto.randomUUID()}`;
+
+      // Data with both neutral and opinion - all fields required
+      const payload = {
+        case_id: testCaseId,
+        data: {
+          title: marker,
+          keyword_type: ["test"],
+          content_type: ["neutral", "opinion"],
+          content_accuracy: 2,
+          content_sources: 2,
+          content_language: 2,
+          content_clarity: 2,
+          content_references: 2,
+          content_logic: 2,
+          content_advertising: 2,
+          additional_rating: 3,
+        },
+      };
+
+      await supabase.functions.invoke("set-review-answers-in-progress", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const { data: inProgress } = await supabase
+        .from("review_answers_in_progress")
+        .select("id")
+        .eq("case_id", testCaseId)
+        .eq("reviewed_by", userId)
+        .single();
+
+      const { data: publishData, error: publishError } = await supabase
+        .functions
+        .invoke("set-review-answers-submitted", {
+          body: { in_progress_id: inProgress!.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+      assert(
+        !publishError,
+        `Should succeed with all required fields: ${publishError?.message}`,
+      );
+      assertEquals(publishData.saved, true);
+      console.log(
+        "✓ Successfully published multiple content types with all fields",
+      );
+    } finally {
+      await supabase.auth.signOut();
+    }
+  },
+});

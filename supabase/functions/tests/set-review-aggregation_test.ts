@@ -769,3 +769,502 @@ Deno.test({
     }
   },
 });
+
+// Test 9: Conditional validation - content_type "neutral" requires content_accuracy
+Deno.test({
+  name:
+    "set-review-aggregation - filters out reviews missing content_accuracy for neutral content",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    // Create a test case
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/neutral-validation",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError, `Failed to create test case: ${caseError?.message}`);
+    assertExists(newCase, "Test case not created");
+
+    try {
+      // Add three reviews: 2 valid, 1 invalid (neutral without content_accuracy)
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            title: "Valid Review 1",
+            keyword_type: ["Test"],
+            content_type: ["neutral"],
+            content_accuracy: 2, // Required for neutral
+            content_sources: 2,
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            title: "Invalid Review - Missing content_accuracy",
+            keyword_type: ["Test"],
+            content_type: ["neutral"],
+            // content_accuracy missing - INVALID
+            content_sources: 2,
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_CUNEYT,
+          data: {
+            title: "Valid Review 2",
+            keyword_type: ["Test"],
+            content_type: ["neutral"],
+            content_accuracy: 3, // Required for neutral
+            content_sources: 3,
+            content_language: 3,
+            content_clarity: 3,
+            content_references: 3,
+            content_logic: 3,
+            content_advertising: 3,
+            additional_rating: 3,
+          },
+        },
+      ];
+
+      // Insert reviews directly (bypassing validation)
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(
+        !reviewsError,
+        `Failed to insert reviews: ${reviewsError?.message}`,
+      );
+
+      // Aggregate - should succeed with 2 valid reviews
+      const { response, data } = await invokeAggregation(newCase.id);
+
+      assertEquals(response.status, 200);
+      assertEquals(data.success, true);
+
+      // Verify aggregation details
+      const { data: aggregation } = await supabase
+        .from("review_aggregations")
+        .select("*")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertExists(aggregation);
+      assertEquals(
+        aggregation.reviewer_ids.length,
+        2,
+        "Should only include 2 valid reviews",
+      );
+
+      console.log(
+        "✓ Invalid review (neutral without content_accuracy) filtered out, aggregation successful with 2 valid reviews",
+      );
+    } finally {
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});
+
+// Test 10: Conditional validation - content_type "opinion" requires content_sources
+Deno.test({
+  name:
+    "set-review-aggregation - filters out reviews missing content_sources for opinion content",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/opinion-validation",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError);
+    assertExists(newCase);
+
+    try {
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            title: "Valid Opinion Review",
+            keyword_type: ["Test"],
+            content_type: ["opinion"],
+            content_sources: 2, // Required for opinion
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            title: "Invalid Opinion Review",
+            keyword_type: ["Test"],
+            content_type: ["opinion"],
+            // content_sources missing - INVALID
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_CUNEYT,
+          data: {
+            title: "Another Valid Review",
+            keyword_type: ["Test"],
+            content_type: ["opinion"],
+            content_sources: 3, // Required for opinion
+            content_language: 3,
+            content_clarity: 3,
+            content_references: 3,
+            content_logic: 3,
+            content_advertising: 3,
+            additional_rating: 3,
+          },
+        },
+      ];
+
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(!reviewsError);
+
+      const { response, data } = await invokeAggregation(newCase.id);
+
+      assertEquals(response.status, 200);
+      assertEquals(data.success, true);
+
+      const { data: aggregation } = await supabase
+        .from("review_aggregations")
+        .select("reviewer_ids")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertEquals(aggregation!.reviewer_ids.length, 2);
+
+      console.log(
+        "✓ Invalid review (opinion without content_sources) filtered out",
+      );
+    } finally {
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});
+
+// Test 11: Conditional validation - additional_rating < 3 requires additional_comment
+Deno.test({
+  name:
+    "set-review-aggregation - filters out reviews with low rating but missing comment",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/rating-validation",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError);
+    assertExists(newCase);
+
+    try {
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            title: "Valid Low Rating Review",
+            keyword_type: ["Test"],
+            content_type: ["nachrichtenartikel"],
+            additional_rating: 2, // Low rating
+            additional_comment: "This is why it's low rated", // Comment provided - VALID
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            title: "Invalid Low Rating Review",
+            keyword_type: ["Test"],
+            content_type: ["nachrichtenartikel"],
+            additional_rating: 1, // Low rating
+            // additional_comment missing - INVALID
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_CUNEYT,
+          data: {
+            title: "Valid High Rating Review",
+            keyword_type: ["Test"],
+            content_type: ["nachrichtenartikel"],
+            additional_rating: 3, // High rating - no comment needed
+          },
+        },
+      ];
+
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(!reviewsError);
+
+      const { response, data } = await invokeAggregation(newCase.id);
+
+      assertEquals(response.status, 200);
+      assertEquals(data.success, true);
+
+      const { data: aggregation } = await supabase
+        .from("review_aggregations")
+        .select("reviewer_ids")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertEquals(aggregation!.reviewer_ids.length, 2);
+
+      console.log("✓ Invalid review (low rating without comment) filtered out");
+    } finally {
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});
+
+// Test 12: Conditional validation - aggregation fails when too many reviews are invalid
+Deno.test({
+  name:
+    "set-review-aggregation - fails when insufficient valid reviews after filtering",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/insufficient-valid",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError);
+    assertExists(newCase);
+
+    try {
+      // Add 3 reviews, but only 1 is valid
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            title: "Valid Review",
+            keyword_type: ["Test"],
+            content_type: ["nachrichtenartikel"],
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            title: "Invalid - neutral without content_accuracy",
+            keyword_type: ["Test"],
+            content_type: ["neutral"],
+            // Missing content_accuracy
+            content_sources: 2,
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_CUNEYT,
+          data: {
+            title: "Invalid - low rating without comment",
+            keyword_type: ["Test"],
+            content_type: ["nachrichtenartikel"],
+            additional_rating: 2,
+            // Missing additional_comment
+          },
+        },
+      ];
+
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(!reviewsError);
+
+      // Should fail - only 1 valid review
+      const { response, data } = await invokeAggregation(newCase.id);
+
+      assertEquals(response.status, 400);
+      assertEquals(data.error, "Insufficient valid reviews for aggregation");
+      assertEquals(data.valid_review_count, 1);
+      assertEquals(data.invalid_review_count, 2);
+      assertEquals(data.required_count, 2);
+      assertExists(data.invalid_reviews);
+      assertEquals(data.invalid_reviews.length, 2);
+
+      console.log(
+        "✓ Aggregation correctly fails when only 1 valid review remains after filtering",
+      );
+    } finally {
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});
+
+// Test 13: Conditional validation - content_type "text_message" requires all content fields
+Deno.test({
+  name:
+    "set-review-aggregation - filters out text_message reviews missing content fields",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const supabase = createServiceRoleClient();
+
+    const { data: newCase, error: caseError } = await supabase
+      .from("cases")
+      .insert({
+        submitted_by: TEST_USER_GORM,
+        content: "http://example.com/text-message-validation",
+        content_type: "url",
+        template_version: 1,
+      })
+      .select()
+      .single();
+
+    assert(!caseError);
+    assertExists(newCase);
+
+    try {
+      const reviews = [
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_GORM,
+          data: {
+            title: "Valid text_message",
+            keyword_type: ["Test"],
+            content_type: ["text_message"],
+            content_language: 2,
+            content_clarity: 2,
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_VALENTIN,
+          data: {
+            title: "Invalid text_message - missing content_clarity",
+            keyword_type: ["Test"],
+            content_type: ["text_message"],
+            content_language: 2,
+            // content_clarity missing - INVALID
+            content_references: 2,
+            content_logic: 2,
+            content_advertising: 2,
+            additional_rating: 3,
+          },
+        },
+        {
+          case_id: newCase.id,
+          reviewed_by: TEST_USER_CUNEYT,
+          data: {
+            title: "Another valid text_message",
+            keyword_type: ["Test"],
+            content_type: ["text_message"],
+            content_language: 3,
+            content_clarity: 3,
+            content_references: 3,
+            content_logic: 3,
+            content_advertising: 3,
+            additional_rating: 3,
+          },
+        },
+      ];
+
+      const { error: reviewsError } = await supabase
+        .from("review_answers_submitted")
+        .insert(reviews);
+
+      assert(!reviewsError);
+
+      const { response, data } = await invokeAggregation(newCase.id);
+
+      assertEquals(response.status, 200);
+      assertEquals(data.success, true);
+
+      const { data: aggregation } = await supabase
+        .from("review_aggregations")
+        .select("reviewer_ids")
+        .eq("case_id", newCase.id)
+        .single();
+
+      assertEquals(aggregation!.reviewer_ids.length, 2);
+
+      console.log(
+        "✓ Invalid review (text_message without content_clarity) filtered out",
+      );
+    } finally {
+      await supabase.from("cases").delete().eq("id", newCase.id);
+    }
+  },
+});

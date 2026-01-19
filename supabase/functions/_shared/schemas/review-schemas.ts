@@ -62,10 +62,3 @@ export type SubmittedReviewAnswer = z.infer<typeof submittedReviewAnswerSchema>;
 export type InProgressReviewAnswer = z.infer<
   typeof inProgressReviewAnswerSchema
 >;
-
-// Re-export metadata field schemas for template modification
-export {
-  contentTypeMetadataFieldSchema,
-  keywordTypeMetadataFieldSchema,
-  titleMetadataFieldSchema,
-} from "./field-schemas.ts";

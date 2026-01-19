@@ -74,4 +74,4 @@ export const reviewAggregationSchema = z.object({
   }),
 });
 
-export type ReviewAggregationInput = z.infer<typeof reviewAggregationSchema>;
+export type ReviewAggregationData = z.infer<typeof reviewAggregationSchema>;

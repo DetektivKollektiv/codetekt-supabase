@@ -32,7 +32,7 @@ export {
 export {
   baseFieldSchema,
   chipFieldSchema,
-  type FieldInput,
+  type Field,
   fieldSchema,
   likertScaleFieldSchema,
   multiLineTextFieldSchema,
@@ -49,7 +49,7 @@ export {
 // Aggregation schemas
 export {
   aggregationFieldValueSchema,
-  type ReviewAggregationInput,
+  type ReviewAggregationData,
   reviewAggregationSchema,
 } from "./aggregation-schemas.ts";
 

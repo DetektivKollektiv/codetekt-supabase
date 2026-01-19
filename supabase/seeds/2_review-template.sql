@@ -525,7 +525,7 @@ VALUES (
           {
             "id": "comment_field",
             "max_length": 500,
-            "placeholder": "Type your answer here..."
+            "placeholder": "Schreibe deine Antwort hier..."
           }
         ],
         "is_shown": [
@@ -554,7 +554,20 @@ VALUES (
   },
   {
     "id": "submit_question",
-    "fields": [],
+    "fields": [
+      {
+        "id": "comment",
+        "type": "text-area",
+        "options": [
+          {
+            "id": "comment_opt",
+            "max_length": 500,
+            "placeholder": "Schreibe deine Antwort hier..."
+          }
+        ],
+        "question": "Was ist dir noch aufgefallen?"
+      }
+    ],
     "metadata": {
       "text": "Überprüfe deine Angaben und schließe den Fall ab.",
       "title": "Fall abschließen",

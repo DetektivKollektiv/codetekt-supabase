@@ -120,7 +120,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -166,7 +166,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -218,7 +218,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -272,7 +272,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -326,7 +326,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -380,7 +380,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -434,7 +434,7 @@ VALUES (
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -499,7 +499,7 @@ VALUES (
           {
             "id": "nothing",
             "text": "Nein,",
-            "color": "hsl(var(--neutral-0))",
+            "color": "hsl(var(--brand-gray))",
             "value": 3,
             "description": "alles geprüft"
           }
@@ -530,7 +530,7 @@ VALUES (
         ],
         "is_shown": [
           {
-            "value": 4,
+            "value": 3,
             "field_id": "additional_rating",
             "operator": "<"
           }
@@ -538,7 +538,7 @@ VALUES (
         "question": "Was ist dir aufgefallen?",
         "is_required": [
           {
-            "value": 4,
+            "value": 3,
             "field_id": "additional_rating",
             "operator": "<"
           }

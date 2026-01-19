@@ -113,7 +113,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -159,7 +159,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -205,7 +205,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -251,7 +251,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -297,7 +297,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -343,7 +343,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -389,7 +389,7 @@
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--neutral-0))"
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -446,7 +446,7 @@
           {
             "id": "nothing",
             "text": "Nein,",
-            "color": "hsl(var(--neutral-0))",
+            "color": "hsl(var(--brand-gray))",
             "value": 3,
             "description": "alles geprüft"
           }

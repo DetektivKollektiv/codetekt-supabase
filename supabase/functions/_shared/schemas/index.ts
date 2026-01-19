@@ -5,7 +5,7 @@ export {
   chipAnswerSchema,
   likertScaleAnswerSchema,
   multiLineTextAnswerSchema,
-  type ReviewAnswerInput,
+  type ReviewAnswer,
   reviewAnswerSchema,
   textAreaAnswerSchema,
   trafficLightAnswerSchema,
@@ -14,7 +14,7 @@ export {
 // Condition schemas
 export {
   comparisonConditionSchema,
-  type ConditionInput,
+  type Condition,
   conditionSchema,
   equalsConditionSchema,
 } from "./condition-schemas.ts";

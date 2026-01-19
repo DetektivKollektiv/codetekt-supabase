@@ -115,12 +115,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -161,12 +161,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -213,12 +213,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -267,12 +267,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -321,12 +321,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -375,12 +375,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -429,12 +429,12 @@ VALUES (
           {
             "id": "traffic-light-opt-4",
             "value": 3,
-            "color": "hsl(var(--brand-red))"
+            "color": "hsl(var(--destructive))"
           },
           {
             "id": "traffic-light-opt-5",
             "value": 4,
-            "color": "hsl(var(--brand-neutral-0))"
+            "color": "hsl(var(--neutral-0))"
           }
         ],
         "is_required": [
@@ -492,14 +492,14 @@ VALUES (
           {
             "id": "critical_error",
             "text": "Ja,",
-            "color": "hsl(var(--brand-red))",
+            "color": "hsl(var(--destructive))",
             "value": 2,
             "description": "gravierender Fehler"
           },
           {
             "id": "nothing",
             "text": "Nein,",
-            "color": "hsl(var(--brand-neutral-0))",
+            "color": "hsl(var(--neutral-0))",
             "value": 3,
             "description": "alles geprüft"
           }

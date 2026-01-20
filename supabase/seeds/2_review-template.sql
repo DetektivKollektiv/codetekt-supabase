@@ -125,16 +125,16 @@ VALUES (
         ],
         "is_required": [
           {
-            "value": "neutral",
             "field_id": "content_type",
-            "operator": "==="
+            "operator": "in",
+            "values": ["neutral"]
           }
         ],
         "is_shown": [
           {
-            "value": "neutral",
             "field_id": "content_type",
-            "operator": "==="
+            "operator": "in",
+            "values": ["neutral"]
           }
         ]
       },

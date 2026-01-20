@@ -106,32 +106,31 @@ export function buildAggregationMetadata(
  * Builds statistical aggregation for numeric fields from multiple submitted review answers.
  *
  * Aggregates numeric fields (traffic-light and likert-scale responses):
- * - Counts occurrences of each value (0-4)
- * - Calculates percentages
- * - Computes averages
- * - Adds quality tags based on field type
+ * - Counts occurrences of each value (0-4 for traffic-light, 0-3 for likert-scale)
+ * - Filters out traffic-light fields where ≥50% chose option 4 ("not applicable")
+ * - Calculates percentages and averages (excluding option 4)
+ * - Adds quality tags based on field type (0-3 only in output)
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
- * @returns Fields object with aggregated statistics keyed by field_id
+ * @returns Fields object with aggregated statistics keyed by field_id (option 4 excluded from output)
  */
 export function buildAggregationFields(
   submitted: SubmittedReview[],
 ): Record<
   string,
   {
-    counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
-    percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
+    counts: { 0: number; 1: number; 2: number; 3: number };
+    percentages: { 0: number; 1: number; 2: number; 3: number };
     average: number;
-    tags: { 0: string; 1: string; 2: string; 3: string; 4: string };
+    tags: { 0: string; 1: string; 2: string; 3: string };
   }
 > {
-  const fields: Record<
+  // Internal accumulator includes option 4 for filtering logic
+  const fieldsInternal: Record<
     string,
     {
       counts: { 0: number; 1: number; 2: number; 3: number; 4: number };
-      percentages: { 0: number; 1: number; 2: number; 3: number; 4: number };
-      average: number;
-      tags: { 0: string; 1: string; 2: string; 3: string; 4: string };
+      totalResponses: number;
     }
   > = {};
 
@@ -150,44 +149,89 @@ export function buildAggregationFields(
       }
 
       // Initialize accumulator
-      if (!fields[fieldId]) {
-        fields[fieldId] = {
+      if (!fieldsInternal[fieldId]) {
+        fieldsInternal[fieldId] = {
           counts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-          percentages: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 },
-          average: 0,
-          tags: DEFAULT_FIELD_TAGS[fieldId] || {
-            0: "Sehr gut",
-            1: "Gut",
-            2: "Mangelhaft",
-            3: "Ungenügend",
-            4: "Nicht zutreffend",
-          },
+          totalResponses: 0,
         };
       }
 
-      const field = fields[fieldId];
+      const field = fieldsInternal[fieldId];
       // Restrict to 0..4 as defined in AggregationFieldValue
       const bucket = Math.max(0, Math.min(4, value)) as 0 | 1 | 2 | 3 | 4;
       field.counts[bucket] += 1;
+      field.totalResponses += 1;
     }
   }
 
-  // Calculate percentages and averages
-  for (const field of Object.values(fields)) {
-    const total = numericLabeledValues.reduce<number>(
-      (sum, key) => sum + field.counts[key],
-      0,
-    );
-    if (total > 0) {
-      for (const key of numericLabeledValues) {
-        field.percentages[key] = (field.counts[key] / total) * 100;
-      }
-      const sum = numericLabeledValues.reduce<number>(
-        (s, key) => s + field.counts[key] * key,
-        0,
-      );
-      field.average = sum / total;
+  // Filter fields and build output (excluding option 4)
+  const fields: Record<
+    string,
+    {
+      counts: { 0: number; 1: number; 2: number; 3: number };
+      percentages: { 0: number; 1: number; 2: number; 3: number };
+      average: number;
+      tags: { 0: string; 1: string; 2: string; 3: string };
     }
+  > = {};
+
+  for (const [fieldId, fieldData] of Object.entries(fieldsInternal)) {
+    const { counts, totalResponses } = fieldData;
+
+    // Calculate percentage of option 4 ("not applicable")
+    const percentage4 = totalResponses > 0
+      ? (counts[4] / totalResponses) * 100
+      : 0;
+
+    // Filter out fields where ≥50% chose option 4
+    if (percentage4 >= 50) {
+      continue; // Skip this field entirely
+    }
+
+    // Calculate total responses excluding option 4
+    const totalExcludingOption4 = counts[0] + counts[1] + counts[2] + counts[3];
+
+    // Build output for this field (without option 4)
+    const outputCounts = {
+      0: counts[0],
+      1: counts[1],
+      2: counts[2],
+      3: counts[3],
+    };
+    const outputPercentages = { 0: 0, 1: 0, 2: 0, 3: 0 };
+    let average = 0;
+
+    if (totalExcludingOption4 > 0) {
+      // Calculate percentages (normalized to 100% without option 4)
+      for (const key of [0, 1, 2, 3] as const) {
+        outputPercentages[key] = (counts[key] / totalExcludingOption4) * 100;
+      }
+
+      // Calculate average (excluding option 4)
+      const sum = counts[0] * 0 + counts[1] * 1 + counts[2] * 2 + counts[3] * 3;
+      average = sum / totalExcludingOption4;
+    }
+
+    // Get tags (only 0-3)
+    const fieldTags = DEFAULT_FIELD_TAGS[fieldId] || {
+      0: "Sehr gut",
+      1: "Gut",
+      2: "Mangelhaft",
+      3: "Ungenügend",
+    };
+    const outputTags = {
+      0: fieldTags[0],
+      1: fieldTags[1],
+      2: fieldTags[2],
+      3: fieldTags[3],
+    };
+
+    fields[fieldId] = {
+      counts: outputCounts,
+      percentages: outputPercentages,
+      average,
+      tags: outputTags,
+    };
   }
 
   return fields;

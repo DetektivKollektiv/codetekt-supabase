@@ -134,7 +134,7 @@ Deno.test({
         "field.tags should be an object",
       );
       assertExists(firstField.tags["0"], "field.tags should have value for 0");
-      assertExists(firstField.tags["4"], "field.tags should have value for 4");
+      assertExists(firstField.tags["3"], "field.tags should have value for 3");
     }
 
     console.log("✓ Successfully aggregated 2+ reviews with new structure");

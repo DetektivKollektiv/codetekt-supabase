@@ -6,12 +6,12 @@ import {
 } from "./answer-schemas.ts";
 
 // Schema for counts and percentages (reusable)
+// Note: Option 4 ("not applicable") is filtered out before aggregation output
 const countsSchema = z.object({
   0: z.number(),
   1: z.number(),
   2: z.number(),
   3: z.number(),
-  4: z.number(),
 });
 
 const percentagesSchema = z.object({
@@ -19,16 +19,15 @@ const percentagesSchema = z.object({
   1: z.number(),
   2: z.number(),
   3: z.number(),
-  4: z.number(),
 });
 
-// Schema for tags - maps value (0-4) to human-readable label
+// Schema for tags - maps value (0-3) to human-readable label
+// Note: Option 4 ("not applicable") is excluded from aggregated output
 const tagsSchema = z.object({
   0: z.string(),
   1: z.string(),
   2: z.string(),
   3: z.string(),
-  4: z.string(),
 });
 
 // Schema for aggregated field values

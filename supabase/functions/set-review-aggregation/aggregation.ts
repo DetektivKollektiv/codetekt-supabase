@@ -2,7 +2,11 @@ import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
-import { DEFAULT_FIELD_TAGS } from "./field-tags.ts";
+import {
+  DEFAULT_FIELD_TAGS,
+  METADATA_QUESTION_IDS,
+  SKIPPED_QUESTION_IDS,
+} from "./field-tags.ts";
 
 export const numericLabeledValues = [0, 1, 2, 3, 4] as const;
 
@@ -192,11 +196,16 @@ export function buildAggregationFields(
 /**
  * Builds statistical aggregation from multiple submitted review answers.
  *
- * Combines metadata extraction and field aggregation:
+ * Explicit question handling:
+ * 1. METADATA_QUESTION_IDS: Extracted separately for metadata (title, keywords, content_type)
+ * 2. SKIPPED_QUESTION_IDS: Completely excluded from aggregation output
+ * 3. Other questions: Aggregated with numeric field statistics
+ *
+ * Process:
  * - Extracts metadata (title from first answer, keyword_type merged, content_type from first answer)
  * - Applies resolved dispute overrides to metadata (admin's final values take precedence)
  * - Aggregates numeric fields with counts, percentages, averages, tags
- * - Organizes fields by questions matching template structure
+ * - Organizes fields by questions matching template structure (excluding metadata and skipped questions)
  * - Computes overall result score
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
@@ -209,12 +218,22 @@ export function buildAggregation(
   template: ReviewTemplateInput[],
   resolvedDisputes?: ResolvedDispute[],
 ): AggregationResult {
+  // Step 1: Extract metadata from metadata questions
   const metadata = buildAggregationMetadata(submitted, resolvedDisputes);
+
+  // Step 2: Aggregate numeric fields from non-metadata, non-skipped questions
   const aggregatedFields = buildAggregationFields(submitted);
 
-  // Build questions array matching template structure
+  // Step 3: Build questions array for aggregation (exclude metadata and skipped questions)
   const questions = template
-    .filter((question) => question.fields.length > 0) // Only include questions with fields
+    .filter((question) => {
+      // Explicitly skip metadata questions (handled separately above)
+      if (METADATA_QUESTION_IDS.includes(question.id)) return false;
+      // Explicitly skip questions marked as skipped
+      if (SKIPPED_QUESTION_IDS.includes(question.id)) return false;
+      // Only include questions with fields
+      return question.fields.length > 0;
+    })
     .map((question) => {
       // Filter fields that have aggregated data (numeric fields only)
       const fields = question.fields

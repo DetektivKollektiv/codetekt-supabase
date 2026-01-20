@@ -60,3 +60,21 @@ export const DEFAULT_FIELD_TAGS: Record<
     4: "Nicht zutreffend",
   },
 };
+
+export const DEFAULT_QUESTION_ICONS: Record<
+  string,
+  string
+> = {
+  content_question: "notebook-text",
+};
+
+export const SKIPPED_QUESTION_IDS = [
+  "evaluation_criteria_question",
+  "submit_question",
+];
+
+export const METADATA_QUESTION_IDS = [
+  "title_question",
+  "keywords_question",
+  "content_type_question",
+];

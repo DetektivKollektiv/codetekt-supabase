@@ -22,7 +22,7 @@
  * - Data must conform to in-progress schema structure
  *
  * Returns:
- * - Success response with saved: true
+ * - Success response with saved: true and in_progress_id
  * - Error if authentication fails
  * - Error if validation fails
  * - Error if database operation fails
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
   const { validatedData } = validationResult;
 
   // Step 4: Save review answer to in_progress table
-  const { error: upsertError } = await supabase
+  const { data: savedData, error: upsertError } = await supabase
     .from("review_answers_in_progress")
     .upsert({
       case_id,
@@ -100,7 +100,9 @@ Deno.serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, {
       onConflict: "case_id,reviewed_by",
-    });
+    })
+    .select()
+    .single();
 
   if (upsertError) {
     console.error("Upsert review_answers_in_progress error", upsertError);
@@ -126,7 +128,7 @@ Deno.serve(async (req) => {
 
   // Step 6: Return success response
   return new Response(
-    JSON.stringify({ saved: true }),
+    JSON.stringify({ saved: true, in_progress_id: savedData.id }),
     { headers: { "Content-Type": "application/json" } },
   );
 });

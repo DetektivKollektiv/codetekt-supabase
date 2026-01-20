@@ -83,12 +83,13 @@ Deno.test("set-review-answers-in-progress - saves partial review data", async ()
     // Verify response structure
     assertExists(data, "Expected response data");
     assertEquals(data.saved, true, "Expected saved to be true");
+    assertExists(data.in_progress_id, "Expected in_progress_id in response");
 
     // Step 5: Verify data was persisted in in_progress table
     const { data: dbData, error: dbError } = await supabase
       .from("review_answers_in_progress")
       .select(
-        "data, has_unpublished_changes, updated_at, submitted_review_answers_id",
+        "id, data, has_unpublished_changes, updated_at, submitted_review_answers_id",
       )
       .eq("case_id", testCaseId)
       .eq("reviewed_by", userId)
@@ -106,6 +107,11 @@ Deno.test("set-review-answers-in-progress - saves partial review data", async ()
       "has_unpublished_changes should be true",
     );
     assertExists(dbData.updated_at, "updated_at should be set");
+    assertEquals(
+      dbData.id,
+      data.in_progress_id,
+      "Returned in_progress_id should match database ID",
+    );
 
     const inProgressData = dbData.data as Record<string, unknown>;
     assertEquals(
@@ -162,6 +168,7 @@ Deno.test("set-review-answers-in-progress - saves empty review data", async () =
 
     assert(!error, `Empty data submission failed: ${error?.message}`);
     assertEquals(data.saved, true, "Expected saved to be true");
+    assertExists(data.in_progress_id, "Expected in_progress_id in response");
 
     // Verify in database
     const { data: dbData, error: dbError } = await supabase
@@ -219,6 +226,10 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
 
     assert(!error1, "First submission failed");
     assertEquals(data1.saved, true);
+    assertExists(
+      data1.in_progress_id,
+      "Expected in_progress_id in first response",
+    );
 
     // Verify first submission
     const { data: db1 } = await supabase
@@ -261,6 +272,15 @@ Deno.test("set-review-answers-in-progress - updates existing review (upsert)", a
 
     assert(!error2, "Second submission failed");
     assertEquals(data2.saved, true);
+    assertExists(
+      data2.in_progress_id,
+      "Expected in_progress_id in second response",
+    );
+    assertEquals(
+      data2.in_progress_id,
+      data1.in_progress_id,
+      "in_progress_id should remain the same on upsert",
+    );
 
     // Verify second submission updated the row
     const { data: db2 } = await supabase
@@ -437,7 +457,7 @@ Deno.test("set-review-answers-in-progress - always sets has_unpublished_changes 
       },
     };
 
-    const { error } = await supabase.functions.invoke(
+    const { data, error } = await supabase.functions.invoke(
       "set-review-answers-in-progress",
       {
         body: payload,
@@ -446,6 +466,7 @@ Deno.test("set-review-answers-in-progress - always sets has_unpublished_changes 
     );
 
     assert(!error, "Submission failed");
+    assertExists(data.in_progress_id, "Expected in_progress_id in response");
 
     // Verify has_unpublished_changes is true
     const { data: dbData } = await supabase
@@ -513,6 +534,7 @@ Deno.test("set-review-answers-in-progress - inserts comment into case_comments w
 
     assert(!error, `Submission failed: ${error?.message}`);
     assertEquals(data.saved, true);
+    assertExists(data.in_progress_id, "Expected in_progress_id in response");
 
     // Verify comment was inserted into case_comments table
     const { data: comments, error: commentsError } = await supabase
@@ -603,6 +625,7 @@ Deno.test("set-review-answers-in-progress - does not insert empty or whitespace-
 
     assert(!error, `Submission failed: ${error?.message}`);
     assertEquals(data.saved, true);
+    assertExists(data.in_progress_id, "Expected in_progress_id in response");
 
     // Verify comment count didn't increase
     const { count: afterCount } = await supabase

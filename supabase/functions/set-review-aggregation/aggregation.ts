@@ -280,6 +280,11 @@ export function buildAggregation(
       // Only return question if it has aggregated fields
       if (fields.length === 0) return null;
 
+      // Calculate question score as the lowest average among all fields
+      const questionScore = fields.length > 0
+        ? Math.min(...fields.map((f) => f.average))
+        : 0;
+
       return {
         id: question.id,
         metadata: {
@@ -287,6 +292,7 @@ export function buildAggregation(
           icon: DEFAULT_QUESTION_ICONS[question.id],
         },
         fields,
+        score: questionScore,
       };
     })
     .filter((q) => q !== null); // Remove questions with no aggregated fields

@@ -70,6 +70,7 @@ export const aggregationQuestionSchema = z.object({
   id: z.string(),
   metadata: questionMetadataSchema,
   fields: z.array(aggregationFieldValueSchema),
+  score: z.number(),
 });
 
 // Review aggregation schema with new structure

@@ -11,8 +11,8 @@ import {
 // Submitted review answer schema with all required fields and validation
 export const submittedReviewAnswerSchema = z
   .object({
-    title: textAnswerSchema,
-    keyword_type: multiLineTextAnswerSchema,
+    title: z.string().min(10).nullable(),
+    keyword_type: z.array(z.string().min(3)).min(1).nullable(),
     content_type: chipAnswerSchema,
     content_accuracy: trafficLightAnswerSchema.optional(),
     content_sources: trafficLightAnswerSchema.optional(),
@@ -22,8 +22,8 @@ export const submittedReviewAnswerSchema = z
     content_logic: trafficLightAnswerSchema.optional(),
     content_advertising: trafficLightAnswerSchema.optional(),
     additional_rating: likertScaleAnswerSchema,
-    additional_comment: textAreaAnswerSchema.optional(),
-    comment: textAreaAnswerSchema.optional(),
+    additional_comment: z.string().min(10).nullable().optional(),
+    comment: z.string().min(10).nullable().optional(),
   })
   .strict() // keine extra keys erlaubt
   .refine(

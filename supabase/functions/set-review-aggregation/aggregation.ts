@@ -1,9 +1,13 @@
 import { z } from "npm:zod@4.1.13";
-import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
+import {
+  type AggregationFieldStats,
+  reviewAggregationSchema,
+} from "../_shared/schemas/aggregation-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   DEFAULT_FIELD_TAGS,
+  DEFAULT_QUESTION_ICONS,
   METADATA_QUESTION_IDS,
   SKIPPED_QUESTION_IDS,
 } from "./aggregation-config.ts";
@@ -116,15 +120,7 @@ export function buildAggregationMetadata(
  */
 export function buildAggregationFields(
   submitted: SubmittedReview[],
-): Record<
-  string,
-  {
-    counts: { 0: number; 1: number; 2: number; 3: number };
-    percentages: { 0: number; 1: number; 2: number; 3: number };
-    average: number;
-    tags: { 0: string; 1: string; 2: string; 3: string };
-  }
-> {
+): Record<string, AggregationFieldStats> {
   // Internal accumulator includes option 4 for filtering logic
   const fieldsInternal: Record<
     string,
@@ -165,15 +161,7 @@ export function buildAggregationFields(
   }
 
   // Filter fields and build output (excluding option 4)
-  const fields: Record<
-    string,
-    {
-      counts: { 0: number; 1: number; 2: number; 3: number };
-      percentages: { 0: number; 1: number; 2: number; 3: number };
-      average: number;
-      tags: { 0: string; 1: string; 2: string; 3: string };
-    }
-  > = {};
+  const fields: Record<string, AggregationFieldStats> = {};
 
   for (const [fieldId, fieldData] of Object.entries(fieldsInternal)) {
     const { counts, totalResponses } = fieldData;
@@ -294,7 +282,10 @@ export function buildAggregation(
 
       return {
         id: question.id,
-        metadata: question.metadata,
+        metadata: {
+          ...question.metadata,
+          icon: DEFAULT_QUESTION_ICONS[question.id],
+        },
         fields,
       };
     })

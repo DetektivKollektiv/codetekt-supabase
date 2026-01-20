@@ -30,6 +30,14 @@ const tagsSchema = z.object({
   3: z.string(),
 });
 
+// Exported type for aggregated field statistics (reused in aggregation.ts)
+export type AggregationFieldStats = {
+  counts: { 0: number; 1: number; 2: number; 3: number };
+  percentages: { 0: number; 1: number; 2: number; 3: number };
+  average: number;
+  tags: { 0: string; 1: string; 2: string; 3: string };
+};
+
 // Schema for aggregated field values
 export const aggregationFieldValueSchema = z.object({
   id: z.string(),
@@ -54,6 +62,7 @@ const questionMetadataSchema = z.object({
   text: z.string(),
   help_url: z.string(),
   indent_level: z.number().optional(),
+  icon: z.string().optional(),
 });
 
 // Schema for aggregated question

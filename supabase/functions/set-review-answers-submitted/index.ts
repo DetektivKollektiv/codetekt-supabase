@@ -44,12 +44,17 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@4.1.13";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+const requestBodySchema = z.object({
+  in_progress_id: z.string().uuid(),
+});
 
 Deno.serve(async (req) => {
   try {
@@ -78,15 +83,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 2: Parse payload
-    const { in_progress_id } = await req.json();
+    // Step 2: Parse and validate payload
+    const body = await req.json();
+    const parseResult = requestBodySchema.safeParse(body);
 
-    if (!in_progress_id) {
+    if (!parseResult.success) {
       return new Response(
-        JSON.stringify({ error: "Missing in_progress_id in request body" }),
+        JSON.stringify({
+          error: "Invalid request body",
+          details: parseResult.error.issues,
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
+
+    const { in_progress_id } = parseResult.data;
 
     // Step 3: Fetch in-progress draft (verify ownership)
     const { data: inProgressReview, error: fetchError } = await supabase

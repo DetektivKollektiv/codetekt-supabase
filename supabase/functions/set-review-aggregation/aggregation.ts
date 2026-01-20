@@ -6,7 +6,7 @@ import {
   DEFAULT_FIELD_TAGS,
   METADATA_QUESTION_IDS,
   SKIPPED_QUESTION_IDS,
-} from "./field-tags.ts";
+} from "./aggregation-config.ts";
 
 export const numericLabeledValues = [0, 1, 2, 3, 4] as const;
 

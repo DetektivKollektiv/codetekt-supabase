@@ -355,7 +355,7 @@ export function buildAggregation(
       // Calculate question score as the lowest average among numeric fields only
       const numericFields = fields.filter((f) => "average" in f);
       const questionScore = numericFields.length > 0
-        ? Math.min(
+        ? Math.max(
           ...numericFields.map((f) => (f as { average: number }).average),
         )
         : 0;
@@ -373,7 +373,7 @@ export function buildAggregation(
     .filter((q) => q !== null); // Remove questions with no aggregated fields
 
   const averages = Object.values(aggregatedFields).map((f) => f.average);
-  const resultScore = averages.length ? Math.min(...averages) : 0;
+  const resultScore = averages.length ? Math.max(...averages) : 0;
 
   return {
     aggregation: {

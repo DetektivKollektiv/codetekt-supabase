@@ -59,6 +59,7 @@ export const DEFAULT_QUESTION_ICONS: Record<
   string
 > = {
   content_question: "notebook-text",
+  additional_comment_question: "message-square-text",
 };
 
 export const SKIPPED_QUESTION_IDS = [

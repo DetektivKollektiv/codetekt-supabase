@@ -39,21 +39,26 @@ export type AggregationFieldStats = {
 };
 
 // Schema for aggregated field values
-export const aggregationFieldValueSchema = z.object({
+export const aggregationTrafficLightValueSchema = z.object({
   id: z.string(),
   type: z.enum([
     "traffic-light",
-    "likert-scale",
-    "chip",
-    "text",
-    "text-area",
-    "multi-line-text",
   ]),
   question: z.string(),
   counts: countsSchema,
   percentages: percentagesSchema,
   average: z.number(),
   tags: tagsSchema,
+});
+
+export const aggregationTextFieldValueSchema = z.object({
+  id: z.string(),
+  type: z.enum([
+    "text",
+    "text-area",
+  ]),
+  question: z.string(),
+  answer_values: z.array(z.string()),
 });
 
 // Reuse the template metadata schema structure
@@ -69,7 +74,12 @@ const questionMetadataSchema = z.object({
 export const aggregationQuestionSchema = z.object({
   id: z.string(),
   metadata: questionMetadataSchema,
-  fields: z.array(aggregationFieldValueSchema),
+  fields: z.array(
+    z.union([
+      aggregationTrafficLightValueSchema,
+      aggregationTextFieldValueSchema,
+    ]),
+  ),
   score: z.number(),
 });
 

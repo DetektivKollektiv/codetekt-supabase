@@ -226,6 +226,54 @@ export function buildAggregationFields(
 }
 
 /**
+ * Builds aggregation for text fields from multiple submitted review answers.
+ *
+ * Aggregates text and text-area fields by collecting all non-null string answers.
+ *
+ * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @param template - Review template to identify text/text-area fields
+ * @returns Fields object with collected answer values keyed by field_id
+ */
+export function buildTextFields(
+  submitted: SubmittedReview[],
+  template: ReviewTemplateInput[],
+): Record<string, { answer_values: string[] }> {
+  // Build a set of text/text-area field IDs from template
+  const textFieldIds = new Set<string>();
+  for (const question of template) {
+    for (const field of question.fields) {
+      if (field.type === "text" || field.type === "text-area") {
+        textFieldIds.add(field.id);
+      }
+    }
+  }
+
+  // Aggregate text answers
+  const textFields: Record<string, { answer_values: string[] }> = {};
+
+  for (const { data } of submitted) {
+    const answerRecord = data as Record<string, unknown>;
+
+    for (const [fieldId, value] of Object.entries(answerRecord)) {
+      // Only aggregate text fields that are in the template
+      if (!textFieldIds.has(fieldId)) continue;
+
+      // Only include string values (skip null/undefined)
+      if (typeof value !== "string") continue;
+
+      // Initialize array if needed
+      if (!textFields[fieldId]) {
+        textFields[fieldId] = { answer_values: [] };
+      }
+
+      textFields[fieldId].answer_values.push(value);
+    }
+  }
+
+  return textFields;
+}
+
+/**
  * Builds statistical aggregation from multiple submitted review answers.
  *
  * Explicit question handling:
@@ -256,7 +304,10 @@ export function buildAggregation(
   // Step 2: Aggregate numeric fields from non-metadata, non-skipped questions
   const aggregatedFields = buildAggregationFields(submitted);
 
-  // Step 3: Build questions array for aggregation (exclude metadata and skipped questions)
+  // Step 3: Aggregate text fields from non-metadata, non-skipped questions
+  const textFields = buildTextFields(submitted, template);
+
+  // Step 4: Build questions array for aggregation (exclude metadata and skipped questions)
   const questions = template
     .filter((question) => {
       // Explicitly skip metadata questions (handled separately above)
@@ -267,22 +318,46 @@ export function buildAggregation(
       return question.fields.length > 0;
     })
     .map((question) => {
-      // Filter fields that have aggregated data (numeric fields only)
+      // Map fields to their aggregated data (numeric or text)
       const fields = question.fields
-        .filter((field) => aggregatedFields[field.id])
-        .map((field) => ({
-          id: field.id,
-          type: field.type,
-          question: field.question,
-          ...aggregatedFields[field.id],
-        }));
+        .map((field) => {
+          // Handle traffic-light fields (numeric)
+          if (field.type === "traffic-light" && aggregatedFields[field.id]) {
+            return {
+              id: field.id,
+              type: field.type,
+              question: field.question,
+              ...aggregatedFields[field.id],
+            };
+          }
+
+          // Handle text/text-area fields
+          if (
+            (field.type === "text" || field.type === "text-area") &&
+            textFields[field.id]
+          ) {
+            return {
+              id: field.id,
+              type: field.type,
+              question: field.question,
+              answer_values: textFields[field.id].answer_values,
+            };
+          }
+
+          // Field has no aggregated data
+          return null;
+        })
+        .filter((field) => field !== null);
 
       // Only return question if it has aggregated fields
       if (fields.length === 0) return null;
 
-      // Calculate question score as the lowest average among all fields
-      const questionScore = fields.length > 0
-        ? Math.min(...fields.map((f) => f.average))
+      // Calculate question score as the lowest average among numeric fields only
+      const numericFields = fields.filter((f) => "average" in f);
+      const questionScore = numericFields.length > 0
+        ? Math.min(
+          ...numericFields.map((f) => (f as { average: number }).average),
+        )
         : 0;
 
       return {

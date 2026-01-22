@@ -20,7 +20,7 @@
  * - Subsequent reviewers:
  *   - Title: initial_answer_value set from first reviewer's submission
  *   - Content type: initial_answer_value set from first reviewer's submission
- *   - Keywords: initial_answer_value set with all keywords from all reviewers (deduplicated)
+ *   - Keywords: initial_answer_value set with all keywords from all reviewers (deduplicated), additional_option_count=3
  *   - All metadata fields: is_required=false, is_disabled=true, is_disputable=true
  *
  * - Resolved disputes (any field):

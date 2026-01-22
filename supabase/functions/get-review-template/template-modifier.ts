@@ -113,6 +113,7 @@ export function modifyKeywordsField(
     is_disabled: true,
     is_disputable: true,
     initial_answer_value: aggregatedKeywords,
+    additonal_option_count: 3,
   } as MultiLineTextField;
 }
 

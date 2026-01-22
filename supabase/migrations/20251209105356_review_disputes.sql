@@ -11,7 +11,6 @@
 create table "public"."review_disputes" (
   "id" uuid not null default gen_random_uuid(),
   "case_id" uuid not null references public.cases(id) on delete cascade,
-  "template_version" integer not null references public.review_templates(version),
   "field_id" text not null,
   
   -- Original-Wert und Dispute-Info

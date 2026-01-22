@@ -48,7 +48,6 @@ export {
 
 // Aggregation schemas
 export {
-  aggregationFieldValueSchema,
   type ReviewAggregationData,
   reviewAggregationSchema,
 } from "./aggregation-schemas.ts";

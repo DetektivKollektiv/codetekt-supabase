@@ -658,6 +658,45 @@ export type Database = {
           },
         ];
       };
+      review_aggregations_without_open_disputes: {
+        Row: {
+          calculated_at: string | null;
+          case_id: string | null;
+          data: Json | null;
+          result_score: number | null;
+          reviewer_ids: string[] | null;
+        };
+        Insert: {
+          calculated_at?: string | null;
+          case_id?: string | null;
+          data?: Json | null;
+          result_score?: number | null;
+          reviewer_ids?: string[] | null;
+        };
+        Update: {
+          calculated_at?: string | null;
+          case_id?: string | null;
+          data?: Json | null;
+          result_score?: number | null;
+          reviewer_ids?: string[] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "review_aggregations_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: true;
+            referencedRelation: "cases";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_aggregations_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: true;
+            referencedRelation: "cases_without_open_disputes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       review_answers_in_progress_without_open_disputes: {
         Row: {
           case_id: string | null;

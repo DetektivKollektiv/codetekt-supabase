@@ -318,6 +318,32 @@ Deno.serve(async (req) => {
       }
     }
 
+    // STEP 5.5: Disable comment field if user has already submitted a review
+    const userHasSubmittedReview = submittedReviews.some(
+      (review) => review.reviewed_by === user.id,
+    );
+
+    if (userHasSubmittedReview) {
+      console.log(
+        `[get-review-template] User has already submitted review, disabling comment field`,
+      );
+
+      for (const section of template) {
+        const commentField = section.fields.find(
+          (f) => f.id === "comment" && f.type === "text-area",
+        );
+        if (commentField) {
+          commentField.is_disabled = true;
+          commentField.is_required = false;
+          // is_shown defaults to true, so field remains visible
+          console.log(
+            `[get-review-template] Comment field disabled for repeat reviewer`,
+          );
+          break;
+        }
+      }
+    }
+
     // STEP 6: Populate user's draft values if exists
     const userInProgressReview = typedCaseData.review_answers_in_progress?.find(
       (ra) => ra.reviewed_by === user.id,

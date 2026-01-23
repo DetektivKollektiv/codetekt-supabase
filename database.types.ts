@@ -513,7 +513,6 @@ export type Database = {
           resolution: string | null
           resolved_at: string | null
           resolved_by: string | null
-          template_version: number
         }
         Insert: {
           case_id: string
@@ -527,7 +526,6 @@ export type Database = {
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
-          template_version: number
         }
         Update: {
           case_id?: string
@@ -541,7 +539,6 @@ export type Database = {
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
-          template_version?: number
         }
         Relationships: [
           {
@@ -571,13 +568,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "review_disputes_template_version_fkey"
-            columns: ["template_version"]
-            isOneToOne: false
-            referencedRelation: "review_templates"
-            referencedColumns: ["version"]
           },
         ]
       }
@@ -654,6 +644,45 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "review_templates"
             referencedColumns: ["version"]
+          },
+        ]
+      }
+      review_aggregations_without_open_disputes: {
+        Row: {
+          calculated_at: string | null
+          case_id: string | null
+          data: Json | null
+          result_score: number | null
+          reviewer_ids: string[] | null
+        }
+        Insert: {
+          calculated_at?: string | null
+          case_id?: string | null
+          data?: Json | null
+          result_score?: number | null
+          reviewer_ids?: string[] | null
+        }
+        Update: {
+          calculated_at?: string | null
+          case_id?: string | null
+          data?: Json | null
+          result_score?: number | null
+          reviewer_ids?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_aggregations_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_aggregations_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: true
+            referencedRelation: "cases_without_open_disputes"
+            referencedColumns: ["id"]
           },
         ]
       }

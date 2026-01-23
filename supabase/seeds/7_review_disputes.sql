@@ -13,7 +13,6 @@
 INSERT INTO public.review_disputes (
   id,
   case_id,
-  template_version,
   field_id,
   original_value,
   disputed_by,
@@ -26,7 +25,6 @@ INSERT INTO public.review_disputes (
 ) VALUES (
   'ddd00001-0001-4001-8001-000000000001',
   '11111111-1111-4111-8111-111111111111',  -- Case 1: Ukraine article
-  1,
   'content_type',
   '["nachrichtenartikel"]',
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',  -- Anna
@@ -48,7 +46,6 @@ INSERT INTO public.review_disputes (
 INSERT INTO public.review_disputes (
   id,
   case_id,
-  template_version,
   field_id,
   original_value,
   disputed_by,
@@ -61,7 +58,6 @@ INSERT INTO public.review_disputes (
 ) VALUES (
   'ddd00002-0002-4002-8002-000000000002',
   '11111111-1111-4111-8111-111111111111',  -- Case 1: Ukraine article
-  1,
   'keyword_type',
   '["Ukraine", "Russland", "Krieg", "Putin", "Zelensky"]',
   'cccccccc-cccc-cccc-cccc-cccccccccccc',  -- Max
@@ -79,7 +75,6 @@ INSERT INTO public.review_disputes (
 INSERT INTO public.review_disputes (
   id,
   case_id,
-  template_version,
   field_id,
   original_value,
   disputed_by,
@@ -92,7 +87,6 @@ INSERT INTO public.review_disputes (
 ) VALUES (
   'ddd00003-0003-4003-8003-000000000003',
   '22222222-2222-4222-8222-222222222222',  -- Case 2: Climate article
-  1,
   'content_type',
   '["nachrichtenartikel"]',
   'dddddddd-dddd-dddd-dddd-dddddddddddd',  -- Lisa

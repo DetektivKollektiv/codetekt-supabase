@@ -6,6 +6,7 @@ import {
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
+  CONTENT_TYPE_NATURALTEXT,
   DEFAULT_FIELD_TAGS,
   DEFAULT_QUESTION_ICONS,
   METADATA_QUESTION_IDS,
@@ -87,7 +88,11 @@ export function buildAggregationMetadata(
         } else if (
           dispute.field_id === "content_type" && Array.isArray(parsedValue)
         ) {
-          finalContentType = parsedValue;
+          // set natural content_type using CONTENT_TYPE_NATURALTEXT
+
+          finalContentType = parsedValue.map((ct) =>
+            CONTENT_TYPE_NATURALTEXT[ct] || ct
+          );
         }
       } catch (error) {
         console.error(

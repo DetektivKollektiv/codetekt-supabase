@@ -32,8 +32,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
 import { z } from "npm:zod@4.1.13";
+import { corsHeaders } from "../_shared/cors.ts";
 import {
   chipFieldSchema,
   multiLineTextFieldSchema,
@@ -145,7 +145,10 @@ Deno.serve(async (req) => {
           error: "Invalid input",
           details: parsed.error.issues,
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -188,7 +191,10 @@ Deno.serve(async (req) => {
       console.error("Case not found:", queryError);
       return new Response(
         JSON.stringify({ error: "Case not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -202,7 +208,10 @@ Deno.serve(async (req) => {
       console.error("Template not found for case");
       return new Response(
         JSON.stringify({ error: "Template not found for case" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -218,7 +227,10 @@ Deno.serve(async (req) => {
           error: "Case has pending disputes",
           dispute_count: openDisputes.length,
         }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -378,7 +390,10 @@ Deno.serve(async (req) => {
     console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

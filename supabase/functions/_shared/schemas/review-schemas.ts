@@ -12,7 +12,10 @@ import {
 export const submittedReviewAnswerSchema = z
   .object({
     title: z.string().min(10).nullable(),
-    keyword_type: z.array(z.string().min(3)).min(1).nullable(),
+    keyword_type: z
+      .array(z.union([z.literal(""), z.string().min(3)]))
+      .min(1)
+      .nullable(),
     content_type: chipAnswerSchema,
     content_accuracy: trafficLightAnswerSchema.optional(),
     content_sources: trafficLightAnswerSchema.optional(),
@@ -23,7 +26,10 @@ export const submittedReviewAnswerSchema = z
     content_advertising: trafficLightAnswerSchema.optional(),
     additional_rating: likertScaleAnswerSchema,
     additional_comment: z.string().min(10).nullable().optional(),
-    comment: z.string().min(10).nullable().optional(),
+    comment: z
+      .union([z.literal(""), z.string().min(10)])
+      .nullable()
+      .optional(),
   })
   .strict() // keine extra keys erlaubt
   .refine(

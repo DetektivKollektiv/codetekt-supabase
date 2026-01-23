@@ -32,6 +32,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "../_shared/cors.ts";
 import { z } from "npm:zod@4.1.13";
 import {
   chipFieldSchema,
@@ -99,11 +100,18 @@ type CaseWithRelations = {
 };
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
     // 1. Authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response("Missing Authorization header", { status: 401 });
+      return new Response("Missing Authorization header", {
+        status: 401,
+        headers: corsHeaders,
+      });
     }
 
     const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -117,7 +125,10 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       console.error("Error fetching user:", userError);
-      return new Response("Unauthorized", { status: 401 });
+      return new Response("Unauthorized", {
+        status: 401,
+        headers: corsHeaders,
+      });
     }
 
     console.log(
@@ -134,7 +145,7 @@ Deno.serve(async (req) => {
           error: "Invalid input",
           details: parsed.error.issues,
         }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -177,7 +188,7 @@ Deno.serve(async (req) => {
       console.error("Case not found:", queryError);
       return new Response(
         JSON.stringify({ error: "Case not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -191,7 +202,7 @@ Deno.serve(async (req) => {
       console.error("Template not found for case");
       return new Response(
         JSON.stringify({ error: "Template not found for case" }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -207,7 +218,7 @@ Deno.serve(async (req) => {
           error: "Case has pending disputes",
           dispute_count: openDisputes.length,
         }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -361,13 +372,13 @@ Deno.serve(async (req) => {
     // 6. Return Response
     return new Response(
       JSON.stringify(template),
-      { headers: { "Content-Type": "application/json" } },
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

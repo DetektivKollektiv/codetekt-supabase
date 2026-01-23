@@ -36,6 +36,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "../_shared/cors.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { payloadSchema, validateInProgressData } from "./validation.ts";
 
@@ -43,11 +44,18 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   // Step 1: Authenticate user
   const authHeader = req.headers.get("Authorization");
 
   if (!authHeader) {
-    return new Response("Missing Authorization header", { status: 401 });
+    return new Response("Missing Authorization header", {
+      status: 401,
+      headers: corsHeaders,
+    });
   }
 
   const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -61,7 +69,10 @@ Deno.serve(async (req) => {
 
   if (userError || !user) {
     console.error("Error fetching user:", userError);
-    return new Response("Unauthorized", { status: 401 });
+    return new Response("Unauthorized", {
+      status: 401,
+      headers: corsHeaders,
+    });
   }
 
   // Step 2: Parse and validate payload
@@ -71,7 +82,7 @@ Deno.serve(async (req) => {
   if (!parsed.success) {
     return new Response(
       JSON.stringify({ error: parsed.error.issues }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
@@ -83,7 +94,7 @@ Deno.serve(async (req) => {
   if (!validationResult.success) {
     return new Response(
       JSON.stringify(validationResult.error),
-      { status: 400, headers: { "Content-Type": "application/json" } },
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
@@ -106,7 +117,10 @@ Deno.serve(async (req) => {
 
   if (upsertError) {
     console.error("Upsert review_answers_in_progress error", upsertError);
-    return new Response("Failed to save review answer", { status: 500 });
+    return new Response("Failed to save review answer", {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 
   // Step 5: Handle comment insertion if provided
@@ -129,7 +143,7 @@ Deno.serve(async (req) => {
   // Step 6: Return success response
   return new Response(
     JSON.stringify({ saved: true, in_progress_id: savedData.id }),
-    { headers: { "Content-Type": "application/json" } },
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 });
 

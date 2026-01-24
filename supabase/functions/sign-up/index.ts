@@ -8,7 +8,6 @@
  * 1. Validates input (email, password, username)
  * 2. Checks username availability (must be unique)
  * 3. Creates user account using admin client (service role key)
- * 4. Auto-confirms email (email_confirm: true)
  * 5. Updates profile with username (profile created by handle_new_user trigger)
  * 6. Signs in user to create session
  * 7. Returns user and session data for immediate authentication
@@ -61,7 +60,10 @@ Deno.serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: "Ungültige Eingabe", issues: parsed.error.issues }),
+        JSON.stringify({
+          error: "Ungültige Eingabe",
+          issues: parsed.error.issues,
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -93,7 +95,9 @@ Deno.serve(async (req) => {
     if (checkError) {
       console.error("Error checking username:", checkError);
       return new Response(
-        JSON.stringify({ error: "Datenbankfehler beim Prüfen des Benutzernamens" }),
+        JSON.stringify({
+          error: "Datenbankfehler beim Prüfen des Benutzernamens",
+        }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -111,18 +115,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 4: Create user account
-    const { data: authData, error: signUpError } = await supabaseAdmin.auth
-      .admin.createUser({
+    // Step 4: Create user with normal signUp (sends email automatically!)
+    const supabaseClient = createClient<Database>(
+      supabaseUrl,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+    );
+
+    const siteUrl = Deno.env.get("SITE_URL") ||
+      "https://codetekt-frontend.vercel.app";
+
+    const { data: authData, error: signUpError } = await supabaseClient.auth
+      .signUp({
         email,
         password,
-        email_confirm: true, // Auto-confirm email for simplicity
+        options: {
+          emailRedirectTo: `${siteUrl}/`,
+        },
       });
 
     if (signUpError || !authData.user) {
       console.error("Sign up error:", signUpError);
       return new Response(
-        JSON.stringify({ error: signUpError?.message || "Registrierung fehlgeschlagen" }),
+        JSON.stringify({
+          error: signUpError?.message || "Registrierung fehlgeschlagen",
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -130,8 +146,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 5: Update profile with username
-    // The handle_new_user trigger already created the profile, we just need to update it
+    // Step 5: Update profile with username (using admin client)
     const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({ username, updated_at: new Date().toISOString() })
@@ -139,11 +154,11 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error("Error updating profile:", updateError);
-      // Try to clean up the created user if profile update fails
+      // Clean up user
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return new Response(
         JSON.stringify({
-          error: "Benutzername konnte nicht gesetzt werden. Bitte versuchen Sie es erneut.",
+          error: "Benutzername konnte nicht gesetzt werden.",
         }),
         {
           status: 500,
@@ -152,42 +167,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 6: Create a proper session by signing in
-    const supabaseClient = createClient<Database>(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      },
-    );
+    console.log("Signup email sent to:", email);
 
-    const { data: signInData, error: signInError } = await supabaseClient.auth
-      .signInWithPassword({
-        email,
-        password,
-      });
-
-    if (signInError || !signInData.session) {
-      console.error("Error signing in after signup:", signInError);
-      return new Response(
-        JSON.stringify({
-          error: "Konto erstellt, aber automatische Anmeldung fehlgeschlagen. Bitte melden Sie sich an.",
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    // Step 7: Return session data
+    // Step 6: Return success
     return new Response(
       JSON.stringify({
-        user: signInData.user,
-        session: signInData.session,
+        success: true,
+        message:
+          "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mails.",
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+        },
       }),
       {
         status: 200,

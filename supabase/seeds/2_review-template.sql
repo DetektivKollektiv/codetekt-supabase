@@ -173,20 +173,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion"
-            ]
+            "values": ["neutral", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion"
-            ]
+            "values": ["neutral", "opinion"]
           }
         ]
       },
@@ -225,22 +219,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ]
       },
@@ -279,22 +265,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ]
       },
@@ -333,22 +311,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ]
       },
@@ -387,22 +357,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ]
       },
@@ -441,22 +403,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": [
-              "neutral",
-              "opinion",
-              "text_message"
-            ]
+            "values": ["neutral", "opinion", "text_message"]
           }
         ]
       }
@@ -525,12 +479,12 @@ VALUES (
           {
             "id": "comment_field",
             "max_length": 500,
-            "placeholder": "Schreibe deine Antwort hier..."
+            "placeholder": "Type your answer here..."
           }
         ],
         "is_shown": [
           {
-            "value": 3,
+            "value": 4,
             "field_id": "additional_rating",
             "operator": "<"
           }
@@ -538,7 +492,7 @@ VALUES (
         "question": "Was ist dir aufgefallen?",
         "is_required": [
           {
-            "value": 3,
+            "value": 4,
             "field_id": "additional_rating",
             "operator": "<"
           }

@@ -416,6 +416,591 @@
     }
   },
   {
+    "id": "media_question",
+    "fields": [
+      {
+        "id": "media_objectivity",
+        "type": "traffic-light",
+        "question": "Bilder und Videos im Artikel stellen das beschriebene Geschehen tatsächlich und objektiv dar. (falls vorhanden)",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "media_no_ai_or_staging_doubts",
+        "type": "traffic-light",
+        "question": "Es bestehen keine Zweifel daran, dass Bilder und Videos, etwa durch den Einsatz von KI, Cropping, Effekten, Zusammenschnitten, manipuliert und künstlich dramatisiert wurden.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "media_no_obvious_editing",
+        "type": "traffic-light",
+        "question": "Es ist keine offensichtliche Manipulationen oder Bearbeitungen der Bilder erkennbar (Cropping, Effekte, Zusammenschnitte).",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "media_visualizations_not_distorted",
+        "type": "traffic-light",
+        "question": "Visualisierungen (Grafiken o.Ä.) werden korrekt dargestellt und sind nicht verzerrt.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "media_visualization_data_traceable",
+        "type": "traffic-light",
+        "question": "Die Daten der Visualisierung werden angegeben und sind nachvollziehbar. Die Daten passen zum Zeitraum.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Bilder/Videos",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "source_question",
+    "fields": [
+      {
+        "id": "source_claims_supported",
+        "type": "traffic-light",
+        "question": "Behauptungen werden mit externen Quellen und/oder eigenen Rechercheergebnissen belegt.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "source_listed_and_verifiable",
+        "type": "traffic-light",
+        "question": "Die genannten externen Quellen wurden vollständig aufgeführt und/oder verlinkt und sind nachprüfbar.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "source_claims_match_originals",
+        "type": "traffic-light",
+        "question": "Die Behauptungen des Artikels decken sich vollständig mit denen der Originalquellen.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "source_experts_verified",
+        "type": "traffic-light",
+        "question": "Zitierte Personen, die als Expert:innen aufgeführt werden, haben nachprüfbare Expertise im entsprechenden Themenfeld.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "source_experts_reputation",
+        "type": "traffic-light",
+        "question": "Die genannten Expert:innen sind nicht für unbelegte und/oder fragwürdige Aussagen bekannt, die in der Vergangenheit widerlegt wurden.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Quelle",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "quotes_question",
+    "fields": [
+      {
+        "id": "quotes_identifiable_persons",
+        "type": "traffic-light",
+        "question": "In der Nachricht werden identifizierbare Personen direkt oder indirekt zitiert.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "quotes_context_accurate",
+        "type": "traffic-light",
+        "question": "Die im Artikel verwendeten Zitate stimmen mit ihrem ursprünglichen Kontext überein und wurden nicht zweckentfremdet.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "opinion", "text_message"]
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Zitate",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
     "id": "evaluation_criteria_question",
     "fields": [
       {
@@ -477,7 +1062,7 @@
         ],
         "is_shown": [
           {
-            "value": 4,
+            "value": 3,
             "field_id": "additional_rating",
             "operator": "<"
           }
@@ -485,7 +1070,7 @@
         "question": "Was ist dir aufgefallen?",
         "is_required": [
           {
-            "value": 4,
+            "value": 3,
             "field_id": "additional_rating",
             "operator": "<"
           }

@@ -7,6 +7,7 @@ import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   CONTENT_TYPE_NATURALTEXT,
+  DEFAULT_FIELD_TAGS,
   FIELD_TAGS,
   METADATA_QUESTION_IDS,
   QUESTION_ICONS,
@@ -112,19 +113,51 @@ export function buildAggregationMetadata(
 }
 
 /**
+ * Extracts field IDs that should be aggregated from the review template.
+ * Returns Set of traffic-light field IDs, excluding metadata and skipped questions.
+ *
+ * @param template - Review template to extract field IDs from
+ * @returns Set of valid traffic-light field IDs
+ */
+export function extractAggregableFieldIds(
+  template: ReviewTemplateInput[],
+): Set<string> {
+  const validFieldIds = new Set<string>();
+
+  for (const question of template) {
+    // Skip metadata questions (handled separately)
+    if (METADATA_QUESTION_IDS.includes(question.id)) continue;
+    
+    // Skip questions marked as skipped
+    if (SKIPPED_QUESTION_IDS.includes(question.id)) continue;
+
+    // Collect traffic-light field IDs
+    for (const field of question.fields) {
+      if (field.type === "traffic-light") {
+        validFieldIds.add(field.id);
+      }
+    }
+  }
+
+  return validFieldIds;
+}
+
+/**
  * Builds statistical aggregation for numeric fields from multiple submitted review answers.
  *
- * Aggregates numeric fields (traffic-light and likert-scale responses):
- * - Counts occurrences of each value (0-4 for traffic-light, 0-3 for likert-scale)
- * - Filters out traffic-light fields where ≥50% chose option 4 ("not applicable")
+ * Aggregates only traffic-light fields provided in validFieldIds:
+ * - Counts occurrences of each value (0-4)
+ * - Filters out fields where ≥50% chose option 4 ("not applicable")
  * - Calculates percentages and averages (excluding option 4)
  * - Adds quality tags based on field type (0-3 only in output)
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
+ * @param validFieldIds - Set of traffic-light field IDs to aggregate (pre-filtered by template)
  * @returns Fields object with aggregated statistics keyed by field_id (option 4 excluded from output)
  */
 export function buildAggregationFields(
   submitted: SubmittedReview[],
+  validFieldIds: Set<string>,
 ): Record<string, AggregationFieldStats> {
   // Internal accumulator includes option 4 for filtering logic
   const fieldsInternal: Record<
@@ -139,7 +172,10 @@ export function buildAggregationFields(
     const answerRecord = data as Record<string, unknown>;
 
     for (const [fieldId, value] of Object.entries(answerRecord)) {
-      // Only aggregate numeric answers (traffic-light / likert)
+      // Only aggregate valid traffic-light fields
+      if (!validFieldIds.has(fieldId)) continue;
+
+      // Only aggregate numeric answers
       if (
         typeof value !== "number" ||
         !numericLabeledValues.includes(
@@ -206,12 +242,7 @@ export function buildAggregationFields(
     }
 
     // Get tags (only 0-3)
-    const fieldTags = FIELD_TAGS[fieldId] || {
-      0: "Sehr gut",
-      1: "Gut",
-      2: "Mangelhaft",
-      3: "Ungenügend",
-    };
+    const fieldTags = FIELD_TAGS[fieldId] || DEFAULT_FIELD_TAGS;
     const outputTags = {
       0: fieldTags[0],
       1: fieldTags[1],
@@ -303,16 +334,19 @@ export function buildAggregation(
   template: ReviewTemplateInput[],
   resolvedDisputes?: ResolvedDispute[],
 ): AggregationResult {
-  // Step 1: Extract metadata from metadata questions
+  // Step 1: Extract valid traffic-light field IDs from template
+  const validFieldIds = extractAggregableFieldIds(template);
+
+  // Step 2: Extract metadata from metadata questions
   const metadata = buildAggregationMetadata(submitted, resolvedDisputes);
 
-  // Step 2: Aggregate numeric fields from non-metadata, non-skipped questions
-  const aggregatedFields = buildAggregationFields(submitted);
+  // Step 3: Aggregate traffic-light fields (excluding metadata and skipped questions)
+  const aggregatedFields = buildAggregationFields(submitted, validFieldIds);
 
-  // Step 3: Aggregate text fields from non-metadata, non-skipped questions
+  // Step 4: Aggregate text fields from non-metadata, non-skipped questions
   const textFields = buildTextFields(submitted, template);
 
-  // Step 4: Build questions array for aggregation (exclude metadata and skipped questions)
+  // Step 5: Build questions array for aggregation (exclude metadata and skipped questions)
   const questions = template
     .filter((question) => {
       // Explicitly skip metadata questions (handled separately above)

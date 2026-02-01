@@ -1,7 +1,7 @@
 -- ============================================
--- SEED: Additional Submitted Reviews (2 per case)
+-- SEED: Additional Submitted Reviews (2 per case) - UPDATED FOR TEMPLATE v1+
 -- Only: public.review_answers_submitted
--- Scale: 0 (gut) .. 3 (schlecht)
+-- Scale: 0 (gut) .. 3 (schlecht), (4=nicht bewertbar)
 -- Sonderfall: "content_type" nur im jeweils 1. Review pro Case
 -- Reviewer: Gorm (1. Review) + Anna (2. Review)
 -- ============================================
@@ -32,9 +32,24 @@ VALUES
     "content_logic": 0,
     "content_advertising": 1,
 
+    "media_objectivity": 4,
+    "media_no_ai_or_staging_doubts": 4,
+    "media_no_obvious_editing": 4,
+    "media_visualizations_not_distorted": 4,
+    "media_visualization_data_traceable": 4,
+
+    "source_claims_supported": 1,
+    "source_listed_and_verifiable": 1,
+    "source_claims_match_originals": 2,
+    "source_experts_verified": 4,
+    "source_experts_reputation": 4,
+
+    "quotes_identifiable_persons": 4,
+    "quotes_context_accurate": 4,
+
     "additional_rating": 1,
     "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",
-    
+
     "comment": "Die Quelle ist seriös und die Fakten scheinen korrekt zu sein."
   }'::jsonb,
   now() - interval '6 days',
@@ -49,7 +64,7 @@ VALUES
     "title": "MDR: Tschechien schickt Botschafter aus Russland zurück",
     "keyword_type": ["Ukraine", "Russland", "Tschechien", "Botschafter", "Propaganda"],
     "content_type": ["neutral"],
-    
+
     "content_accuracy": 1,
     "content_sources": 2,
     "content_language": 3,
@@ -57,6 +72,21 @@ VALUES
     "content_references": 0,
     "content_logic": 1,
     "content_advertising": 2,
+
+    "media_objectivity": 4,
+    "media_no_ai_or_staging_doubts": 4,
+    "media_no_obvious_editing": 4,
+    "media_visualizations_not_distorted": 4,
+    "media_visualization_data_traceable": 4,
+
+    "source_claims_supported": 2,
+    "source_listed_and_verifiable": 2,
+    "source_claims_match_originals": 2,
+    "source_experts_verified": 4,
+    "source_experts_reputation": 4,
+
+    "quotes_identifiable_persons": 4,
+    "quotes_context_accurate": 4,
 
     "additional_rating": 2,
     "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",

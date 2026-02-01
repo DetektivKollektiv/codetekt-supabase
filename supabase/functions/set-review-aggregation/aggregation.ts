@@ -7,9 +7,9 @@ import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   CONTENT_TYPE_NATURALTEXT,
-  DEFAULT_FIELD_TAGS,
-  DEFAULT_QUESTION_ICONS,
+  FIELD_TAGS,
   METADATA_QUESTION_IDS,
+  QUESTION_ICONS,
   SKIPPED_QUESTION_IDS,
 } from "./aggregation-config.ts";
 
@@ -206,7 +206,7 @@ export function buildAggregationFields(
     }
 
     // Get tags (only 0-3)
-    const fieldTags = DEFAULT_FIELD_TAGS[fieldId] || {
+    const fieldTags = FIELD_TAGS[fieldId] || {
       0: "Sehr gut",
       1: "Gut",
       2: "Mangelhaft",
@@ -369,7 +369,7 @@ export function buildAggregation(
         id: question.id,
         metadata: {
           ...question.metadata,
-          icon: DEFAULT_QUESTION_ICONS[question.id],
+          icon: QUESTION_ICONS[question.id],
         },
         fields,
         score: questionScore,

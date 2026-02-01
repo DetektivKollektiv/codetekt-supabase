@@ -6,7 +6,7 @@
  * Lower numbers (0-1) indicate better quality, higher numbers (2-3) indicate issues.
  * Note: Option 4 ("not applicable") is used for filtering but not included in final output.
  */
-export const DEFAULT_FIELD_TAGS: Record<
+export const FIELD_TAGS: Record<
   string,
   { 0: string; 1: string; 2: string; 3: string }
 > = {
@@ -54,12 +54,14 @@ export const DEFAULT_FIELD_TAGS: Record<
   },
 };
 
-export const DEFAULT_QUESTION_ICONS: Record<
+export const QUESTION_ICONS: Record<
   string,
   string
 > = {
   content_question: "notebook-text",
   additional_comment_question: "message-square-text",
+  media_question: "image",
+  source_question: "link-2",
 };
 
 export const SKIPPED_QUESTION_IDS = [

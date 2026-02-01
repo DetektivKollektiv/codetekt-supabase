@@ -127,7 +127,7 @@ export function extractAggregableFieldIds(
   for (const question of template) {
     // Skip metadata questions (handled separately)
     if (METADATA_QUESTION_IDS.includes(question.id)) continue;
-    
+
     // Skip questions marked as skipped
     if (SKIPPED_QUESTION_IDS.includes(question.id)) continue;
 

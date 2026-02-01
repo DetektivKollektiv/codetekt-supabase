@@ -144,6 +144,7 @@ export const QUESTION_ICONS: Record<
   additional_comment_question: "message-square-text",
   media_question: "image",
   source_question: "link-2",
+  quotes_question: "quote",
 };
 
 export const SKIPPED_QUESTION_IDS = [

@@ -68,7 +68,10 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Missing Authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
     console.log("set-review-answers-submitted: Authenticating user");
@@ -77,16 +80,21 @@ Deno.serve(async (req) => {
     });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
+    const { data: claims, error: claimsError } = await supabase.auth.getClaims(
       token,
     );
 
-    if (userError || !user) {
+    if (claimsError || !claims?.claims?.sub) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
+
+    const userId = claims.claims.sub;
 
     // Step 2: Parse and validate payload
     const body = await req.json();
@@ -98,7 +106,10 @@ Deno.serve(async (req) => {
           error: "Invalid request body",
           details: parseResult.error.issues,
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -109,7 +120,7 @@ Deno.serve(async (req) => {
       .from("review_answers_in_progress")
       .select("*")
       .eq("id", in_progress_id)
-      .eq("reviewed_by", user.id) // CRITICAL: Verify user owns the draft
+      .eq("reviewed_by", userId) // CRITICAL: Verify user owns the draft
       .single();
 
     if (fetchError || !inProgressReview) {
@@ -117,7 +128,10 @@ Deno.serve(async (req) => {
         JSON.stringify({
           error: "Draft not found or you don't have permission to publish it",
         }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -132,7 +146,10 @@ Deno.serve(async (req) => {
     if (!validation.success) {
       return new Response(
         JSON.stringify(validation.error),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -148,7 +165,7 @@ Deno.serve(async (req) => {
         .from("review_answers_submitted")
         .upsert({
           case_id: inProgressReview.case_id,
-          reviewed_by: user.id,
+          reviewed_by: userId,
           data: validation.validatedData as never,
           submitted_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -165,7 +182,10 @@ Deno.serve(async (req) => {
           error: "Failed to publish review",
           details: upsertError?.message,
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -210,7 +230,10 @@ Deno.serve(async (req) => {
         saved: true,
         review_id: submittedReview.id,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
     console.error("Unexpected error in set-review-answers-submitted:", error);
@@ -219,7 +242,10 @@ Deno.serve(async (req) => {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

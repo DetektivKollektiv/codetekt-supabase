@@ -106,6 +106,7 @@ Deno.serve(async (req) => {
 
   try {
     // 1. Authentication
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response("Missing Authorization header", {
@@ -114,26 +115,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    const token = authHeader.replace("Bearer ", "");
+
     const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
+    // Use getClaims() for ES256 token support (new JWT Signing Keys)
+    const { data: claims, error: claimsError } = await supabase.auth.getClaims(
       token,
     );
 
-    if (userError || !user) {
-      console.error("Error fetching user:", userError);
+    if (claimsError || !claims?.claims?.sub) {
       return new Response("Unauthorized", {
         status: 401,
         headers: corsHeaders,
       });
     }
 
-    console.log(
-      `[get-review-template] User ${user.id} requesting template`,
-    );
+    const userId = claims.claims.sub;
 
     // 2. Input Validation
     const json = await req.json().catch(() => null);
@@ -153,7 +153,6 @@ Deno.serve(async (req) => {
     }
 
     const { case_id } = parsed.data;
-    console.log(`[get-review-template] Case ID: ${case_id}`);
 
     // 3. Data Fetching (single optimized query)
     const { data: caseData, error: queryError } = await supabase
@@ -188,7 +187,6 @@ Deno.serve(async (req) => {
 
     // Check if case exists
     if (queryError || !caseData) {
-      console.error("Case not found:", queryError);
       return new Response(
         JSON.stringify({ error: "Case not found" }),
         {
@@ -205,7 +203,6 @@ Deno.serve(async (req) => {
       !typedCaseData.review_templates ||
       !typedCaseData.review_templates.template
     ) {
-      console.error("Template not found for case");
       return new Response(
         JSON.stringify({ error: "Template not found for case" }),
         {
@@ -221,7 +218,6 @@ Deno.serve(async (req) => {
     );
 
     if (openDisputes && openDisputes.length > 0) {
-      console.error(`Case has ${openDisputes.length} pending disputes`);
       return new Response(
         JSON.stringify({
           error: "Case has pending disputes",
@@ -244,28 +240,10 @@ Deno.serve(async (req) => {
     // STEP 2: Get all submitted reviews
     const submittedReviews = typedCaseData.review_answers_submitted || [];
 
-    console.log(
-      `[get-review-template] Found ${submittedReviews.length} submitted reviews`,
-    );
-
     // STEP 3: Aggregate metadata from submitted reviews
     const aggregatedKeywords = aggregateKeywords(submittedReviews);
     const aggregatedContentTypes = aggregateContentTypes(submittedReviews);
     const aggregatedTitle = aggregateTitle(submittedReviews);
-
-    console.log(
-      `[get-review-template] Aggregated keywords: ${aggregatedKeywords.length}`,
-    );
-    console.log(
-      `[get-review-template] Aggregated content types: ${
-        aggregatedContentTypes ? aggregatedContentTypes.length : 0
-      }`,
-    );
-    console.log(
-      `[get-review-template] Aggregated title: ${
-        aggregatedTitle ? "found" : "none"
-      }`,
-    );
 
     // STEP 4: Modify metadata fields based on reviewer status
     // Find and modify title field
@@ -314,10 +292,6 @@ Deno.serve(async (req) => {
       (dispute) => dispute.resolution !== null && dispute.final_value !== null,
     ) || [];
 
-    console.log(
-      `[get-review-template] Found ${resolvedDisputes.length} resolved disputes`,
-    );
-
     for (const dispute of resolvedDisputes) {
       // Find the field to modify
       for (const section of template) {
@@ -332,10 +306,6 @@ Deno.serve(async (req) => {
             dispute.field_id,
             modifiedField as ChipField | MultiLineTextField | TextField,
           );
-
-          console.log(
-            `[get-review-template] Applied resolved dispute for field: ${dispute.field_id}`,
-          );
           break;
         }
       }
@@ -343,14 +313,10 @@ Deno.serve(async (req) => {
 
     // STEP 5.5: Disable comment field if user has already submitted a review
     const userHasSubmittedReview = submittedReviews.some(
-      (review) => review.reviewed_by === user.id,
+      (review) => review.reviewed_by === userId,
     );
 
     if (userHasSubmittedReview) {
-      console.log(
-        `[get-review-template] User has already submitted review, disabling comment field`,
-      );
-
       for (const section of template) {
         const commentField = section.fields.find(
           (f) => f.id === "comment" && f.type === "text-area",
@@ -359,9 +325,6 @@ Deno.serve(async (req) => {
           commentField.is_disabled = true;
           commentField.is_required = false;
           // is_shown defaults to true, so field remains visible
-          console.log(
-            `[get-review-template] Comment field disabled for repeat reviewer`,
-          );
           break;
         }
       }
@@ -369,11 +332,10 @@ Deno.serve(async (req) => {
 
     // STEP 6: Populate user's draft values if exists
     const userInProgressReview = typedCaseData.review_answers_in_progress?.find(
-      (ra) => ra.reviewed_by === user.id,
+      (ra) => ra.reviewed_by === userId,
     );
 
     if (userInProgressReview) {
-      console.log(`[get-review-template] Populating in-progress values`);
       const inProgressData = userInProgressReview.data as Record<
         string,
         unknown

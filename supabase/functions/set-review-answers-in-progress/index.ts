@@ -63,17 +63,19 @@ Deno.serve(async (req) => {
   });
 
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error: userError } = await supabase.auth.getUser(
+  const { data: claims, error: claimsError } = await supabase.auth.getClaims(
     token,
   );
 
-  if (userError || !user) {
-    console.error("Error fetching user:", userError);
+  if (claimsError || !claims?.claims?.sub) {
+    console.error("Error validating token:", claimsError);
     return new Response("Unauthorized", {
       status: 401,
       headers: corsHeaders,
     });
   }
+
+  const userId = claims.claims.sub;
 
   // Step 2: Parse and validate payload
   const json = await req.json().catch(() => null);
@@ -82,7 +84,10 @@ Deno.serve(async (req) => {
   if (!parsed.success) {
     return new Response(
       JSON.stringify({ error: parsed.error.issues }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -94,7 +99,10 @@ Deno.serve(async (req) => {
   if (!validationResult.success) {
     return new Response(
       JSON.stringify(validationResult.error),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -105,7 +113,7 @@ Deno.serve(async (req) => {
     .from("review_answers_in_progress")
     .upsert({
       case_id,
-      reviewed_by: user.id,
+      reviewed_by: userId,
       data: validatedData as never,
       has_unpublished_changes: true,
       updated_at: new Date().toISOString(),
@@ -130,7 +138,7 @@ Deno.serve(async (req) => {
       .from("case_comments")
       .insert({
         case_id,
-        author_id: user.id,
+        author_id: userId,
         content: comment.trim(),
       });
 

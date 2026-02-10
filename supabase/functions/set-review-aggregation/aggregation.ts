@@ -7,7 +7,7 @@ import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   CONTENT_TYPE_NATURALTEXT,
-  DEFAULT_FIELD_TAGS,
+  DEFAULT_FIELD_TAG,
   FIELD_TAGS,
   METADATA_QUESTION_IDS,
   QUESTION_ICONS,
@@ -242,19 +242,13 @@ export function buildAggregationFields(
     }
 
     // Get tags (only 0-3)
-    const fieldTags = FIELD_TAGS[fieldId] || DEFAULT_FIELD_TAGS;
-    const outputTags = {
-      0: fieldTags[0],
-      1: fieldTags[1],
-      2: fieldTags[2],
-      3: fieldTags[3],
-    };
+    const fieldTags = FIELD_TAGS[fieldId] || DEFAULT_FIELD_TAG;
 
     fields[fieldId] = {
       counts: outputCounts,
       percentages: outputPercentages,
       average,
-      tags: outputTags,
+      tag: fieldTags,
     };
   }
 

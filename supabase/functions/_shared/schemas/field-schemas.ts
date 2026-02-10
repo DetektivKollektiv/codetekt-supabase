@@ -32,6 +32,7 @@ export const chipFieldSchema = baseFieldSchema.extend({
   question: z.string(),
   options: z.array(chipOptionSchema),
   answer_value: chipAnswerSchema.optional(),
+  initial_answer_value: chipAnswerSchema.optional(),
 });
 
 export const trafficLightFieldSchema = baseFieldSchema.extend({
@@ -39,6 +40,7 @@ export const trafficLightFieldSchema = baseFieldSchema.extend({
   question: z.string(),
   options: z.array(trafficLightOptionSchema),
   answer_value: trafficLightAnswerSchema.optional(),
+  initial_answer_value: trafficLightAnswerSchema.optional(),
 });
 
 export const likertScaleFieldSchema = baseFieldSchema.extend({
@@ -46,6 +48,7 @@ export const likertScaleFieldSchema = baseFieldSchema.extend({
   question: z.string(),
   options: z.array(likertScaleOptionSchema),
   answer_value: likertScaleAnswerSchema.optional(),
+  initial_answer_value: likertScaleAnswerSchema.optional(),
 });
 
 export const textAreaFieldSchema = baseFieldSchema.extend({
@@ -53,6 +56,7 @@ export const textAreaFieldSchema = baseFieldSchema.extend({
   question: z.string(),
   options: z.array(textAreaOptionSchema),
   answer_value: textAreaAnswerSchema.optional(),
+  initial_answer_value: textAreaAnswerSchema.optional(),
 });
 
 export const textFieldSchema = baseFieldSchema.extend({
@@ -60,6 +64,15 @@ export const textFieldSchema = baseFieldSchema.extend({
   question: z.string(),
   options: z.array(textOptionSchema),
   answer_value: textAnswerSchema.optional(),
+  initial_answer_value: textAnswerSchema.optional(),
+});
+
+export const deletableTextFieldSchema = baseFieldSchema.extend({
+  type: z.literal("deletable-text"),
+  question: z.string(),
+  options: z.array(textOptionSchema),
+  answer_value: textAnswerSchema.optional(),
+  initial_answer_value: textAnswerSchema.optional(),
 });
 
 export const multiLineTextFieldSchema = baseFieldSchema.extend({
@@ -70,31 +83,8 @@ export const multiLineTextFieldSchema = baseFieldSchema.extend({
   additonal_option_count: z.number(),
   max_length: z.number(),
   placeholder: z.string(),
+  initial_answer_value: multiLineTextAnswerSchema.optional(),
 });
-
-// Base metadata field schema with initial_answer_value
-export const baseMetadataFieldSchema = z.object({
-  initial_answer_value: z.unknown().optional(),
-});
-
-// Metadata field schemas - merge base metadata with specific field types
-export const titleMetadataFieldSchema = textFieldSchema.merge(
-  baseMetadataFieldSchema.extend({
-    initial_answer_value: textAnswerSchema.optional(),
-  }),
-);
-
-export const keywordTypeMetadataFieldSchema = multiLineTextFieldSchema.merge(
-  baseMetadataFieldSchema.extend({
-    initial_answer_value: multiLineTextAnswerSchema.optional(),
-  }),
-);
-
-export const contentTypeMetadataFieldSchema = chipFieldSchema.merge(
-  baseMetadataFieldSchema.extend({
-    initial_answer_value: chipAnswerSchema.optional(),
-  }),
-);
 
 // Discriminated union of all field types
 export const fieldSchema = z.discriminatedUnion("type", [
@@ -104,13 +94,7 @@ export const fieldSchema = z.discriminatedUnion("type", [
   textAreaFieldSchema,
   multiLineTextFieldSchema,
   textFieldSchema,
+  deletableTextFieldSchema,
 ]);
 
 export type Field = z.infer<typeof fieldSchema>;
-export type TitleMetadataField = z.infer<typeof titleMetadataFieldSchema>;
-export type KeywordTypeMetadataField = z.infer<
-  typeof keywordTypeMetadataFieldSchema
->;
-export type ContentTypeMetadataField = z.infer<
-  typeof contentTypeMetadataFieldSchema
->;

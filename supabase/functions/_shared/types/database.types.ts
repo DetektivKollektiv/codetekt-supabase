@@ -514,7 +514,6 @@ export type Database = {
           resolution: string | null;
           resolved_at: string | null;
           resolved_by: string | null;
-          template_version: number;
         };
         Insert: {
           case_id: string;
@@ -528,7 +527,6 @@ export type Database = {
           resolution?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
-          template_version: number;
         };
         Update: {
           case_id?: string;
@@ -542,7 +540,6 @@ export type Database = {
           resolution?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
-          template_version?: number;
         };
         Relationships: [
           {
@@ -572,13 +569,6 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "review_disputes_template_version_fkey";
-            columns: ["template_version"];
-            isOneToOne: false;
-            referencedRelation: "review_templates";
-            referencedColumns: ["version"];
           },
         ];
       };
@@ -763,6 +753,16 @@ export type Database = {
     };
     Functions: {
       get_project_url: { Args: never; Returns: string };
+      get_user_leaderboard: {
+        Args: { limit_count?: number };
+        Returns: {
+          cases_count: number;
+          reviews_count: number;
+          total_contributions: number;
+          user_id: string;
+          username: string;
+        }[];
+      };
       has_admin_resolution: {
         Args: { p_case_id: string; p_field_id: string };
         Returns: boolean;

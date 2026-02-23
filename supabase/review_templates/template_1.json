@@ -1026,9 +1026,20 @@
             "values": ["neutral", "opinion", "text_message"]
           }
         ]
-      },
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Quelle",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "quotes_question",
+    "fields": [
       {
-        "id": "source_experts_reputation",
+        "id": "quotes_experts_reputation",
         "type": "traffic-light",
         "question": "Die genannten Expert:innen sind nicht für unbelegte und/oder fragwürdige Aussagen bekannt, die in der Vergangenheit widerlegt wurden.",
         "options": [
@@ -1072,18 +1083,7 @@
             "values": ["neutral", "opinion", "text_message"]
           }
         ]
-      }
-    ],
-    "metadata": {
-      "text": "Bewerte die folgenden Aussagen sorgfältig.",
-      "title": "Quelle",
-      "help_url": "",
-      "indent_level": 0
-    }
-  },
-  {
-    "id": "quotes_question",
-    "fields": [
+      },
       {
         "id": "quotes_identifiable_persons",
         "type": "traffic-light",

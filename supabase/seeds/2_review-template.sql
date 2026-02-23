@@ -413,6 +413,190 @@ VALUES (
             "values": ["neutral", "opinion", "text_message"]
           }
         ]
+      },
+      {
+        "id": "content_rhetorical_manipulation",
+        "type": "traffic-light",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "question": "Der Artikel beinhaltet keine offensichtlichen rhetorischen Manipulationstechniken, um die Wahrnehmung bewusst zu beeinflussen.",
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ]
+      },
+      {
+        "id": "content_objective_no_hate_no_panic",
+        "type": "traffic-light",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "question": "Der Artikel ist objektiv geschrieben und frei von Hetze, Generalisierungen, Panikmache oder Ähnlichem.",
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ]
+      },
+      {
+        "id": "content_headline_matches_article",
+        "type": "traffic-light",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "question": "Die Überschrift passt zum Inhalt des Artikels.",
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ]
+      },
+      {
+        "id": "content_claims_not_debunked",
+        "type": "traffic-light",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "question": "Die im Beitrag aufgeführten Behauptungen wurden bislang nicht durch Fact-Checking widerlegt.",
+        "is_required": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "content_type",
+            "operator": "in",
+            "values": ["neutral", "text_message", "opinion"]
+          }
+        ]
       }
     ],
     "metadata": {
@@ -849,9 +1033,20 @@ VALUES (
             "values": ["neutral", "opinion", "text_message"]
           }
         ]
-      },
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Quelle",
+      "help_url": "",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "quotes_question",
+    "fields": [
       {
-        "id": "source_experts_reputation",
+        "id": "quotes_experts_reputation",
         "type": "traffic-light",
         "question": "Die genannten Expert:innen sind nicht für unbelegte und/oder fragwürdige Aussagen bekannt, die in der Vergangenheit widerlegt wurden.",
         "options": [
@@ -895,18 +1090,7 @@ VALUES (
             "values": ["neutral", "opinion", "text_message"]
           }
         ]
-      }
-    ],
-    "metadata": {
-      "text": "Bewerte die folgenden Aussagen sorgfältig.",
-      "title": "Quelle",
-      "help_url": "",
-      "indent_level": 0
-    }
-  },
-  {
-    "id": "quotes_question",
-    "fields": [
+      },
       {
         "id": "quotes_identifiable_persons",
         "type": "traffic-light",

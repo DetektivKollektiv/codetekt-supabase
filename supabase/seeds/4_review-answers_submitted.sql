@@ -31,6 +31,10 @@ VALUES
     "content_references": 3,
     "content_logic": 0,
     "content_advertising": 1,
+    "content_rhetorical_manipulation": 0,
+    "content_objective_no_hate_no_panic": 0,
+    "content_headline_matches_article": 1,
+    "content_claims_not_debunked": 0,
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
@@ -42,8 +46,8 @@ VALUES
     "source_listed_and_verifiable": 1,
     "source_claims_match_originals": 2,
     "source_experts_verified": 3,
-    "source_experts_reputation": 3,
 
+    "quotes_experts_reputation": 3,
     "quotes_identifiable_persons": 3,
     "quotes_context_accurate": 3,
 
@@ -72,6 +76,10 @@ VALUES
     "content_references": 0,
     "content_logic": 1,
     "content_advertising": 2,
+    "content_rhetorical_manipulation": 1,
+    "content_objective_no_hate_no_panic": 1,
+    "content_headline_matches_article": 2,
+    "content_claims_not_debunked": 1,
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
@@ -83,8 +91,8 @@ VALUES
     "source_listed_and_verifiable": 2,
     "source_claims_match_originals": 2,
     "source_experts_verified": 3,
-    "source_experts_reputation": 3,
 
+    "quotes_experts_reputation": 3,
     "quotes_identifiable_persons": 3,
     "quotes_context_accurate": 3,
 

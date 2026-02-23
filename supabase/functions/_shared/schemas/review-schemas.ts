@@ -36,7 +36,7 @@ export const submittedReviewAnswerSchema = z
     source_listed_and_verifiable: trafficLightAnswerSchema.optional(),
     source_claims_match_originals: trafficLightAnswerSchema.optional(),
     source_experts_verified: trafficLightAnswerSchema.optional(),
-    source_experts_reputation: trafficLightAnswerSchema.optional(),
+    quotes_experts_reputation: trafficLightAnswerSchema.optional(),
 
     // Zitate
     quotes_identifiable_persons: trafficLightAnswerSchema.optional(),
@@ -484,20 +484,20 @@ export const submittedReviewAnswerSchema = z
           ["neutral", "opinion", "text_message"].includes(t)
         )
       ) {
-        return data.source_experts_reputation !== null &&
-          data.source_experts_reputation !== undefined;
+        return data.quotes_experts_reputation !== null &&
+          data.quotes_experts_reputation !== undefined;
       }
       return true;
     },
     {
       message:
-        "source_experts_reputation is required when content_type is neutral, opinion or text_message",
-      path: ["source_experts_reputation"],
+        "quotes_experts_reputation is required when content_type is neutral, opinion or text_message",
+      path: ["quotes_experts_reputation"],
       when(payload) {
         const hasRelevantIssues = payload.issues.some(
           (iss) =>
             iss.path?.[0] === "content_type" ||
-            iss.path?.[0] === "source_experts_reputation",
+            iss.path?.[0] === "quotes_experts_reputation",
         );
         return !hasRelevantIssues;
       },
@@ -617,9 +617,9 @@ export const inProgressReviewAnswerSchema = z
     source_listed_and_verifiable: trafficLightAnswerSchema.optional(),
     source_claims_match_originals: trafficLightAnswerSchema.optional(),
     source_experts_verified: trafficLightAnswerSchema.optional(),
-    source_experts_reputation: trafficLightAnswerSchema.optional(),
 
     // Zitate
+    quotes_experts_reputation: trafficLightAnswerSchema.optional(),
     quotes_identifiable_persons: trafficLightAnswerSchema.optional(),
     quotes_context_accurate: trafficLightAnswerSchema.optional(),
 

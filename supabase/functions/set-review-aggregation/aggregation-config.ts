@@ -24,7 +24,7 @@ export const FIELD_TAGS: Record<string, string> = {
 
   "source_claims_match_originals": "Originalquellen",
   "source_claims_supported": "Quellen belegen Behauptungen",
-  "source_experts_reputation": "Ruf der Expert*innen",
+  "quotes_experts_reputation": "Ruf der Expert*innen",
   "source_experts_verified": "Expert*innen besitzen Expertise im Themengebiet",
   "source_listed_and_verifiable": "Quellen vollständig und nachprüfbar",
 };

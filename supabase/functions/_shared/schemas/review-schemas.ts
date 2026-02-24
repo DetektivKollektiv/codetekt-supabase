@@ -23,6 +23,10 @@ export const submittedReviewAnswerSchema = z
     content_references: trafficLightAnswerSchema.optional(),
     content_logic: trafficLightAnswerSchema.optional(),
     content_advertising: trafficLightAnswerSchema.optional(),
+    content_rhetorical_manipulation: trafficLightAnswerSchema.optional(),
+    content_objective_no_hate_no_panic: trafficLightAnswerSchema.optional(),
+    content_headline_matches_article: trafficLightAnswerSchema.optional(),
+    content_claims_not_debunked: trafficLightAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema.optional(),
@@ -220,6 +224,110 @@ export const submittedReviewAnswerSchema = z
           (iss) =>
             iss.path?.[0] === "content_type" ||
             iss.path?.[0] === "content_advertising",
+        );
+        return !hasRelevantIssues;
+      },
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.content_type?.some((t) =>
+          ["neutral", "opinion", "text_message"].includes(t)
+        )
+      ) {
+        return data.content_rhetorical_manipulation !== null &&
+          data.content_rhetorical_manipulation !== undefined;
+      }
+      return true;
+    },
+    {
+      message:
+        "content_rhetorical_manipulation is required when content_type is neutral, opinion or text_message",
+      path: ["content_rhetorical_manipulation"],
+      when(payload) {
+        const hasRelevantIssues = payload.issues.some(
+          (iss) =>
+            iss.path?.[0] === "content_type" ||
+            iss.path?.[0] === "content_rhetorical_manipulation",
+        );
+        return !hasRelevantIssues;
+      },
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.content_type?.some((t) =>
+          ["neutral", "opinion", "text_message"].includes(t)
+        )
+      ) {
+        return data.content_objective_no_hate_no_panic !== null &&
+          data.content_objective_no_hate_no_panic !== undefined;
+      }
+      return true;
+    },
+    {
+      message:
+        "content_objective_no_hate_no_panic is required when content_type is neutral, opinion or text_message",
+      path: ["content_objective_no_hate_no_panic"],
+      when(payload) {
+        const hasRelevantIssues = payload.issues.some(
+          (iss) =>
+            iss.path?.[0] === "content_type" ||
+            iss.path?.[0] === "content_objective_no_hate_no_panic",
+        );
+        return !hasRelevantIssues;
+      },
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.content_type?.some((t) =>
+          ["neutral", "opinion", "text_message"].includes(t)
+        )
+      ) {
+        return data.content_headline_matches_article !== null &&
+          data.content_headline_matches_article !== undefined;
+      }
+      return true;
+    },
+    {
+      message:
+        "content_headline_matches_article is required when content_type is neutral, opinion or text_message",
+      path: ["content_headline_matches_article"],
+      when(payload) {
+        const hasRelevantIssues = payload.issues.some(
+          (iss) =>
+            iss.path?.[0] === "content_type" ||
+            iss.path?.[0] === "content_headline_matches_article",
+        );
+        return !hasRelevantIssues;
+      },
+    },
+  )
+  .refine(
+    (data) => {
+      if (
+        data.content_type?.some((t) =>
+          ["neutral", "opinion", "text_message"].includes(t)
+        )
+      ) {
+        return data.content_claims_not_debunked !== null &&
+          data.content_claims_not_debunked !== undefined;
+      }
+      return true;
+    },
+    {
+      message:
+        "content_claims_not_debunked is required when content_type is neutral, opinion or text_message",
+      path: ["content_claims_not_debunked"],
+      when(payload) {
+        const hasRelevantIssues = payload.issues.some(
+          (iss) =>
+            iss.path?.[0] === "content_type" ||
+            iss.path?.[0] === "content_claims_not_debunked",
         );
         return !hasRelevantIssues;
       },
@@ -604,6 +712,10 @@ export const inProgressReviewAnswerSchema = z
     content_references: trafficLightAnswerSchema.optional(),
     content_logic: trafficLightAnswerSchema.optional(),
     content_advertising: trafficLightAnswerSchema.optional(),
+    content_rhetorical_manipulation: trafficLightAnswerSchema.optional(),
+    content_objective_no_hate_no_panic: trafficLightAnswerSchema.optional(),
+    content_headline_matches_article: trafficLightAnswerSchema.optional(),
+    content_claims_not_debunked: trafficLightAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema.optional(),

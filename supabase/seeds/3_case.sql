@@ -33,7 +33,7 @@ INSERT INTO public.cases (
     'url',
     1,
     now() - interval '38 days'
-  ),
+  )/* ,
   (
     'f2974bce-eeca-41d0-99d2-8c73ed966dcf',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
@@ -417,4 +417,4 @@ INSERT INTO public.cases (
     'text',
     1,
     now() - interval '11 days'
-  );
+  ) */;

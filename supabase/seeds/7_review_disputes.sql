@@ -10,7 +10,7 @@
 -- Dispute 1: Content Type Dispute on Case 1 (Ukraine article)
 -- Anna disputes that the article should be categorized as "opinion" instead of "nachrichtenartikel"
 -- Status: Unresolved (waiting for admin review)
-INSERT INTO public.review_disputes (
+/* INSERT INTO public.review_disputes (
   id,
   case_id,
   field_id,
@@ -34,7 +34,7 @@ INSERT INTO public.review_disputes (
   NULL,
   NULL,
   NULL
-);
+); */
 
 -- ============================================
 -- RESOLVED DISPUTES

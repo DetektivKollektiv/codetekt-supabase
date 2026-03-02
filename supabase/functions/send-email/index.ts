@@ -1,22 +1,32 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  disputeEmail,
+  type DisputeField,
+  newCaseEmail,
+} from "../_shared/email-templates.ts";
 
 const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")!;
 const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://codetekt.org";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+  "";
 
-Deno.serve(async (_req) => {
+// ─── Mailgun helper ───────────────────────────────────────────────────────────
+
+async function sendMail(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<void> {
   const form = new URLSearchParams();
   form.set("from", `Codetekt <noreply@${MAILGUN_DOMAIN}>`);
-  form.set("to", "gorm-labenz@hotmail.com"); // your test recipient
-  form.set("subject", "Hello from Supabase Edge Function");
-  form.set(
-    "text",
-    "It works! Email sent via Mailgun from a Supabase Edge Function.",
-  );
+  form.set("to", to);
+  form.set("subject", subject);
+  form.set("html", html);
 
-  console.log("Sending email via Mailgun...", MAILGUN_DOMAIN);
-
-  // Use EU endpoint — mg.codetekt.org is hosted on Mailgun EU
   const res = await fetch(
     `https://api.eu.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
     {
@@ -29,21 +39,138 @@ Deno.serve(async (_req) => {
     },
   );
 
-  console.log("Mailgun response status:", res.status);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mailgun error ${res.status}: ${text}`);
+  }
+}
 
-  // Mailgun may return plain text on errors, handle both cases
-  const text = await res.text();
-  let data: unknown;
+// ─── Request types ────────────────────────────────────────────────────────────
+
+type NewCasePayload = {
+  type: "new_case";
+  to: string | string[]; // one or more reviewer emails
+  caseNumber: number;
+  caseId: string;
+};
+
+type DisputePayload = {
+  type: "dispute";
+  caseNumber: number;
+  caseId: string;
+  disputedField: DisputeField;
+};
+
+type Payload = NewCasePayload | DisputePayload;
+
+// ─── Handler ─────────────────────────────────────────────────────────────────
+
+Deno.serve(async (req) => {
+  let payload: Payload;
   try {
-    data = JSON.parse(text);
+    payload = await req.json() as Payload;
   } catch {
-    data = text;
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  return new Response(JSON.stringify({ status: res.status, mailgun: data }), {
-    status: res.ok ? 200 : 500,
-    headers: { "Content-Type": "application/json" },
-  });
+  try {
+    if (payload.type === "new_case") {
+      // ── Template 1: notify reviewer(s) about a new case ──
+      const { subject, html } = newCaseEmail({
+        caseNumber: payload.caseNumber,
+        caseId: payload.caseId,
+        siteUrl: SITE_URL,
+      });
+
+      const recipients = Array.isArray(payload.to) ? payload.to : [payload.to];
+      await Promise.all(
+        recipients.map((email) => sendMail(email, subject, html)),
+      );
+
+      console.log(
+        `[send-email] new_case – sent to ${recipients.length} recipient(s)`,
+      );
+      return new Response(JSON.stringify({ sent: recipients.length }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (payload.type === "dispute") {
+      // ── Template 2: notify all admins about a dispute ──
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+      const { data: admins, error } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("is_admin", true);
+
+      if (error) throw new Error(`Failed to fetch admins: ${error.message}`);
+      if (!admins || admins.length === 0) {
+        return new Response(JSON.stringify({ error: "No admins found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Fetch auth emails for each admin id via the admin API
+      const adminEmails: string[] = [];
+      for (const admin of admins) {
+        const { data: userData, error: userError } = await supabase.auth.admin
+          .getUserById(admin.id);
+        if (userError || !userData.user?.email) {
+          console.warn(
+            `[send-email] Could not resolve email for admin ${admin.id}`,
+          );
+          continue;
+        }
+        adminEmails.push(userData.user.email);
+      }
+
+      if (adminEmails.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "No admin emails resolved" }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const { subject, html } = disputeEmail({
+        caseNumber: payload.caseNumber,
+        caseId: payload.caseId,
+        disputedField: payload.disputedField,
+      });
+
+      await Promise.all(
+        adminEmails.map((email) => sendMail(email, subject, html)),
+      );
+
+      console.log(
+        `[send-email] dispute – notified ${adminEmails.length} admin(s)`,
+      );
+      return new Response(JSON.stringify({ sent: adminEmails.length }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Unknown type" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[send-email] Error:`, message);
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 });
 
 /* To invoke locally:

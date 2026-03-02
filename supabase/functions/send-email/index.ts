@@ -21,8 +21,8 @@
  */
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { disputeEmail, newCaseEmail } from "../_shared/email-templates.ts";

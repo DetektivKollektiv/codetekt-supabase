@@ -3,16 +3,15 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   disputeEmail,
-  type DisputeField,
   newCaseEmail,
 } from "../_shared/email-templates.ts";
 
 const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")!;
 const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://codetekt.org";
+const NEW_CASE_NOTIFICATION_EMAIL = Deno.env.get("NEW_CASE_NOTIFICATION_EMAIL")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-  "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 // ─── Mailgun helper ───────────────────────────────────────────────────────────
 
@@ -49,7 +48,6 @@ async function sendMail(
 
 type NewCasePayload = {
   type: "new_case";
-  to: string | string[]; // one or more reviewer emails
   caseNumber: number;
   caseId: string;
 };
@@ -58,7 +56,7 @@ type DisputePayload = {
   type: "dispute";
   caseNumber: number;
   caseId: string;
-  disputedField: DisputeField;
+  disputedField: string; // field_id from review_disputes (e.g. keyword_type, content_type)
 };
 
 type Payload = NewCasePayload | DisputePayload;
@@ -78,39 +76,35 @@ Deno.serve(async (req) => {
 
   try {
     if (payload.type === "new_case") {
-      // ── Template 1: notify reviewer(s) about a new case ──
+      // ── Template 1: fixed notification email for new cases ──
       const { subject, html } = newCaseEmail({
         caseNumber: payload.caseNumber,
         caseId: payload.caseId,
         siteUrl: SITE_URL,
       });
 
-      const recipients = Array.isArray(payload.to) ? payload.to : [payload.to];
-      await Promise.all(
-        recipients.map((email) => sendMail(email, subject, html)),
-      );
+      await sendMail(NEW_CASE_NOTIFICATION_EMAIL, subject, html);
 
-      console.log(
-        `[send-email] new_case – sent to ${recipients.length} recipient(s)`,
-      );
-      return new Response(JSON.stringify({ sent: recipients.length }), {
+      console.log(`[send-email] new_case – sent to ${NEW_CASE_NOTIFICATION_EMAIL}`);
+      return new Response(JSON.stringify({ sent: 1 }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
     if (payload.type === "dispute") {
-      // ── Template 2: notify all admins about a dispute ──
+      // ── Template 2: notify admins with notifications enabled ──
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
       const { data: admins, error } = await supabase
         .from("profiles")
         .select("id")
-        .eq("is_admin", true);
+        .eq("is_admin", true)
+        .eq("get_notifications", true);
 
       if (error) throw new Error(`Failed to fetch admins: ${error.message}`);
       if (!admins || admins.length === 0) {
-        return new Response(JSON.stringify({ error: "No admins found" }), {
+        return new Response(JSON.stringify({ error: "No admins with notifications enabled" }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
         });

@@ -128,7 +128,7 @@ export function newCaseEmail(
 
 // ─── Template 2: Einspruch erhoben (Admin-Benachrichtigung) ──────────────────
 
-export type DisputeField = "Titel" | "Tags" | "Kategorie";
+export type DisputeField = string; // field_id from review_disputes (e.g. keyword_type, content_type)
 
 export type DisputeEmailParams = {
     caseNumber: number;

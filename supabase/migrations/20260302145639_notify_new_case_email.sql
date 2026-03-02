@@ -38,3 +38,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- ============================================
+-- TRIGGER: Fire after every new case insert
+-- ============================================
+
+CREATE OR REPLACE TRIGGER notify_new_case_email_trigger
+  AFTER INSERT ON public.cases
+  FOR EACH ROW
+  EXECUTE FUNCTION public.notify_new_case_email();

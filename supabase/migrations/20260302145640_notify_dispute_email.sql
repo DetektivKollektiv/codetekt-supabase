@@ -46,3 +46,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- ============================================
+-- TRIGGER: Fire after every new dispute insert
+-- ============================================
+
+CREATE OR REPLACE TRIGGER notify_dispute_email_trigger
+  AFTER INSERT ON public.review_disputes
+  FOR EACH ROW
+  EXECUTE FUNCTION public.notify_dispute_email();

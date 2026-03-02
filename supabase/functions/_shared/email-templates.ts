@@ -35,7 +35,7 @@ const footer = `
 `;
 
 function wrapLayout(content: string): string {
-    return `
+  return `
 <div style="${baseStyles}">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
     <tr>
@@ -61,24 +61,24 @@ function wrapLayout(content: string): string {
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
 export type EmailTemplate = {
-    subject: string;
-    html: string;
+  subject: string;
+  html: string;
 };
 
 // ─── Template 1: Neuer Fall eingereicht ──────────────────────────────────────
 
 export type NewCaseEmailParams = {
-    caseNumber: number;
-    caseId: string;
-    siteUrl: string;
+  caseNumber: number;
+  caseId: string;
+  siteUrl: string;
 };
 
 export function newCaseEmail(
-    { caseNumber, caseId, siteUrl }: NewCaseEmailParams,
+  { caseNumber, caseId, siteUrl }: NewCaseEmailParams,
 ): EmailTemplate {
-    const reviewUrl = `${siteUrl}/review/${caseId}`;
+  const reviewUrl = `${siteUrl}/review/${caseId}`;
 
-    const html = wrapLayout(`
+  const html = wrapLayout(`
     <!-- Subheadline -->
     <tr>
       <td style="padding: 0 0 8px 0">
@@ -120,10 +120,10 @@ export function newCaseEmail(
     </tr>
   `);
 
-    return {
-        subject: `Fall ${caseNumber} – Jetzt bewerten`,
-        html,
-    };
+  return {
+    subject: `Fall ${caseNumber} – Jetzt bewerten`,
+    html,
+  };
 }
 
 // ─── Template 2: Einspruch erhoben (Admin-Benachrichtigung) ──────────────────
@@ -131,17 +131,17 @@ export function newCaseEmail(
 export type DisputeField = string; // field_id from review_disputes (e.g. keyword_type, content_type)
 
 export type DisputeEmailParams = {
-    caseNumber: number;
-    caseId: string;
-    disputedField: DisputeField;
+  caseNumber: number;
+  caseId: string;
+  disputedField: DisputeField;
 };
 
 export function disputeEmail({
-    caseNumber,
-    caseId,
-    disputedField,
+  caseNumber,
+  caseId,
+  disputedField,
 }: DisputeEmailParams): EmailTemplate {
-    const html = wrapLayout(`
+  const html = wrapLayout(`
     <!-- Subheadline -->
     <tr>
       <td style="padding: 0 0 8px 0">
@@ -185,8 +185,8 @@ export function disputeEmail({
     </tr>
   `);
 
-    return {
-        subject: `Einspruch bei Fall ${caseNumber} – ${disputedField}`,
-        html,
-    };
+  return {
+    subject: `Einspruch bei Fall ${caseNumber} – ${disputedField}`,
+    html,
+  };
 }

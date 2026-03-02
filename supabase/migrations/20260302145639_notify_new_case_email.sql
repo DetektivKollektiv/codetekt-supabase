@@ -11,12 +11,22 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
-  request_id bigint;
+  request_id    bigint;
+  webhook_secret text;
 BEGIN
+  -- Read shared secret from vault (never hard-coded in SQL)
+  SELECT decrypted_secret
+    INTO webhook_secret
+    FROM vault.decrypted_secrets
+   WHERE name = 'db_webhook_secret';
+
   BEGIN
     SELECT net.http_post(
       url := get_project_url() || '/functions/v1/send-email',
-      headers := '{"Content-Type": "application/json"}'::jsonb,
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'X-Db-Secret',  webhook_secret
+      ),
       body := jsonb_build_object(
         'type',       'new_case',
         'caseNumber', NEW.case_number,

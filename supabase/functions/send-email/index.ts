@@ -1,7 +1,10 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { disputeEmail, newCaseEmail } from "../_shared/email-templates.ts";
+
+const enc = new TextEncoder();
 
 const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")!;
 const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
@@ -64,6 +67,22 @@ type Payload = NewCasePayload | DisputePayload;
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
+  // ─── Auth: verify X-Db-Secret header ──────────────────────────────────────
+  const expected = Deno.env.get("DB_WEBHOOK_SECRET") ?? "";
+  const incoming = req.headers.get("x-db-secret") ?? "";
+  const expectedBytes = enc.encode(expected);
+  const incomingBytes = enc.encode(incoming);
+  const authorized =
+    expectedBytes.length > 0 &&
+    expectedBytes.length === incomingBytes.length &&
+    timingSafeEqual(expectedBytes, incomingBytes);
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   let payload: Payload;
   try {
     payload = await req.json() as Payload;

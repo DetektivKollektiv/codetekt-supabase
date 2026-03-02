@@ -1,7 +1,30 @@
+/**
+ * SEND EMAIL EDGE FUNCTION
+ *
+ * Sends transactional emails via Mailgun. Called exclusively by database triggers
+ * through pg_net — never directly by clients. Authenticated via a shared secret
+ * (X-Db-Secret header) stored in Supabase Vault on the DB side and in
+ * DB_WEBHOOK_SECRET env on the function side.
+ *
+ * Supported email types:
+ *
+ * - new_case: Notifies a fixed address (NEW_CASE_NOTIFICATION_EMAIL) when a new
+ *   case is submitted. Triggered by the notify_new_case_email_trigger on public.cases.
+ *
+ * - dispute: Notifies all admins with get_notifications=true when a review dispute
+ *   is created. Triggered by the notify_dispute_email_trigger on public.review_disputes.
+ *
+ * Security:
+ * - verify_jwt = false in config.toml (no user JWT — DB calls use X-Db-Secret instead)
+ * - timingSafeEqual comparison prevents timing-attack secret leaks
+ * - Payload validated with Zod before any processing
+ */
+
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@4.1.13";
 import { disputeEmail, newCaseEmail } from "../_shared/email-templates.ts";
 
 const enc = new TextEncoder();
@@ -47,22 +70,27 @@ async function sendMail(
   }
 }
 
-// ─── Request types ────────────────────────────────────────────────────────────
+// ─── Payload schemas ─────────────────────────────────────────────────────────
 
-type NewCasePayload = {
-  type: "new_case";
-  caseNumber: number;
-  caseId: string;
-};
+const newCasePayloadSchema = z.object({
+  type: z.literal("new_case"),
+  caseNumber: z.number().int().positive(),
+  caseId: z.string().uuid(),
+});
 
-type DisputePayload = {
-  type: "dispute";
-  caseNumber: number;
-  caseId: string;
-  disputedField: string; // field_id from review_disputes (e.g. keyword_type, content_type)
-};
+const disputePayloadSchema = z.object({
+  type: z.literal("dispute"),
+  caseNumber: z.number().int().positive(),
+  caseId: z.string().uuid(),
+  disputedField: z.string().min(1), // field_id from review_disputes (e.g. keyword_type, content_type)
+});
 
-type Payload = NewCasePayload | DisputePayload;
+const payloadSchema = z.discriminatedUnion("type", [
+  newCasePayloadSchema,
+  disputePayloadSchema,
+]);
+
+type Payload = z.infer<typeof payloadSchema>;
 
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
@@ -72,8 +100,7 @@ Deno.serve(async (req) => {
   const incoming = req.headers.get("x-db-secret") ?? "";
   const expectedBytes = enc.encode(expected);
   const incomingBytes = enc.encode(incoming);
-  const authorized =
-    expectedBytes.length > 0 &&
+  const authorized = expectedBytes.length > 0 &&
     expectedBytes.length === incomingBytes.length &&
     timingSafeEqual(expectedBytes, incomingBytes);
   if (!authorized) {
@@ -83,15 +110,24 @@ Deno.serve(async (req) => {
     });
   }
 
-  let payload: Payload;
+  let body: unknown;
   try {
-    payload = await req.json() as Payload;
+    body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const parsed = payloadSchema.safeParse(body);
+  if (!parsed.success) {
+    return new Response(
+      JSON.stringify({ error: "Invalid payload", issues: parsed.error.issues }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  const payload: Payload = parsed.data;
 
   try {
     if (payload.type === "new_case") {

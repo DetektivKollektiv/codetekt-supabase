@@ -29,7 +29,11 @@ import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
-import { aggregationEmail, disputeEmail, newCaseEmail } from "./email-templates.ts";
+import {
+  aggregationEmail,
+  disputeEmail,
+  newCaseEmail,
+} from "./email-templates.ts";
 
 const enc = new TextEncoder();
 

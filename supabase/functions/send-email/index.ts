@@ -14,6 +14,10 @@
  * - dispute: Notifies all admins with get_notifications=true when a review dispute
  *   is created. Triggered by the notify_dispute_email_trigger on public.review_disputes.
  *
+ * - review_aggregated: Notifies the case creator that their case has received enough
+ *   reviews and the result is published. Will be triggered by a DB trigger on
+ *   public.review_aggregations (migration pending).
+ *
  * Security:
  * - verify_jwt = false in config.toml (no user JWT — DB calls use X-Db-Secret instead)
  * - timingSafeEqual comparison prevents timing-attack secret leaks
@@ -25,7 +29,7 @@ import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
-import { disputeEmail, newCaseEmail } from "./email-templates.ts";
+import { aggregationEmail, disputeEmail, newCaseEmail } from "./email-templates.ts";
 
 const enc = new TextEncoder();
 
@@ -85,9 +89,16 @@ const disputePayloadSchema = z.object({
   disputedField: z.string().min(1), // field_id from review_disputes (e.g. keyword_type, content_type)
 });
 
+const aggregationPayloadSchema = z.object({
+  type: z.literal("review_aggregated"),
+  caseNumber: z.number().int().positive(),
+  caseId: z.string().uuid(),
+});
+
 const payloadSchema = z.discriminatedUnion("type", [
   newCasePayloadSchema,
   disputePayloadSchema,
+  aggregationPayloadSchema,
 ]);
 
 type Payload = z.infer<typeof payloadSchema>;
@@ -208,6 +219,49 @@ Deno.serve(async (req) => {
         `[send-email] dispute – notified ${adminEmails.length} admin(s)`,
       );
       return new Response(JSON.stringify({ sent: adminEmails.length }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (payload.type === "review_aggregated") {
+      // ── Template 3: notify the case creator that their case is published ──
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+      // Look up the case owner
+      const { data: caseRow, error: caseError } = await supabase
+        .from("cases")
+        .select("submitted_by")
+        .eq("id", payload.caseId)
+        .single();
+
+      if (caseError || !caseRow) {
+        throw new Error(
+          `Failed to fetch case owner: ${caseError?.message ?? "not found"}`,
+        );
+      }
+
+      const { data: userData, error: userError } = await supabase.auth.admin
+        .getUserById(caseRow.submitted_by);
+
+      if (userError || !userData.user?.email) {
+        throw new Error(
+          `Failed to resolve email for user ${caseRow.submitted_by}`,
+        );
+      }
+
+      const { subject, html } = aggregationEmail({
+        caseNumber: payload.caseNumber,
+        caseId: payload.caseId,
+        siteUrl: SITE_URL,
+      });
+
+      await sendMail(userData.user.email, subject, html);
+
+      console.log(
+        `[send-email] review_aggregated – sent to ${userData.user.email} for case ${payload.caseId}`,
+      );
+      return new Response(JSON.stringify({ sent: 1 }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

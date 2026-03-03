@@ -126,6 +126,67 @@ export function newCaseEmail(
   };
 }
 
+// ─── Template 3: Aggregation abgeschlossen (Fall-Ersteller-Benachrichtigung) ──
+
+export type AggregationEmailParams = {
+  caseNumber: number;
+  caseId: string;
+  siteUrl: string;
+};
+
+export function aggregationEmail(
+  { caseNumber, caseId, siteUrl }: AggregationEmailParams,
+): EmailTemplate {
+  const archiveUrl = `${siteUrl}/archive/${caseId}`;
+
+  const html = wrapLayout(`
+    <!-- Subheadline -->
+    <tr>
+      <td style="padding: 0 0 8px 0">
+        <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8c8c9f;">
+          Ergebnis verfügbar
+        </div>
+      </td>
+    </tr>
+
+    <!-- Headline -->
+    <tr>
+      <td style="padding: 0 0 14px 0">
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;">
+          Fall ${caseNumber} veröffentlicht
+        </div>
+      </td>
+    </tr>
+
+    <!-- Copy -->
+    <tr>
+      <td style="padding: 0 0 24px 0">
+        <p style="margin: 0; font-size: 15px; line-height: 1.65">
+          Dein <strong>Fall ${caseNumber}</strong> hat genügend Bewertungen erhalten und ist jetzt
+          im Archiv veröffentlicht. Du kannst das Ergebnis der Überprüfung ab sofort einsehen.
+        </p>
+      </td>
+    </tr>
+
+    <!-- CTA -->
+    <tr>
+      <td align="left">
+        <a
+          href="${archiveUrl}"
+          style="display: inline-block; background: #5f38fa; color: #ffffff; text-decoration: none; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;"
+        >
+          Ergebnis ansehen
+        </a>
+      </td>
+    </tr>
+  `);
+
+  return {
+    subject: `Fall ${caseNumber} – Ergebnis verfügbar`,
+    html,
+  };
+}
+
 // ─── Template 2: Einspruch erhoben (Admin-Benachrichtigung) ──────────────────
 
 export type DisputeField = string; // field_id from review_disputes (e.g. keyword_type, content_type)

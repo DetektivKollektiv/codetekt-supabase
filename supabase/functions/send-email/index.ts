@@ -15,8 +15,12 @@
  *   is created. Triggered by the notify_dispute_email_trigger on public.review_disputes.
  *
  * - review_aggregated: Notifies the case creator that their case has received enough
- *   reviews and the result is published. Will be triggered by a DB trigger on
- *   public.review_aggregations (migration pending).
+ *   reviews and the result is published. Triggered by a DB trigger on
+ *   public.review_aggregations.
+ *
+ * - review_milestone: Notifies the case creator when their case reaches the
+ *   configured review count threshold (REVIEW_MILESTONE_COUNT in config.ts).
+ *   Triggered by a DB trigger on public.review_answers_submitted.
  *
  * Security:
  * - verify_jwt = false in config.toml (no user JWT — DB calls use X-Db-Secret instead)
@@ -29,10 +33,12 @@ import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
+import { REVIEW_MILESTONE_COUNT } from "./config.ts";
 import {
   aggregationEmail,
   disputeEmail,
   newCaseEmail,
+  reviewMilestoneEmail,
 } from "./email-templates.ts";
 
 const enc = new TextEncoder();
@@ -99,10 +105,18 @@ const aggregationPayloadSchema = z.object({
   caseId: z.string().uuid(),
 });
 
+const reviewMilestonePayloadSchema = z.object({
+  type: z.literal("review_milestone"),
+  caseNumber: z.number().int().positive(),
+  caseId: z.string().uuid(),
+  reviewCount: z.number().int().positive(),
+});
+
 const payloadSchema = z.discriminatedUnion("type", [
   newCasePayloadSchema,
   disputePayloadSchema,
   aggregationPayloadSchema,
+  reviewMilestonePayloadSchema,
 ]);
 
 type Payload = z.infer<typeof payloadSchema>;
@@ -271,6 +285,57 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (payload.type === "review_milestone") {
+      // ── Template 4: notify case creator at configured review count milestone ──
+      if (payload.reviewCount !== REVIEW_MILESTONE_COUNT) {
+        // Not the configured milestone — ignore silently
+        return new Response(
+          JSON.stringify({ sent: 0, reason: "Not a milestone count" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+      const { data: caseRow, error: caseError } = await supabase
+        .from("cases")
+        .select("submitted_by")
+        .eq("id", payload.caseId)
+        .single();
+
+      if (caseError || !caseRow) {
+        throw new Error(
+          `Failed to fetch case owner: ${caseError?.message ?? "not found"}`,
+        );
+      }
+
+      const { data: userData, error: userError } = await supabase.auth.admin
+        .getUserById(caseRow.submitted_by);
+
+      if (userError || !userData.user?.email) {
+        throw new Error(
+          `Failed to resolve email for user ${caseRow.submitted_by}`,
+        );
+      }
+
+      const { subject, html } = reviewMilestoneEmail({
+        caseNumber: payload.caseNumber,
+        caseId: payload.caseId,
+        reviewCount: payload.reviewCount,
+        siteUrl: SITE_URL,
+      });
+
+      await sendMail(userData.user.email, subject, html);
+
+      console.log(
+        `[send-email] review_milestone – sent to ${userData.user.email} for case ${payload.caseId} (${payload.reviewCount} reviews)`,
+      );
+      return new Response(JSON.stringify({ sent: 1 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown type" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -288,11 +353,53 @@ Deno.serve(async (req) => {
 /* To invoke locally:
 
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+  2. Make an HTTP request using one of the commands below.
+     The x-db-secret value must match the vault secret `db_webhook_secret` in your local seed.
+
+  ── new_case ──────────────────────────────────────────────────────────────────
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
     --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
+    --data '{
+      "type": "new_case",
+      "caseNumber": 1,
+      "caseId": "11111111-1111-4111-8111-111111111111"
+    }'
+
+  ── dispute ───────────────────────────────────────────────────────────────────
+
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "type": "dispute",
+      "caseNumber": 1,
+      "caseId": "11111111-1111-4111-8111-111111111111",
+      "disputedField": "keyword_type"
+    }'
+
+  ── review_aggregated ─────────────────────────────────────────────────────────
+
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "type": "review_aggregated",
+      "caseNumber": 1,
+      "caseId": "11111111-1111-4111-8111-111111111111"
+    }'
+
+  ── review_milestone ──────────────────────────────────────────────────────────
+
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "type": "review_milestone",
+      "caseNumber": 1,
+      "caseId": "11111111-1111-4111-8111-111111111111",
+      "reviewCount": 5
+    }'
 
 */

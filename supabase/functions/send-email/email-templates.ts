@@ -187,6 +187,68 @@ export function aggregationEmail(
   };
 }
 
+// ─── Template 4: Bewertungs-Meilenstein (Fall-Ersteller-Benachrichtigung) ──────
+
+export type ReviewMilestoneEmailParams = {
+  caseNumber: number;
+  caseId: string;
+  reviewCount: number;
+  siteUrl: string;
+};
+
+export function reviewMilestoneEmail(
+  { caseNumber, caseId, reviewCount, siteUrl }: ReviewMilestoneEmailParams,
+): EmailTemplate {
+  const caseUrl = `${siteUrl}/archive/${caseId}`;
+
+  const html = wrapLayout(`
+    <!-- Subheadline -->
+    <tr>
+      <td style="padding: 0 0 8px 0">
+        <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8c8c9f;">
+          Bewertungs-Meilenstein
+        </div>
+      </td>
+    </tr>
+
+    <!-- Headline -->
+    <tr>
+      <td style="padding: 0 0 14px 0">
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;">
+          Dein Fall ${caseNumber} hat ${reviewCount} Bewertungen erhalten
+        </div>
+      </td>
+    </tr>
+
+    <!-- Copy -->
+    <tr>
+      <td style="padding: 0 0 24px 0">
+        <p style="margin: 0; font-size: 15px; line-height: 1.65">
+          <strong>Fall ${caseNumber}</strong> hat bisher <strong>${reviewCount} Bewertungen</strong> erhalten.
+          Schau dir an, was die Community bisher herausgefunden hat.
+        </p>
+      </td>
+    </tr>
+
+    <!-- CTA -->
+    <tr>
+      <td align="left">
+        <a
+          href="${caseUrl}"
+          style="display: inline-block; background: #5f38fa; color: #ffffff; text-decoration: none; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;"
+        >
+          Fall ansehen
+        </a>
+      </td>
+    </tr>
+  `);
+
+  return {
+    subject: `Fall ${caseNumber} – ${reviewCount} Bewertungen erhalten`,
+    html,
+  };
+}
+
 // ─── Template 2: Einspruch erhoben (Admin-Benachrichtigung) ──────────────────
 
 export type DisputeField = string; // field_id from review_disputes (e.g. keyword_type, content_type)

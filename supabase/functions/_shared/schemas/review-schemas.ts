@@ -12,7 +12,7 @@ import {
 export const submittedReviewAnswerSchema = z
   .object({
     title: z.string().min(10).nullable(),
-    keyword_type: z.array(z.string().min(3)).min(1).nullable(),
+    keyword_type: z.array(z.string().min(2)).min(1).nullable(),
     content_type: chipAnswerSchema,
 
     // Inhalt

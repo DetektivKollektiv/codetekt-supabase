@@ -38,7 +38,6 @@ VALUES
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
-    "media_no_obvious_editing": 3,
     "media_visualizations_not_distorted": 3,
     "media_visualization_data_traceable": 3,
 
@@ -50,9 +49,6 @@ VALUES
     "quotes_experts_reputation": 3,
     "quotes_identifiable_persons": 3,
     "quotes_context_accurate": 3,
-
-    "additional_rating": 1,
-    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",
 
     "comment": "Die Quelle ist seriös und die Fakten scheinen korrekt zu sein."
   }'::jsonb,
@@ -84,7 +80,6 @@ VALUES
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
-    "media_no_obvious_editing": 3,
     "media_visualizations_not_distorted": 3,
     "media_visualization_data_traceable": 3,
 
@@ -96,9 +91,6 @@ VALUES
     "quotes_experts_reputation": 3,
     "quotes_identifiable_persons": 3,
     "quotes_context_accurate": 3,
-
-    "additional_rating": 2,
-    "additional_comment": "Wirkt insgesamt sauber, aber Überschrift etwas zugespitzt.",
 
     "comment": "Die Quelle ist seriös und die Fakten scheinen korrekt zu sein."
   }'::jsonb,

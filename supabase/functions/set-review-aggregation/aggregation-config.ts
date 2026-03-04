@@ -14,7 +14,6 @@ export const FIELD_TAGS: Record<string, string> = {
   "content_sources": "Autor*in des Beitrags",
 
   "media_no_ai_or_staging_doubts": "Darstellung von Bilder und Videos",
-  "media_no_obvious_editing": "Bearbeitung der Bilder",
   "media_objectivity": "Objektivität der Bilder und Videos",
   "media_visualization_data_traceable": "Daten der Visualisierungen",
   "media_visualizations_not_distorted": "Einsatz von Visualisierungen",
@@ -34,16 +33,13 @@ export const QUESTION_ICONS: Record<
   string
 > = {
   content_question: "notebook-text",
-  additional_comment_question: "message-square-text",
   media_question: "image",
   source_question: "link-2",
   quotes_question: "quote",
 };
 
 export const SKIPPED_QUESTION_IDS = [
-  "evaluation_criteria_question",
   "submit_question",
-  "additional_rating",
 ];
 
 export const METADATA_QUESTION_IDS = [

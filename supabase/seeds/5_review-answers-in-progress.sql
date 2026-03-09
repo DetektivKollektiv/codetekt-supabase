@@ -1,8 +1,8 @@
 -- ============================================
--- SEED: Additional Submitted Reviews (2 per case) - UPDATED FOR TEMPLATE v1+
--- Only: public.review_answers_submitted
+-- SEED: In-Progress Reviews
+-- Only: public.review_answers_in_progress
 -- Scale: 0 (gut) .. 3 (schlecht), (4=nicht bewertbar)
--- Sonderfall: "content_type" nur im jeweils 1. Review pro Case
+-- Note: title, keywords, category are stored in case_titles/case_keywords/case_categories
 -- Reviewer: Gorm (1. Review) + Anna (2. Review)
 -- ============================================
 
@@ -20,10 +20,6 @@ VALUES
   '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com'),
   '{
-    "title": "MDR: Tschechien schickt Botschafter aus Russland zurück",
-    "keyword_type": ["Ukraine", "Russland", "Tschechien", "Botschafter", "Propaganda"],
-    "content_type": ["neutral"],
-
     "content_accuracy": 0,
     "content_sources": 1,
     "content_language": 2,
@@ -62,10 +58,6 @@ VALUES
   '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com'),
   '{
-    "title": "MDR: Tschechien schickt Botschafter aus Russland zurück",
-    "keyword_type": ["Ukraine", "Russland", "Tschechien", "Botschafter", "Propaganda"],
-    "content_type": ["neutral"],
-
     "content_accuracy": 1,
     "content_sources": 2,
     "content_language": 3,

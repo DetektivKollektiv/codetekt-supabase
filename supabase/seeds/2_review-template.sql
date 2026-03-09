@@ -44,14 +44,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht"]
+            "values": ["report"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht"]
+            "values": ["report"]
           }
         ]
       },
@@ -90,14 +90,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion"]
+            "values": ["report", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion"]
+            "values": ["report", "opinion"]
           }
         ]
       },
@@ -136,14 +136,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -182,14 +182,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -228,14 +228,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -274,14 +274,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -320,14 +320,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -366,14 +366,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ]
       },
@@ -412,14 +412,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ]
       },
@@ -458,14 +458,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ]
       },
@@ -504,14 +504,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message", "opinion"]
+            "values": ["report", "text_message", "opinion"]
           }
         ]
       }
@@ -561,14 +561,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -607,14 +607,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -653,14 +653,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -699,14 +699,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       }
@@ -756,14 +756,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -802,14 +802,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -848,14 +848,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -894,14 +894,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       }
@@ -951,14 +951,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       },
@@ -997,14 +997,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message"]
+            "values": ["report", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "text_message"]
+            "values": ["report", "text_message"]
           }
         ]
       },
@@ -1043,14 +1043,14 @@ VALUES (
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_type",
             "operator": "in",
-            "values": ["bericht", "opinion", "text_message"]
+            "values": ["report", "opinion", "text_message"]
           }
         ]
       }

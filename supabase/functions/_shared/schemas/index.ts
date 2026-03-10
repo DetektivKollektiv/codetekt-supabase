@@ -52,14 +52,6 @@ export {
   reviewAggregationSchema,
 } from "./aggregation-schemas.ts";
 
-// Review schemas
-export {
-  type InProgressReviewAnswer,
-  inProgressReviewAnswerSchema,
-  type SubmittedReviewAnswer,
-  submittedReviewAnswerSchema,
-} from "./review-schemas.ts";
-
 // Open Graph schemas
 export {
   type OgImageObject,
@@ -84,3 +76,17 @@ export {
   type UpdateCase,
   updateCaseSchema,
 } from "./case-schemas.ts";
+
+// Review schemas
+export {
+  inProgressReviewAnswerSchema,
+  type InProgressReviewAnswer,
+  submittedReviewAnswerOpinionSchema,
+  type SubmittedReviewAnswerOpinion,
+  submittedReviewAnswerReportSchema,
+  type SubmittedReviewAnswerReport,
+  submittedReviewAnswerSatireSchema,
+  type SubmittedReviewAnswerSatire,
+  submittedReviewAnswerTextMessageSchema,
+  type SubmittedReviewAnswerTextMessage,
+} from "./review-schemas.ts";

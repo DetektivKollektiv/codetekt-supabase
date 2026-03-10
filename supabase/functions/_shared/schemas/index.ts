@@ -79,14 +79,14 @@ export {
 
 // Review schemas
 export {
-  inProgressReviewAnswerSchema,
   type InProgressReviewAnswer,
-  submittedReviewAnswerOpinionSchema,
+  inProgressReviewAnswerSchema,
   type SubmittedReviewAnswerOpinion,
-  submittedReviewAnswerReportSchema,
+  submittedReviewAnswerOpinionSchema,
   type SubmittedReviewAnswerReport,
-  submittedReviewAnswerSatireSchema,
+  submittedReviewAnswerReportSchema,
   type SubmittedReviewAnswerSatire,
-  submittedReviewAnswerTextMessageSchema,
+  submittedReviewAnswerSatireSchema,
   type SubmittedReviewAnswerTextMessage,
+  submittedReviewAnswerTextMessageSchema,
 } from "./review-schemas.ts";

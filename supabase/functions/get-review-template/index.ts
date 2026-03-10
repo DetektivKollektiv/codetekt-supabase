@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
             submitted_review_answers_id,
             has_unpublished_changes
           ),
-          case_disputes!review_disputes_case_id_fkey (
+          case_disputes:cases_metadata_disputes!review_disputes_case_id_fkey (
             metadata_field,
             resolution,
             final_value

@@ -38,12 +38,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
-import {
-  submittedReviewAnswerOpinionSchema,
-  submittedReviewAnswerReportSchema,
-  submittedReviewAnswerSatireSchema,
-  submittedReviewAnswerTextMessageSchema,
-} from "../_shared/schemas/review-schemas.ts";
+import { submittedReviewAnswerSchemaMap } from "../_shared/schemas/review-schemas.ts";
 import { reviewTemplateSchema } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { buildAggregation, SubmittedReview } from "./aggregation.ts";
@@ -197,13 +192,10 @@ Deno.serve(async (req) => {
     }
 
     // Step 4: Validate each review against the category-specific schema
-    const schemaMap = {
-      satire: submittedReviewAnswerSatireSchema,
-      report: submittedReviewAnswerReportSchema,
-      opinion: submittedReviewAnswerOpinionSchema,
-      text_message: submittedReviewAnswerTextMessageSchema,
-    } as const;
-    const reviewSchema = schemaMap[category as keyof typeof schemaMap];
+    const reviewSchema =
+      submittedReviewAnswerSchemaMap[
+        category as keyof typeof submittedReviewAnswerSchemaMap
+      ];
 
     const validatedReviews: SubmittedReview[] = [];
     const invalidReviews: {

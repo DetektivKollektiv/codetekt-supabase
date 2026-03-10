@@ -1,9 +1,7 @@
 import { ZodIssue } from "npm:zod@4.1.13";
 import {
-  submittedReviewAnswerOpinionSchema,
-  submittedReviewAnswerReportSchema,
-  submittedReviewAnswerSatireSchema,
-  submittedReviewAnswerTextMessageSchema,
+  type Category,
+  submittedReviewAnswerSchemaMap,
 } from "../_shared/schemas/review-schemas.ts";
 
 export type ValidationResult =
@@ -19,15 +17,6 @@ export type ValidationResult =
     };
   };
 
-const schemaMap = {
-  report: submittedReviewAnswerReportSchema,
-  opinion: submittedReviewAnswerOpinionSchema,
-  satire: submittedReviewAnswerSatireSchema,
-  text_message: submittedReviewAnswerTextMessageSchema,
-} as const;
-
-type Category = keyof typeof schemaMap;
-
 /**
  * Validates review answer data using the category-specific strict schema.
  *
@@ -42,7 +31,7 @@ export function validateSubmittedData(
   data: Record<string, unknown>,
   category: string,
 ): ValidationResult {
-  const schema = schemaMap[category as Category];
+  const schema = submittedReviewAnswerSchemaMap[category as Category];
 
   if (!schema) {
     return {

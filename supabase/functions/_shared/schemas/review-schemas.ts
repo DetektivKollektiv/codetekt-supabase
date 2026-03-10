@@ -178,3 +178,12 @@ export type SubmittedReviewAnswerTextMessage = z.infer<
 export type InProgressReviewAnswer = z.infer<
   typeof inProgressReviewAnswerSchema
 >;
+
+export const submittedReviewAnswerSchemaMap = {
+  report: submittedReviewAnswerReportSchema,
+  opinion: submittedReviewAnswerOpinionSchema,
+  satire: submittedReviewAnswerSatireSchema,
+  text_message: submittedReviewAnswerTextMessageSchema,
+} as const;
+
+export type Category = keyof typeof submittedReviewAnswerSchemaMap;

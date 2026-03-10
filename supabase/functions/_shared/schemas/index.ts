@@ -79,6 +79,7 @@ export {
 
 // Review schemas
 export {
+  type Category,
   type InProgressReviewAnswer,
   inProgressReviewAnswerSchema,
   type SubmittedReviewAnswerOpinion,
@@ -87,6 +88,7 @@ export {
   submittedReviewAnswerReportSchema,
   type SubmittedReviewAnswerSatire,
   submittedReviewAnswerSatireSchema,
+  submittedReviewAnswerSchemaMap,
   type SubmittedReviewAnswerTextMessage,
   submittedReviewAnswerTextMessageSchema,
 } from "./review-schemas.ts";

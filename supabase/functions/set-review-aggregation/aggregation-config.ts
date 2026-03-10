@@ -41,34 +41,3 @@ export const QUESTION_ICONS: Record<
 export const SKIPPED_QUESTION_IDS = [
   "submit_question",
 ];
-
-export const METADATA_QUESTION_IDS = [
-  "title_question",
-  "keywords_question",
-  "content_type_question",
-];
-/*         "options": [
-          {
-            "id": "satire",
-            "text": "Satire"
-          },
-          {
-            "id": "neutral",
-            "text": "Neutral"
-          },
-          {
-            "id": "text_message",
-            "text": "Textnachricht"
-          },
-          {
-            "id": "opinion",
-            "text": "Meinung"
-          }
-        ], */
-
-export const CONTENT_TYPE_NATURALTEXT: Record<string, string> = {
-  "satire": "Satire",
-  "neutral": "Neutral",
-  "text_message": "Textnachricht",
-  "opinion": "Meinung",
-};

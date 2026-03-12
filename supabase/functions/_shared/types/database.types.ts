@@ -259,77 +259,6 @@ export type Database = {
           },
         ];
       };
-      case_disputes: {
-        Row: {
-          case_id: string;
-          created_at: string | null;
-          disputed_by: string;
-          final_value: string | null;
-          id: string;
-          metadata_field: string;
-          original_value: string;
-          reason: string | null;
-          resolution: string | null;
-          resolved_at: string | null;
-          resolved_by: string | null;
-        };
-        Insert: {
-          case_id: string;
-          created_at?: string | null;
-          disputed_by: string;
-          final_value?: string | null;
-          id?: string;
-          metadata_field: string;
-          original_value: string;
-          reason?: string | null;
-          resolution?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-        };
-        Update: {
-          case_id?: string;
-          created_at?: string | null;
-          disputed_by?: string;
-          final_value?: string | null;
-          id?: string;
-          metadata_field?: string;
-          original_value?: string;
-          reason?: string | null;
-          resolution?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "review_disputes_case_id_fkey";
-            columns: ["case_id"];
-            isOneToOne: false;
-            referencedRelation: "cases";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "review_disputes_case_id_fkey";
-            columns: ["case_id"];
-            isOneToOne: false;
-            referencedRelation: "cases_without_open_disputes";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "review_disputes_disputed_by_fkey";
-            columns: ["disputed_by"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "review_disputes_resolved_by_fkey";
-            columns: ["resolved_by"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       case_keywords: {
         Row: {
           case_id: string;
@@ -480,6 +409,77 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "review_templates";
             referencedColumns: ["version"];
+          },
+        ];
+      };
+      cases_metadata_disputes: {
+        Row: {
+          case_id: string;
+          created_at: string | null;
+          disputed_by: string;
+          final_value: string | null;
+          id: string;
+          metadata_field: string;
+          original_value: string;
+          reason: string | null;
+          resolution: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: {
+          case_id: string;
+          created_at?: string | null;
+          disputed_by: string;
+          final_value?: string | null;
+          id?: string;
+          metadata_field: string;
+          original_value: string;
+          reason?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Update: {
+          case_id?: string;
+          created_at?: string | null;
+          disputed_by?: string;
+          final_value?: string | null;
+          id?: string;
+          metadata_field?: string;
+          original_value?: string;
+          reason?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "review_disputes_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: false;
+            referencedRelation: "cases";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_disputes_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: false;
+            referencedRelation: "cases_without_open_disputes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_disputes_disputed_by_fkey";
+            columns: ["disputed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_disputes_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
           },
         ];
       };

@@ -42,14 +42,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report"]
           }
@@ -88,14 +88,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion"]
           }
@@ -134,14 +134,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -180,14 +180,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -226,14 +226,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -272,14 +272,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -318,14 +318,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -364,14 +364,14 @@ VALUES (
         "question": "Der Artikel beinhaltet keine offensichtlichen rhetorischen Manipulationstechniken, um die Wahrnehmung bewusst zu beeinflussen.",
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
@@ -410,14 +410,14 @@ VALUES (
         "question": "Der Artikel ist objektiv geschrieben und frei von Hetze, Generalisierungen, Panikmache oder Ähnlichem.",
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
@@ -456,14 +456,14 @@ VALUES (
         "question": "Die Überschrift passt zum Inhalt des Artikels.",
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
@@ -502,14 +502,14 @@ VALUES (
         "question": "Die im Beitrag aufgeführten Behauptungen wurden bislang nicht durch Fact-Checking widerlegt.",
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
@@ -559,14 +559,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -605,14 +605,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -651,14 +651,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -697,14 +697,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -754,14 +754,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -800,14 +800,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -846,14 +846,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -892,14 +892,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -949,14 +949,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
@@ -995,14 +995,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "text_message"]
           }
@@ -1041,14 +1041,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_type",
+            "field_id": "category",
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }

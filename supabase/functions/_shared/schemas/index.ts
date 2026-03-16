@@ -13,6 +13,7 @@ export {
 
 // Condition schemas
 export {
+  categoryInConditionSchema,
   comparisonConditionSchema,
   type Condition,
   conditionSchema,

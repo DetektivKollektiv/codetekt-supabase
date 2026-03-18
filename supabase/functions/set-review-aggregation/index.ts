@@ -5,10 +5,10 @@
  * Uses service role key to access all reviews regardless of RLS policies.
  *
  * Aggregation process:
+ * - Verifies case metadata completeness (title, category, keywords must all exist)
  * - Fetches case and associated review template
  * - Fetches all submitted reviews for the specified case
- * - Validates each review against the schema (filters out invalid reviews)
- * - Applies resolved dispute values for metadata fields (title, keywords, content_type)
+ * - Validates each review against the category-specific schema (filters out invalid reviews)
  * - Calculates consensus values and confidence scores for all fields
  * - Organizes aggregated fields by questions matching template structure
  * - Generates quality tags for each aggregated field
@@ -16,13 +16,14 @@
  * - Stores aggregation with reviewer IDs and timestamp
  *
  * Requirements:
+ * - Case must have title, category, and keywords set in their respective tables
  * - Minimum 2 valid reviews required for aggregation
  * - Invalid reviews are logged but don't block aggregation
- * - Resolved disputes override review values for metadata fields
  * - Template must exist and be valid
  *
  * Returns:
  * - Success response when aggregation is saved
+ * - Error if case metadata is incomplete (missing title, category, or keywords)
  * - Error if case or template not found
  * - Error if insufficient valid reviews (< 2)
  * - Error if aggregation validation fails
@@ -37,7 +38,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
-import { submittedReviewAnswerSchema } from "../_shared/schemas/review-schemas.ts";
+import { submittedReviewAnswerSchemaMap } from "../_shared/schemas/review-schemas.ts";
 import { reviewTemplateSchema } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { buildAggregation, SubmittedReview } from "./aggregation.ts";
@@ -74,6 +75,48 @@ Deno.serve(async (req) => {
       supabaseUrl,
       supabaseServiceRoleKey,
     );
+
+    // Step 2.3: Verify all case metadata is set (title, category, keywords)
+    const [
+      { data: titleData, error: titleError },
+      { data: categoryData, error: categoryError },
+      { data: keywordsData, error: keywordsError },
+    ] = await Promise.all([
+      supabaseServiceRole
+        .from("case_titles")
+        .select("id")
+        .eq("case_id", case_id)
+        .maybeSingle(),
+      supabaseServiceRole
+        .from("case_categories")
+        .select("value")
+        .eq("case_id", case_id)
+        .maybeSingle(),
+      supabaseServiceRole
+        .from("case_keywords")
+        .select("id")
+        .eq("case_id", case_id)
+        .limit(1),
+    ]);
+
+    const missingMetadata: string[] = [];
+    if (titleError || !titleData) missingMetadata.push("title");
+    if (categoryError || !categoryData) missingMetadata.push("category");
+    if (keywordsError || !keywordsData || keywordsData.length === 0) {
+      missingMetadata.push("keywords");
+    }
+
+    if (missingMetadata.length > 0) {
+      return new Response(
+        JSON.stringify({
+          error: "Case metadata incomplete",
+          missing: missingMetadata,
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const category = categoryData!.value;
 
     // Step 2.5: Fetch case to get template_version
     const { data: caseData, error: caseError } = await supabaseServiceRole
@@ -148,28 +191,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3.5: Query resolved disputes for metadata fields
-    const { data: resolvedDisputes, error: disputeError } =
-      await supabaseServiceRole
-        .from("review_disputes")
-        .select("field_id, final_value")
-        .eq("case_id", case_id)
-        .not("resolution", "is", null)
-        .not("final_value", "is", null)
-        .in("field_id", ["title", "keyword_type", "content_type"]);
+    // Step 4: Validate each review against the category-specific schema
+    const reviewSchema =
+      submittedReviewAnswerSchemaMap[
+        category as keyof typeof submittedReviewAnswerSchemaMap
+      ];
 
-    if (disputeError) {
-      console.error("Failed to query resolved disputes:", disputeError);
-      return new Response(
-        JSON.stringify({
-          error: "Failed to query resolved disputes",
-          details: disputeError.message,
-        }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    // Step 4: Validate each review and filter out invalid ones
     const validatedReviews: SubmittedReview[] = [];
     const invalidReviews: {
       reviewed_by: string;
@@ -177,7 +204,7 @@ Deno.serve(async (req) => {
     }[] = [];
 
     for (const review of allSubmittedReviews ?? []) {
-      const validationResult = submittedReviewAnswerSchema.safeParse(
+      const validationResult = reviewSchema.safeParse(
         review.data,
       );
       if (validationResult.success) {
@@ -219,7 +246,6 @@ Deno.serve(async (req) => {
       const aggregationResult = buildAggregation(
         validatedReviews,
         template,
-        resolvedDisputes || undefined,
       );
 
       aggregation = aggregationResult.aggregation;

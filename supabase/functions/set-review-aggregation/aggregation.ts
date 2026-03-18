@@ -6,10 +6,8 @@ import {
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
-  CONTENT_TYPE_NATURALTEXT,
   DEFAULT_FIELD_TAG,
   FIELD_TAGS,
-  METADATA_QUESTION_IDS,
   QUESTION_ICONS,
   SKIPPED_QUESTION_IDS,
 } from "./aggregation-config.ts";
@@ -26,92 +24,6 @@ export type SubmittedReview = Pick<
   "data" | "reviewed_by"
 >;
 
-export type ResolvedDispute = Pick<
-  Database["public"]["Tables"]["review_disputes"]["Row"],
-  "field_id" | "final_value"
->;
-
-/**
- * Extracts and aggregates metadata from submitted review answers.
- *
- * - Title: Taken from the first answer
- * - Keywords (keyword_type): Merges unique keywords from all reviews
- * - Content type: Taken from the first answer
- * - Resolved disputes: Admin's final_value overrides aggregated values
- *
- * @param submitted - Array of submitted review answers with data and reviewer_id
- * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
- * @returns Metadata object with title, keyword_type and content_type
- */
-export function buildAggregationMetadata(
-  submitted: SubmittedReview[],
-  resolvedDisputes?: ResolvedDispute[],
-): {
-  title: string | null;
-  keyword_type: string[] | null;
-  content_type: string[] | null;
-} {
-  const firstData = submitted[0]?.data as Record<string, unknown> | undefined;
-
-  // Merge keywords from all reviews
-  const allKeywords = new Set<string>();
-  for (const { data } of submitted) {
-    const answerRecord = data as Record<string, unknown>;
-    const keywords = answerRecord?.keyword_type as string[] | null | undefined;
-    if (keywords && Array.isArray(keywords)) {
-      keywords.forEach((keyword) => allKeywords.add(keyword));
-    }
-  }
-
-  // Build aggregated values
-  let finalTitle: string | null =
-    (firstData?.title as string | null | undefined) ?? null;
-  let finalKeywordType: string[] | null = allKeywords.size > 0
-    ? Array.from(allKeywords)
-    : null;
-  let finalContentType: string[] | null =
-    (firstData?.content_type as string[] | null | undefined) ?? null;
-
-  // Apply resolved dispute overrides
-  if (resolvedDisputes && resolvedDisputes.length > 0) {
-    for (const dispute of resolvedDisputes) {
-      if (!dispute.final_value) continue;
-
-      try {
-        const parsedValue = JSON.parse(dispute.final_value);
-
-        if (dispute.field_id === "title" && typeof parsedValue === "string") {
-          finalTitle = parsedValue;
-        } else if (
-          dispute.field_id === "keyword_type" && Array.isArray(parsedValue)
-        ) {
-          finalKeywordType = parsedValue;
-        } else if (
-          dispute.field_id === "content_type" && Array.isArray(parsedValue)
-        ) {
-          // set natural content_type using CONTENT_TYPE_NATURALTEXT
-
-          finalContentType = parsedValue.map((ct) =>
-            CONTENT_TYPE_NATURALTEXT[ct] || ct
-          );
-        }
-      } catch (error) {
-        console.error(
-          `Failed to parse final_value for dispute field_id="${dispute.field_id}":`,
-          error,
-        );
-        // Fall back to aggregated value (already set above)
-      }
-    }
-  }
-
-  return {
-    title: finalTitle,
-    keyword_type: finalKeywordType,
-    content_type: finalContentType,
-  };
-}
-
 /**
  * Extracts field IDs that should be aggregated from the review template.
  * Returns Set of traffic-light field IDs, excluding metadata and skipped questions.
@@ -125,9 +37,6 @@ export function extractAggregableFieldIds(
   const validFieldIds = new Set<string>();
 
   for (const question of template) {
-    // Skip metadata questions (handled separately)
-    if (METADATA_QUESTION_IDS.includes(question.id)) continue;
-
     // Skip questions marked as skipped
     if (SKIPPED_QUESTION_IDS.includes(question.id)) continue;
 
@@ -307,44 +216,34 @@ export function buildTextFields(
  * Builds statistical aggregation from multiple submitted review answers.
  *
  * Explicit question handling:
- * 1. METADATA_QUESTION_IDS: Extracted separately for metadata (title, keywords, content_type)
- * 2. SKIPPED_QUESTION_IDS: Completely excluded from aggregation output
- * 3. Other questions: Aggregated with numeric field statistics
+ * 1. SKIPPED_QUESTION_IDS: Completely excluded from aggregation output
+ * 2. Other questions: Aggregated with numeric field statistics
  *
  * Process:
- * - Extracts metadata (title from first answer, keyword_type merged, content_type from first answer)
- * - Applies resolved dispute overrides to metadata (admin's final values take precedence)
  * - Aggregates numeric fields with counts, percentages, averages, tags
- * - Organizes fields by questions matching template structure (excluding metadata and skipped questions)
+ * - Organizes fields by questions matching template structure (excluding skipped questions)
  * - Computes overall result score
  *
  * @param submitted - Array of submitted review answers with data and reviewer_id
  * @param template - Review template to match structure and get metadata
- * @param resolvedDisputes - Optional array of resolved disputes with admin's final values
  * @returns Aggregation object and result score
  */
 export function buildAggregation(
   submitted: SubmittedReview[],
   template: ReviewTemplateInput[],
-  resolvedDisputes?: ResolvedDispute[],
 ): AggregationResult {
   // Step 1: Extract valid traffic-light field IDs from template
   const validFieldIds = extractAggregableFieldIds(template);
 
-  // Step 2: Extract metadata from metadata questions
-  const metadata = buildAggregationMetadata(submitted, resolvedDisputes);
-
-  // Step 3: Aggregate traffic-light fields (excluding metadata and skipped questions)
+  // Step 2: Aggregate traffic-light fields
   const aggregatedFields = buildAggregationFields(submitted, validFieldIds);
 
-  // Step 4: Aggregate text fields from non-metadata, non-skipped questions
+  // Step 3: Aggregate text fields
   const textFields = buildTextFields(submitted, template);
 
-  // Step 5: Build questions array for aggregation (exclude metadata and skipped questions)
+  // Step 4: Build questions array for aggregation (excluding skipped questions)
   const questions = template
     .filter((question) => {
-      // Explicitly skip metadata questions (handled separately above)
-      if (METADATA_QUESTION_IDS.includes(question.id)) return false;
       // Explicitly skip questions marked as skipped
       if (SKIPPED_QUESTION_IDS.includes(question.id)) return false;
       // Only include questions with fields
@@ -411,7 +310,6 @@ export function buildAggregation(
   return {
     aggregation: {
       questions,
-      metadata,
     },
     resultScore,
   };

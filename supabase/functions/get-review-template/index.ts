@@ -1,31 +1,18 @@
 /**
  * GET REVIEW TEMPLATE EDGE FUNCTION
  *
- * Returns a personalized review template for a case based on:
- * - User's reviewer status (first reviewer vs. subsequent reviewers)
- * - Aggregated metadata from existing submitted reviews (title, keywords, content types)
- * - Resolved disputes (admin's final values lock fields and disable editing)
- * - User's in-progress review data (pre-populates answer values)
+ * Returns a personalized review template for a case.
  *
  * Blocks access if:
+ * - Case metadata (title, keywords, category) is not yet set in the DB
  * - Case has open/pending disputes on any field
  * - User is not authenticated
  * - Case or template not found
  *
- * Metadata field behavior:
- * - First reviewer:
- *   - All metadata fields (title, keywords, content_type) are required and editable
- *   - No initial_answer_value set
- *
- * - Subsequent reviewers:
- *   - Title: initial_answer_value set from first reviewer's submission
- *   - Content type: initial_answer_value set from first reviewer's submission
- *   - Keywords: initial_answer_value set with all keywords from all reviewers (deduplicated), additional_option_count=3
- *   - All metadata fields: is_required=false, is_disabled=true, is_disputable=true
- *
- * - Resolved disputes (any field):
- *   - initial_answer_value set to admin's final_value
- *   - is_required=false, is_disabled=true, is_disputable=false (locked, non-disputable)
+ * Template building:
+ * - Resolved disputes: admin's final_value locks the affected field
+ *   (is_required=false, is_disabled=true, is_disputable=false)
+ * - User's in-progress draft values are pre-populated into answer_value fields
  */
 
 // Setup type definitions for built-in Supabase Runtime APIs
@@ -34,30 +21,15 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { corsHeaders } from "../_shared/cors.ts";
-import {
-  chipFieldSchema,
-  multiLineTextFieldSchema,
-  textFieldSchema,
-} from "../_shared/schemas/field-schemas.ts";
-import { InProgressReviewAnswer } from "../_shared/schemas/review-schemas.ts";
+import { Field } from "../_shared/schemas/field-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
-  aggregateContentTypes,
-  aggregateKeywords,
-  aggregateTitle,
   deepCloneTemplate,
-  modifyContentTypeField,
   modifyFieldWithResolvedDispute,
-  modifyKeywordsField,
-  modifyTitleField,
   populateAnswerValues,
   replaceField,
 } from "./template-modifier.ts";
-
-type ChipField = z.infer<typeof chipFieldSchema>;
-type MultiLineTextField = z.infer<typeof multiLineTextFieldSchema>;
-type TextField = z.infer<typeof textFieldSchema>;
 
 // Request validation schema
 const requestSchema = z.object({
@@ -79,20 +51,14 @@ type CaseWithRelations = {
     | Array<{
       id: string;
       reviewed_by: string;
-      data: InProgressReviewAnswer;
+      data: Record<string, unknown>;
       submitted_review_answers_id: string | null;
       has_unpublished_changes: boolean;
     }>
     | null;
-  review_answers_submitted:
+  case_disputes:
     | Array<{
-      reviewed_by: string;
-      data: unknown;
-    }>
-    | null;
-  review_disputes:
-    | Array<{
-      field_id: string;
+      metadata_field: string;
       resolution: string | null;
       final_value: string | null;
     }>
@@ -154,34 +120,43 @@ Deno.serve(async (req) => {
 
     const { case_id } = parsed.data;
 
-    // 3. Data Fetching (single optimized query)
-    const { data: caseData, error: queryError } = await supabase
-      .from("cases")
-      .select(`
-        id,
-        template_version,
-        review_templates!cases_template_version_fkey (
-          template
-        ),
-        review_answers_in_progress!review_answers_in_progress_case_id_fkey (
+    // 3. Data Fetching — check metadata completeness and fetch case data in parallel
+    const [metadataResult, caseResult] = await Promise.all([
+      Promise.all([
+        supabase.from("case_titles").select("id").eq("case_id", case_id)
+          .maybeSingle(),
+        supabase.from("case_keywords").select("id").eq("case_id", case_id)
+          .limit(1).maybeSingle(),
+        supabase.from("case_categories").select("id").eq("case_id", case_id)
+          .maybeSingle(),
+      ]),
+      supabase
+        .from("cases")
+        .select(`
           id,
-          reviewed_by,
-          data,
-          submitted_review_answers_id,
-          has_unpublished_changes
-        ),
-        review_answers_submitted!review_answers_submitted_case_id_fkey (
-          reviewed_by,
-          data
-        ),
-        review_disputes!review_disputes_case_id_fkey (
-          field_id,
-          resolution,
-          final_value
-        )
-      `)
-      .eq("id", case_id)
-      .single();
+          template_version,
+          review_templates!cases_template_version_fkey (
+            template
+          ),
+          review_answers_in_progress!review_answers_in_progress_case_id_fkey (
+            id,
+            reviewed_by,
+            data,
+            submitted_review_answers_id,
+            has_unpublished_changes
+          ),
+          case_disputes:cases_metadata_disputes!review_disputes_case_id_fkey (
+            metadata_field,
+            resolution,
+            final_value
+          )
+        `)
+        .eq("id", case_id)
+        .single(),
+    ]);
+
+    const [titleResult, keywordsResult, categoryResult] = metadataResult;
+    const { data: caseData, error: queryError } = caseResult;
 
     // 4. Authorization Checks
 
@@ -212,8 +187,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check for open disputes (especially on metadata fields like title)
-    const openDisputes = typedCaseData.review_disputes?.filter(
+    // Check metadata completeness — all three must exist before a review can start
+    const missing: string[] = [];
+    if (!titleResult.data) missing.push("title");
+    if (!keywordsResult.data) missing.push("keywords");
+    if (!categoryResult.data) missing.push("category");
+
+    if (missing.length > 0) {
+      return new Response(
+        JSON.stringify({ error: "Case metadata incomplete", missing }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // Check for open disputes
+    const openDisputes = typedCaseData.case_disputes?.filter(
       (dispute) => dispute.resolution === null,
     );
 
@@ -237,65 +228,16 @@ Deno.serve(async (req) => {
       typedCaseData.review_templates.template,
     );
 
-    // STEP 2: Get all submitted reviews
-    const submittedReviews = typedCaseData.review_answers_submitted || [];
-
-    // STEP 3: Aggregate metadata from submitted reviews
-    const aggregatedKeywords = aggregateKeywords(submittedReviews);
-    const aggregatedContentTypes = aggregateContentTypes(submittedReviews);
-    const aggregatedTitle = aggregateTitle(submittedReviews);
-
-    // STEP 4: Modify metadata fields based on reviewer status
-    // Find and modify title field
-    for (const section of template) {
-      const titleField = section.fields.find(
-        (f) => f.id === "title" && f.type === "text",
-      );
-      if (titleField && titleField.type === "text") {
-        const modifiedField = modifyTitleField(
-          titleField,
-          submittedReviews.length,
-          aggregatedTitle,
-        );
-        template = replaceField(template, "title", modifiedField);
-      }
-
-      // Find and modify keywords field
-      const keywordsField = section.fields.find(
-        (f) => f.id === "keyword_type" && f.type === "multi-line-text",
-      );
-      if (keywordsField && keywordsField.type === "multi-line-text") {
-        const modifiedField = modifyKeywordsField(
-          keywordsField,
-          submittedReviews.length,
-          aggregatedKeywords,
-        );
-        template = replaceField(template, "keyword_type", modifiedField);
-      }
-
-      // Find and modify content type field
-      const contentTypeField = section.fields.find(
-        (f) => f.id === "content_type" && f.type === "chip",
-      );
-      if (contentTypeField && contentTypeField.type === "chip") {
-        const modifiedField = modifyContentTypeField(
-          contentTypeField,
-          submittedReviews.length,
-          aggregatedContentTypes,
-        );
-        template = replaceField(template, "content_type", modifiedField);
-      }
-    }
-
-    // STEP 5: Apply resolved dispute modifications (overrides aggregated values)
-    const resolvedDisputes = typedCaseData.review_disputes?.filter(
+    // STEP 2: Apply resolved dispute modifications (locks fields with admin's final value)
+    const resolvedDisputes = typedCaseData.case_disputes?.filter(
       (dispute) => dispute.resolution !== null && dispute.final_value !== null,
     ) || [];
 
     for (const dispute of resolvedDisputes) {
-      // Find the field to modify
       for (const section of template) {
-        const field = section.fields.find((f) => f.id === dispute.field_id);
+        const field = section.fields.find((f) =>
+          f.id === dispute.metadata_field
+        );
         if (field) {
           const modifiedField = modifyFieldWithResolvedDispute(
             field,
@@ -303,44 +245,21 @@ Deno.serve(async (req) => {
           );
           template = replaceField(
             template,
-            dispute.field_id,
-            modifiedField as ChipField | MultiLineTextField | TextField,
+            dispute.metadata_field,
+            modifiedField as Field,
           );
           break;
         }
       }
     }
 
-    // STEP 5.5: Disable comment field if user has already submitted a review
-    const userHasSubmittedReview = submittedReviews.some(
-      (review) => review.reviewed_by === userId,
-    );
-
-    if (userHasSubmittedReview) {
-      for (const section of template) {
-        const commentField = section.fields.find(
-          (f) => f.id === "comment" && f.type === "text-area",
-        );
-        if (commentField) {
-          commentField.is_disabled = true;
-          commentField.is_required = false;
-          // is_shown defaults to true, so field remains visible
-          break;
-        }
-      }
-    }
-
-    // STEP 6: Populate user's draft values if exists
+    // STEP 3: Populate user's draft values if exists
     const userInProgressReview = typedCaseData.review_answers_in_progress?.find(
       (ra) => ra.reviewed_by === userId,
     );
 
     if (userInProgressReview) {
-      const inProgressData = userInProgressReview.data as Record<
-        string,
-        unknown
-      >;
-      template = populateAnswerValues(template, inProgressData);
+      template = populateAnswerValues(template, userInProgressReview.data);
     }
 
     // 6. Return Response

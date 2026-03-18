@@ -138,9 +138,30 @@ Deno.serve(async (req) => {
     // Capture updated_at for optimistic locking (race condition protection)
     const originalUpdatedAt = inProgressReview.updated_at;
 
-    // Step 4: Validate data with strict schema
+    // Step 3.5: Fetch category for the case to select the correct schema
+    const { data: categoryData, error: categoryError } = await supabase
+      .from("case_categories")
+      .select("value")
+      .eq("case_id", inProgressReview.case_id)
+      .maybeSingle();
+
+    if (categoryError || !categoryData) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Case category not set. Please set the case category before publishing.",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // Step 4: Validate data with category-specific strict schema
     const validation = validateSubmittedData(
       inProgressReview.data as Record<string, unknown>,
+      categoryData.value,
     );
 
     if (!validation.success) {

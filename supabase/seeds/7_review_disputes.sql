@@ -1,6 +1,7 @@
 -- ============================================
 -- SEED: Case Disputes
 -- Test data for Case Disputes System
+-- Table: cases_metadata_disputes (renamed from review_disputes)
 -- ============================================
 
 -- ============================================
@@ -10,10 +11,10 @@
 -- Dispute 1: Content Type Dispute on Case 1 (Ukraine article)
 -- Anna disputes that the article should be categorized as "opinion" instead of "nachrichtenartikel"
 -- Status: Unresolved (waiting for admin review)
-/* INSERT INTO public.review_disputes (
+/* INSERT INTO public.cases_metadata_disputes (
   id,
   case_id,
-  field_id,
+  metadata_field,
   original_value,
   disputed_by,
   reason,
@@ -25,7 +26,7 @@
 ) VALUES (
   'ddd00001-0001-4001-8001-000000000001',
   '11111111-1111-4111-8111-111111111111',  -- Case 1: Ukraine article
-  'content_type',
+  'category',
   '["nachrichtenartikel"]',
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',  -- Anna
   'Dieser Artikel ist klar tendenziös und sollte als Meinungsbeitrag kategorisiert werden.',
@@ -43,10 +44,10 @@
 -- Dispute 2: Keyword Dispute on Case 1 - Admin Kept Original
 -- Max suggested adding "NATO" keyword, but admin decided original keywords are sufficient
 -- Status: Resolved (original_kept)
-INSERT INTO public.review_disputes (
+INSERT INTO public.cases_metadata_disputes (
   id,
   case_id,
-  field_id,
+  metadata_field,
   original_value,
   disputed_by,
   reason,
@@ -58,7 +59,7 @@ INSERT INTO public.review_disputes (
 ) VALUES (
   'ddd00002-0002-4002-8002-000000000002',
   '11111111-1111-4111-8111-111111111111',  -- Case 1: Ukraine article
-  'keyword_type',
+  'keywords',
   '["Ukraine", "Russland", "Krieg", "Putin", "Zelensky"]',
   'cccccccc-cccc-cccc-cccc-cccccccccccc',  -- Max
   'Das Stichwort ''NATO'' fehlt komplett, obwohl es mehrfach im Artikel erwähnt wird.',
@@ -72,10 +73,10 @@ INSERT INTO public.review_disputes (
 -- Dispute 3: Content Type Dispute on Case 2 - Admin Changed Value
 -- Lisa disputed climate article categorization, admin agreed and changed to "opinion"
 -- Status: Resolved (changed)
-INSERT INTO public.review_disputes (
+INSERT INTO public.cases_metadata_disputes (
   id,
   case_id,
-  field_id,
+  metadata_field,
   original_value,
   disputed_by,
   reason,
@@ -87,7 +88,7 @@ INSERT INTO public.review_disputes (
 ) VALUES (
   'ddd00003-0003-4003-8003-000000000003',
   '22222222-2222-4222-8222-222222222222',  -- Case 2: Climate article
-  'content_type',
+  'category',
   '["nachrichtenartikel"]',
   'dddddddd-dddd-dddd-dddd-dddddddddddd',  -- Lisa
   'Dies ist eindeutig ein Meinungsbeitrag, keine neutrale Nachricht.',

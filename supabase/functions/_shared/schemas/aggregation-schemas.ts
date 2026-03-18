@@ -1,9 +1,4 @@
 import { z } from "npm:zod@4.1.13";
-import {
-  chipAnswerSchema,
-  multiLineTextAnswerSchema,
-  textAnswerSchema,
-} from "./answer-schemas.ts";
 
 // Schema for counts and percentages (reusable)
 // Note: Option 4 ("not applicable") is filtered out before aggregation output
@@ -81,11 +76,6 @@ export const aggregationQuestionSchema = z.object({
 // Review aggregation schema with new structure
 export const reviewAggregationSchema = z.object({
   questions: z.array(aggregationQuestionSchema),
-  metadata: z.object({
-    title: textAnswerSchema, // Case title from first reviewer
-    keyword_type: multiLineTextAnswerSchema, // Aggregated keywords
-    content_type: chipAnswerSchema, // Content type from first reviewer
-  }),
 });
 
 export type ReviewAggregationData = z.infer<typeof reviewAggregationSchema>;

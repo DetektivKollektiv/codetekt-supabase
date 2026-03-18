@@ -13,6 +13,7 @@ export {
 
 // Condition schemas
 export {
+  categoryInConditionSchema,
   comparisonConditionSchema,
   type Condition,
   conditionSchema,
@@ -52,14 +53,6 @@ export {
   reviewAggregationSchema,
 } from "./aggregation-schemas.ts";
 
-// Review schemas
-export {
-  type InProgressReviewAnswer,
-  inProgressReviewAnswerSchema,
-  type SubmittedReviewAnswer,
-  submittedReviewAnswerSchema,
-} from "./review-schemas.ts";
-
 // Open Graph schemas
 export {
   type OgImageObject,
@@ -84,3 +77,19 @@ export {
   type UpdateCase,
   updateCaseSchema,
 } from "./case-schemas.ts";
+
+// Review schemas
+export {
+  type Category,
+  type InProgressReviewAnswer,
+  inProgressReviewAnswerSchema,
+  type SubmittedReviewAnswerOpinion,
+  submittedReviewAnswerOpinionSchema,
+  type SubmittedReviewAnswerReport,
+  submittedReviewAnswerReportSchema,
+  type SubmittedReviewAnswerSatire,
+  submittedReviewAnswerSatireSchema,
+  submittedReviewAnswerSchemaMap,
+  type SubmittedReviewAnswerTextMessage,
+  submittedReviewAnswerTextMessageSchema,
+} from "./review-schemas.ts";

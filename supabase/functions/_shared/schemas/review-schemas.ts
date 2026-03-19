@@ -32,7 +32,6 @@ export const submittedReviewAnswerReportSchema = z
     source_author_expertise: trafficLightAnswerSchema,
     source_claims_supported: trafficLightAnswerSchema,
     source_listed_and_verifiable: trafficLightAnswerSchema,
-    source_claims_match_originals: trafficLightAnswerSchema,
     source_additional_points: trafficLightAnswerSchema,
 
     // Zitate
@@ -67,7 +66,6 @@ export const submittedReviewAnswerOpinionSchema = z
     source_author_expertise: trafficLightAnswerSchema,
     source_claims_supported: trafficLightAnswerSchema,
     source_listed_and_verifiable: trafficLightAnswerSchema,
-    source_claims_match_originals: trafficLightAnswerSchema,
     source_additional_points: trafficLightAnswerSchema,
 
     // Zitate
@@ -96,7 +94,6 @@ export const submittedReviewAnswerTextMessageSchema = z
     source_text_message_author_expertise: trafficLightAnswerSchema,
     source_claims_supported: trafficLightAnswerSchema,
     source_listed_and_verifiable: trafficLightAnswerSchema,
-    source_claims_match_originals: trafficLightAnswerSchema,
     source_additional_points: trafficLightAnswerSchema,
 
     // Zitate
@@ -134,7 +131,6 @@ export const inProgressReviewAnswerSchema = z
     source_text_message_author_expertise: trafficLightAnswerSchema.optional(),
     source_claims_supported: trafficLightAnswerSchema.optional(),
     source_listed_and_verifiable: trafficLightAnswerSchema.optional(),
-    source_claims_match_originals: trafficLightAnswerSchema.optional(),
     source_additional_points: trafficLightAnswerSchema.optional(),
 
     // Zitate

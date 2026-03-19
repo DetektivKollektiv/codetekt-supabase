@@ -39,7 +39,6 @@ VALUES
     "source_author_expertise": 3,
     "source_claims_supported": 1,
     "source_listed_and_verifiable": 1,
-    "source_claims_match_originals": 2,
     "source_additional_points": 1,
 
     "quotes_identifiable_people": 3,
@@ -76,7 +75,6 @@ VALUES
     "source_author_expertise": 3,
     "source_claims_supported": 2,
     "source_listed_and_verifiable": 2,
-    "source_claims_match_originals": 2,
     "source_additional_points": 2,
 
     "quotes_identifiable_people": 3,

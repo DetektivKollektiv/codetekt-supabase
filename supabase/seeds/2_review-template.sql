@@ -632,7 +632,7 @@ VALUES (
     ],
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
-      "title": "Inhalt",
+      "title": "Medium",
       "help_url": "",
       "indent_level": 0
     }
@@ -687,7 +687,7 @@ VALUES (
         ]
       },
       {
-        "id": "source_author_expertise",
+        "id": "source_text_message_author_expertise",
         "type": "traffic-light",
         "question": "Die Textnachricht ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",
         "options": [
@@ -825,99 +825,7 @@ VALUES (
         ]
       },
       {
-        "id": "source_claims_match_originals",
-        "type": "traffic-light",
-        "question": "Behauptungen werden mit externen Quellen und/oder eigenen Rechercheergebnissen belegt.",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ]
-      },
-      {
-        "id": "source_listed_and_verifiable",
-        "type": "traffic-light",
-        "question": "Die genannten externen Quellen wurden vollständig aufgeführt und/oder verlinkt und sind nachprüfbar.",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ]
-      },
-      {
-        "id": "source_listed_and_verifiable",
+        "id": "source_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Quelle negativ beeinflussen.",
         "options": [
@@ -975,7 +883,7 @@ VALUES (
     "id": "quotes_question",
     "fields": [
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_identifiable_people",
         "type": "traffic-light",
         "question": "In dem Beitrag werden identifizierbare Personen direkt oder indirekt zitiert.",
         "options": [
@@ -1067,7 +975,7 @@ VALUES (
         ]
       },
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_match_originals",
         "type": "traffic-light",
         "question": "Die Zitate sind korrekt wiedergegeben und nicht aus dem Zusammenhang gerissen.",
         "options": [
@@ -1113,7 +1021,7 @@ VALUES (
         ]
       },
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Zitate negativ beeinflussen.",
         "options": [

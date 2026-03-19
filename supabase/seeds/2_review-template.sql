@@ -1061,29 +1061,6 @@ VALUES (
       "help_url": "",
       "indent_level": 0
     }
-  },
-  {
-    "id": "submit_question",
-    "fields": [
-      {
-        "id": "comment",
-        "type": "text-area",
-        "options": [
-          {
-            "id": "comment_opt",
-            "max_length": 500,
-            "placeholder": "Schreibe deine Antwort hier..."
-          }
-        ],
-        "question": "Was ist dir noch aufgefallen?"
-      }
-    ],
-    "metadata": {
-      "text": "Wenn du willst, kannst du deine Einschätzung in einem zusammenfassenden Kommentar schildern oder schreiben, was dir sonst noch aufgefallen ist.",
-      "title": "Fall abschließen",
-      "help_url": "",
-      "indent_level": 0
-    }
   }
 ]
 '::jsonb,

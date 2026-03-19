@@ -680,7 +680,7 @@
         ]
       },
       {
-        "id": "source_author_expertise",
+        "id": "source_text_message_author_expertise",
         "type": "traffic-light",
         "question": "Die Textnachricht ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",
         "options": [
@@ -864,7 +864,7 @@
         ]
       },
       {
-        "id": "source_listed_and_verifiable",
+        "id": "source_claims_supported",
         "type": "traffic-light",
         "question": "Die genannten externen Quellen wurden vollständig aufgeführt und/oder verlinkt und sind nachprüfbar.",
         "options": [
@@ -910,7 +910,7 @@
         ]
       },
       {
-        "id": "source_listed_and_verifiable",
+        "id": "source_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Quelle negativ beeinflussen.",
         "options": [
@@ -968,7 +968,7 @@
     "id": "quotes_question",
     "fields": [
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_identifiable_people",
         "type": "traffic-light",
         "question": "In dem Beitrag werden identifizierbare Personen direkt oder indirekt zitiert.",
         "options": [
@@ -1060,7 +1060,7 @@
         ]
       },
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_match_originals",
         "type": "traffic-light",
         "question": "Die Zitate sind korrekt wiedergegeben und nicht aus dem Zusammenhang gerissen.",
         "options": [
@@ -1106,7 +1106,7 @@
         ]
       },
       {
-        "id": "quotes_experts_reputation",
+        "id": "quotes_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Zitate negativ beeinflussen.",
         "options": [

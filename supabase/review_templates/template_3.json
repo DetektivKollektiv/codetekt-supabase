@@ -1,11 +1,4 @@
--- ============================================
--- Review Template Version 1
--- ============================================
-
-INSERT INTO public.review_templates (version, template, created_by)
-VALUES (
-  1,
-  '[
+[
   {
     "id": "media_question",
     "fields": [
@@ -1167,6 +1160,3 @@ VALUES (
     }
   }
 ]
-'::jsonb,
-  (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com')
-);

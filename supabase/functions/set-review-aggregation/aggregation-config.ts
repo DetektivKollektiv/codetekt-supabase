@@ -34,6 +34,7 @@ export const QUESTION_ICONS: Record<
 > = {
   content_question: "notebook-text",
   media_question: "image",
+  medium_question: "newspaper",
   source_question: "link-2",
   quotes_question: "quote",
 };

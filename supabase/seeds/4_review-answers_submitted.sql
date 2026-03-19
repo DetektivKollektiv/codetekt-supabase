@@ -40,8 +40,12 @@ VALUES
     "source_claims_supported": 1,
     "source_listed_and_verifiable": 1,
     "source_claims_match_originals": 2,
+    "source_additional_points": 1,
 
-    "quotes_experts_reputation": 3
+    "quotes_identifiable_people": 3,
+    "quotes_experts_reputation": 3,
+    "quotes_match_originals": 3,
+    "quotes_additional_points": 3
   }'::jsonb,
   now() - interval '6 days',
   now() - interval '6 days',
@@ -72,8 +76,12 @@ VALUES
     "source_claims_supported": 2,
     "source_listed_and_verifiable": 2,
     "source_claims_match_originals": 2,
+    "source_additional_points": 2,
 
-    "quotes_experts_reputation": 3
+    "quotes_identifiable_people": 3,
+    "quotes_experts_reputation": 3,
+    "quotes_match_originals": 3,
+    "quotes_additional_points": 3
   }'::jsonb,
   now() - interval '5 days',
   now() - interval '5 days',

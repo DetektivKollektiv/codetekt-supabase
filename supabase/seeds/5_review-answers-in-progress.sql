@@ -40,8 +40,12 @@ VALUES
     "source_claims_supported": 1,
     "source_listed_and_verifiable": 1,
     "source_claims_match_originals": 2,
+    "source_additional_points": 1,
 
-    "quotes_experts_reputation": 3
+    "quotes_identifiable_people": 3,
+    "quotes_experts_reputation": 3,
+    "quotes_match_originals": 3,
+    "quotes_additional_points": 3
   }'::jsonb,
   '8a7c1c7e-7b85-4b98-9e2a-1f98b4a9a1c1',
   false,
@@ -73,8 +77,12 @@ VALUES
     "source_claims_supported": 2,
     "source_listed_and_verifiable": 2,
     "source_claims_match_originals": 2,
+    "source_additional_points": 2,
 
-    "quotes_experts_reputation": 3
+    "quotes_identifiable_people": 3,
+    "quotes_experts_reputation": 3,
+    "quotes_match_originals": 3,
+    "quotes_additional_points": 3
   }'::jsonb,
   'f1d6e9c5-3d90-4e8d-bc70-6b8b5a2d8c91',
   false,

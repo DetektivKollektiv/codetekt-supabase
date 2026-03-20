@@ -14,6 +14,14 @@ export const signUpSchema = z.object({
       /^[a-zA-Z0-9_-]+$/,
       "Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten",
     ),
+  legal: z.object({
+    privacy: z.boolean().refine((value: boolean) => value === true, {
+      message: "Du musst die Datenschutzerklärung akzeptieren",
+    }),
+    terms: z.boolean().refine((value: boolean) => value === true, {
+      message: "Du musst die Nutzungsbedingungen akzeptieren",
+    }),
+  }),
 });
 
 export type SignUpPayload = z.infer<typeof signUpSchema>;

@@ -38,6 +38,7 @@ export const chipFieldSchema = baseFieldSchema.extend({
 export const trafficLightFieldSchema = baseFieldSchema.extend({
   type: z.literal("traffic-light"),
   question: z.string(),
+  shortTip: z.string(),
   options: z.array(trafficLightOptionSchema),
   answer_value: trafficLightAnswerSchema.optional(),
   initial_answer_value: trafficLightAnswerSchema.optional(),

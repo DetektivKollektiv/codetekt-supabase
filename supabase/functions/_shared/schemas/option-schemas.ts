@@ -10,7 +10,6 @@ export const chipOptionSchema = z.object({
 export const trafficLightOptionSchema = z.object({
   id: z.string(),
   color: z.string(),
-  shortTip: z.string(),
   value: z.union([
     z.literal(0),
     z.literal(1),

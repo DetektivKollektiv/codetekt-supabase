@@ -13,6 +13,7 @@ VALUES (
         "id": "media_objectivity",
         "type": "traffic-light",
         "question": "Bilder und Videos im Artikel stellen das beschriebene Geschehen tatsächlich und objektiv dar. (falls vorhanden)",
+        "shortTip": "Achte darauf, ob sie die Szene überdramatisieren oder aus einem anderen Kontext stammen. Nutze eine Reverse Image Search (z.B. TinEye)",
         "options": [
           {
             "id": "traffic-light-opt-1",
@@ -99,7 +100,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte z. B. auf Musik, viele Schnitte, Effekte, Filter oder schwammige Umrisse"
       },
       {
         "id": "media_visualizations_not_distorted",
@@ -145,7 +147,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob Achsen verzerrt oder Daten weggelassen werden."
       },
       {
         "id": "media_addtional_points",
@@ -191,7 +194,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob KI missbräuchlich/verdeckt zum Einsatz kommt."
       }
     ],
     "metadata": {
@@ -248,7 +252,8 @@ VALUES (
             "operator": "in",
             "values": ["report"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob im Text verschiedene Sichtweisen und Kontroversen benannt werden."
       },
       {
         "id": "content_language",
@@ -294,7 +299,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": ""
       },
       {
         "id": "content_objective_no_hate_no_panic",
@@ -340,7 +346,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte auf Superlative, Verallgemeinerungen („immer“), Meinungen („ich finde“) oder Emotionen, die bei dir ausgelöst werden."
       },
       {
         "id": "content_headline_matches_article",
@@ -386,7 +393,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob die Überschrift den Inhalt fair zusammenfasst."
       },
       {
         "id": "content_claims_not_debunked",
@@ -432,7 +440,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": ""
       },
       {
         "id": "content_addtional_points",
@@ -478,7 +487,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte auf rhetorische Manipulationstechniken (im Help Center verlinkt) oder bewusst ausgelassene Informationen"
       }
     ],
     "metadata": {
@@ -535,7 +545,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Wem gehört das Medium, wer finanziert es? Nutze eine Online-Suche oder das Impressum."
       },
       {
         "id": "medium_authenticity",
@@ -581,7 +592,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob die URL wirklich zur Marke passt (https://www.zeit.de) vs. (https://www.zeitt.de) und ob Logo und Design stimmig wirken."
       },
       {
         "id": "medium_additional_points",
@@ -627,7 +639,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Achte auf fehlende Transparenz (Impressum, Redaktion), bekannte Fälle von Falschberichten oder Rügen durch den Presserat."
       }
     ],
     "metadata": {
@@ -684,7 +697,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Der Name steht meit unter dem Titel oder am Ende des Artikels. Gibt es einen prüfbaren Klarnamen + Bio oder andere Veröffentlichungen zum Thema?"
       },
       {
         "id": "source_text_message_author_expertise",
@@ -730,7 +744,8 @@ VALUES (
             "operator": "in",
             "values": ["text_message"]
           }
-        ]
+        ],
+        "shortTip": "Der Name steht meist im Profil. Gibt es einen prüfbaren Klarnamen + Bio oder andere Posts zum Thema?"
       },
       {
         "id": "source_claims_supported",
@@ -776,7 +791,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob nach Kernaussagen im Text Quellen genannt werden."
       },
       {
         "id": "source_listed_and_verifiable",
@@ -822,7 +838,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Meist sind diese direkt verlinkt oder als Fußnote unterhalb des Artikels zu finden."
       },
       {
         "id": "source_additional_points",
@@ -868,7 +885,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "opinion", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob z.B. als Quelle meist eigene Artikel/Posts aufgeführt werden."
       }
     ],
     "metadata": {
@@ -878,7 +896,6 @@ VALUES (
       "indent_level": 0
     }
   },
-
   {
     "id": "quotes_question",
     "fields": [
@@ -926,7 +943,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "text_message"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob Vor- und Nachname sowie Beruf genannt werden."
       },
       {
         "id": "quotes_experts_reputation",
@@ -972,7 +990,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob sie wirklich Fachwissen haben mittels einer kurzen Online-Suche (Name + Beruf)."
       },
       {
         "id": "quotes_match_originals",
@@ -1018,7 +1037,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Nutze eine kurze Online-Suche mit dem Zitat in \"Anführungzeichen\" und vergleiche die Ergebnisse."
       },
       {
         "id": "quotes_additional_points",
@@ -1064,7 +1084,8 @@ VALUES (
             "operator": "in",
             "values": ["report", "text_message", "opinion"]
           }
-        ]
+        ],
+        "shortTip": "Achte darauf, ob Zitate z. B. nur sehr verkürzt (einzelne Wörter) angegeben werden."
       }
     ],
     "metadata": {

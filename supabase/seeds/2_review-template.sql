@@ -200,7 +200,7 @@ VALUES (
       {
         "id": "media_additional_points_details",
         "type": "text-area",
-        "question": "Weitere Punkte: Gib weitere Punkte an, die die Vertrauenswürdigkeit der Bilder/Videos schädigen.",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit der Bilder/Videos schädigen.",
         "options": [
           {
             "id": "media_additional_points_details_opt",
@@ -519,7 +519,7 @@ VALUES (
       {
         "id": "content_additional_points_details",
         "type": "text-area",
-        "question": "Weitere Punkte: Gib weitere Punkte an, die die Vertrauenswürdigkeit des Inhalts schädigen.",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit des Inhalts schädigen.",
         "options": [
           {
             "id": "content_additional_points_details_opt",
@@ -697,7 +697,7 @@ VALUES (
       {
         "id": "medium_additional_points_details",
         "type": "text-area",
-        "question": "Weitere Punkte: Gib weitere Punkte an, die die Vertrauenswürdigkeit des Mediums schädigen.",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit des Mediums schädigen.",
         "options": [
           {
             "id": "medium_additional_points_details_opt",
@@ -969,7 +969,7 @@ VALUES (
       {
         "id": "source_additional_points_details",
         "type": "text-area",
-        "question": "Weitere Punkte: Gib weitere Punkte an, die die Vertrauenswürdigkeit der Quelle schädigen.",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit der Quelle schädigen.",
         "options": [
           {
             "id": "source_additional_points_details_opt",
@@ -1194,7 +1194,7 @@ VALUES (
       {
         "id": "quotes_additional_points_details",
         "type": "text-area",
-        "question": "Weitere Punkte: Gib weitere Punkte an, die die Vertrauenswürdigkeit der Zitate schädigen.",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit der Zitate schädigen.",
         "options": [
           {
             "id": "quotes_additional_points_details_opt",

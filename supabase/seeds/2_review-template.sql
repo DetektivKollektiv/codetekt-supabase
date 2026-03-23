@@ -227,7 +227,7 @@ VALUES (
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Bilder/Videos",
-      "help_url": "",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-bilder-videos-und-grafiken/",
       "indent_level": 0
     }
   },
@@ -546,7 +546,7 @@ VALUES (
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Inhalt",
-      "help_url": "",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-inhalt/",
       "indent_level": 0
     }
   },
@@ -724,7 +724,7 @@ VALUES (
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Medium",
-      "help_url": "",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-medium/",
       "indent_level": 0
     }
   },
@@ -996,7 +996,7 @@ VALUES (
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Quelle",
-      "help_url": "",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-quelle/",
       "indent_level": 0
     }
   },
@@ -1221,7 +1221,7 @@ VALUES (
     "metadata": {
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Zitate",
-      "help_url": "",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-zitate/",
       "indent_level": 0
     }
   }

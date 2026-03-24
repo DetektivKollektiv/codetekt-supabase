@@ -313,3 +313,81 @@ export function disputeEmail({
     html,
   };
 }
+
+// ─── Template 5: Kommentar gemeldet (Admin-Benachrichtigung) ─────────────────
+
+export type CommentReportEmailParams = {
+  caseNumber: number;
+  caseId: string;
+  commentId: string;
+  reportReason: string;
+  siteUrl: string;
+};
+
+export function commentReportEmail({
+  caseNumber,
+  caseId,
+  commentId,
+  reportReason,
+  siteUrl,
+}: CommentReportEmailParams): EmailTemplate {
+  const caseUrl = `${siteUrl}/archive/${caseId}`;
+
+  const html = wrapLayout(`
+    <!-- Subheadline -->
+    <tr>
+      <td style="padding: 0 0 8px 0">
+        <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8c8c9f;">
+          Kommentar gemeldet
+        </div>
+      </td>
+    </tr>
+
+    <!-- Headline -->
+    <tr>
+      <td style="padding: 0 0 14px 0">
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;">
+          Fall ${caseNumber}: Kommentar-Report
+        </div>
+      </td>
+    </tr>
+
+    <!-- Copy -->
+    <tr>
+      <td style="padding: 0 0 24px 0">
+        <p style="margin: 0; font-size: 15px; line-height: 1.65">
+          Für <strong>Fall ${caseNumber}</strong> wurde ein Kommentar gemeldet.
+          Bitte prüfe den gemeldeten Inhalt im Admin-Bereich.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Info box -->
+    <tr>
+      <td style="padding: 0 0 20px 0">
+        <div style="background: #f4f1ff; border-left: 3px solid #5f38fa; border-radius: 6px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #140736;">
+          <strong>Fall-ID:</strong> ${caseId}<br />
+          <strong>Kommentar-ID:</strong> ${commentId}<br />
+          <strong>Meldegrund:</strong> ${reportReason}
+        </div>
+      </td>
+    </tr>
+
+    <!-- CTA -->
+    <tr>
+      <td align="left">
+        <a
+          href="${caseUrl}"
+          style="display: inline-block; background: #5f38fa; color: #ffffff; text-decoration: none; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;"
+        >
+          Fall prüfen
+        </a>
+      </td>
+    </tr>
+  `);
+
+  return {
+    subject: `Kommentar gemeldet – Fall ${caseNumber}`,
+    html,
+  };
+}

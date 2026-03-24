@@ -22,6 +22,10 @@
  *   configured review count threshold (REVIEW_MILESTONE_COUNT in config.ts).
  *   Triggered by a DB trigger on public.review_answers_submitted.
  *
+ * - comment_report: Notifies a fixed address (COMMENT_REPORT_NOTIFICATION_EMAIL)
+ *   when a comment is reported. Triggered by a DB trigger on
+ *   public.case_comment_reports.
+ *
  * Security:
  * - verify_jwt = false in config.toml (no user JWT — DB calls use X-Db-Secret instead)
  * - timingSafeEqual comparison prevents timing-attack secret leaks
@@ -36,6 +40,7 @@ import { z } from "npm:zod@4.1.13";
 import { REVIEW_MILESTONE_COUNT } from "./config.ts";
 import {
   aggregationEmail,
+  commentReportEmail,
   disputeEmail,
   newCaseEmail,
   reviewMilestoneEmail,
@@ -48,6 +53,9 @@ const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://codetekt.org";
 const NEW_CASE_NOTIFICATION_EMAIL = Deno.env.get(
   "NEW_CASE_NOTIFICATION_EMAIL",
+)!;
+const COMMENT_REPORT_NOTIFICATION_EMAIL = Deno.env.get(
+  "COMMENT_REPORT_NOTIFICATION_EMAIL",
 )!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
@@ -112,11 +120,20 @@ const reviewMilestonePayloadSchema = z.object({
   reviewCount: z.number().int().positive(),
 });
 
+const commentReportPayloadSchema = z.object({
+  type: z.literal("comment_report"),
+  caseNumber: z.number().int().positive(),
+  caseId: z.string().uuid(),
+  commentId: z.string().uuid(),
+  reportReason: z.string().min(10).max(500),
+});
+
 const payloadSchema = z.discriminatedUnion("type", [
   newCasePayloadSchema,
   disputePayloadSchema,
   aggregationPayloadSchema,
   reviewMilestonePayloadSchema,
+  commentReportPayloadSchema,
 ]);
 
 type Payload = z.infer<typeof payloadSchema>;
@@ -336,6 +353,28 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (payload.type === "comment_report") {
+      // ── Template 5: fixed notification email for comment reports ──
+
+      const { subject, html } = commentReportEmail({
+        caseNumber: payload.caseNumber,
+        caseId: payload.caseId,
+        commentId: payload.commentId,
+        reportReason: payload.reportReason,
+        siteUrl: SITE_URL,
+      });
+
+      await sendMail(COMMENT_REPORT_NOTIFICATION_EMAIL, subject, html);
+
+      console.log(
+        `[send-email] comment_report – sent to ${COMMENT_REPORT_NOTIFICATION_EMAIL}`,
+      );
+      return new Response(JSON.stringify({ sent: 1 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown type" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -400,6 +439,19 @@ Deno.serve(async (req) => {
       "caseNumber": 1,
       "caseId": "11111111-1111-4111-8111-111111111111",
       "reviewCount": 5
+    }'
+
+  ── comment_report ─────────────────────────────────────────────────────────────
+
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/send-email' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "type": "comment_report",
+      "caseNumber": 1,
+      "caseId": "11111111-1111-4111-8111-111111111111",
+      "commentId": "22222222-2222-4222-8222-222222222222",
+      "reportReason": "Dieser Kommentar enthält eine beleidigende Formulierung."
     }'
 
 */

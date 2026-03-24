@@ -38,7 +38,6 @@ VALUES
     "medium_additional_points": 1,
     "medium_additional_points_details": "Es bestehen zusätzliche Zweifel an Transparenz und Unabhängigkeit.",
 
-    "source_author_expertise": 3,
     "source_claims_supported": 1,
     "source_listed_and_verifiable": 1,
     "source_additional_points": 1,
@@ -78,7 +77,6 @@ VALUES
     "medium_additional_points": 2,
     "medium_additional_points_details": "Es gibt weitere Hinweise auf eingeschränkte Glaubwürdigkeit des Mediums.",
 
-    "source_author_expertise": 3,
     "source_claims_supported": 2,
     "source_listed_and_verifiable": 2,
     "source_additional_points": 2,

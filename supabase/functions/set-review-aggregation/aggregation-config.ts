@@ -92,11 +92,6 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
     value0: "",
     value1_2_3: "",
   },
-
-  "source_author_expertise": {
-    value0: "",
-    value1_2_3: "",
-  },
   "source_text_message_author_expertise": {
     value0: "",
     value1_2_3: "Verfasser*in fragwüdig",

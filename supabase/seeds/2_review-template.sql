@@ -685,53 +685,6 @@ VALUES (
     "id": "source_question",
     "fields": [
       {
-        "id": "source_author_expertise",
-        "type": "traffic-light",
-        "question": "Der Artikel ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion"]
-          }
-        ],
-        "shortTip": "Der Name steht meit unter dem Titel oder am Ende des Artikels. Gibt es einen prüfbaren Klarnamen + Bio oder andere Veröffentlichungen zum Thema?"
-      },
-      {
         "id": "source_text_message_author_expertise",
         "type": "traffic-light",
         "question": "Die Textnachricht ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",

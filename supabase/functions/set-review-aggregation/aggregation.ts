@@ -150,14 +150,15 @@ export function buildAggregationFields(
       average = sum / totalExcludingOption4;
     }
 
-    // Get tags (only 0-3)
+    // Choose one output tag by value bucket: 0 vs 1,2,3
     const fieldTags = FIELD_TAGS[fieldId] || DEFAULT_FIELD_TAG;
+    const selectedBucket = Math.ceil(average) === 0 ? "value0" : "value1_2_3";
 
     fields[fieldId] = {
       counts: outputCounts,
       percentages: outputPercentages,
       average,
-      tag: fieldTags,
+      tag: fieldTags[selectedBucket],
     };
   }
 

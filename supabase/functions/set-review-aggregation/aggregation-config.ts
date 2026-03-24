@@ -29,7 +29,7 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
     value0: "Objektivität des Beitrags",
     value1_2_3: "Mangelnde Objekivität",
   },
-  "content_addtional_points": {
+  "content_additional_points": {
     value0: "",
     value1_2_3: "",
   },
@@ -50,7 +50,7 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
     value0: "Einsatz von Visualisierungen",
     value1_2_3: "Mangelhafte Visualisierungen",
   },
-  "media_addtional_points": {
+  "media_additional_points": {
     value0: "",
     value1_2_3: "",
   },

@@ -151,7 +151,7 @@ VALUES (
         "shortTip": "Achte darauf, ob Achsen verzerrt oder Daten weggelassen werden."
       },
       {
-        "id": "media_addtional_points",
+        "id": "media_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Bilder & Videos negativ beeinflussen. ",
         "options": [
@@ -210,14 +210,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "media_addtional_points",
+            "field_id": "media_additional_points",
             "operator": ">",
             "value": 0
           }
         ],
         "is_shown": [
           {
-            "field_id": "media_addtional_points",
+            "field_id": "media_additional_points",
             "operator": ">",
             "value": 0
           }
@@ -470,7 +470,7 @@ VALUES (
         "shortTip": ""
       },
       {
-        "id": "content_addtional_points",
+        "id": "content_additional_points",
         "type": "traffic-light",
         "options": [
           {
@@ -529,14 +529,14 @@ VALUES (
         ],
         "is_required": [
           {
-            "field_id": "content_addtional_points",
+            "field_id": "content_additional_points",
             "operator": ">",
             "value": 0
           }
         ],
         "is_shown": [
           {
-            "field_id": "content_addtional_points",
+            "field_id": "content_additional_points",
             "operator": ">",
             "value": 0
           }

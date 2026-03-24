@@ -25,13 +25,13 @@ VALUES
     "content_objective_no_hate_no_panic": 0,
     "content_headline_matches_article": 1,
     "content_claims_not_debunked": 0,
-    "content_addtional_points": 1,
+    "content_additional_points": 1,
     "content_additional_points_details": "Zusätzliche inhaltliche Auffälligkeiten wurden dokumentiert.",
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
     "media_visualizations_not_distorted": 3,
-    "media_addtional_points": 3,
+    "media_additional_points": 3,
     "media_additional_points_details": "Mehrere visuelle Auffälligkeiten beeinträchtigen die Vertrauenswürdigkeit.",
 
     "medium_independent_no_conflicts": 1,
@@ -67,13 +67,13 @@ VALUES
     "content_objective_no_hate_no_panic": 1,
     "content_headline_matches_article": 2,
     "content_claims_not_debunked": 1,
-    "content_addtional_points": 2,
+    "content_additional_points": 2,
     "content_additional_points_details": "Es fehlen zusätzliche Kontextinformationen im Inhalt.",
 
     "media_objectivity": 3,
     "media_no_ai_or_staging_doubts": 3,
     "media_visualizations_not_distorted": 3,
-    "media_addtional_points": 3,
+    "media_additional_points": 3,
     "media_additional_points_details": "Die verwendeten Medien verstärken den Eindruck von Unzuverlässigkeit.",
 
     "medium_independent_no_conflicts": 2,

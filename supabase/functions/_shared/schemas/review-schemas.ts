@@ -18,14 +18,14 @@ export const submittedReviewAnswerReportSchema = z
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
     content_claims_not_debunked: trafficLightAnswerSchema,
-    content_addtional_points: trafficLightAnswerSchema,
+    content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema,
     media_no_ai_or_staging_doubts: trafficLightAnswerSchema,
     media_visualizations_not_distorted: trafficLightAnswerSchema,
-    media_addtional_points: trafficLightAnswerSchema,
+    media_additional_points: trafficLightAnswerSchema,
     media_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Medium
@@ -59,14 +59,14 @@ export const submittedReviewAnswerOpinionSchema = z
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
     content_claims_not_debunked: trafficLightAnswerSchema,
-    content_addtional_points: trafficLightAnswerSchema,
+    content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema,
     media_no_ai_or_staging_doubts: trafficLightAnswerSchema,
     media_visualizations_not_distorted: trafficLightAnswerSchema,
-    media_addtional_points: trafficLightAnswerSchema,
+    media_additional_points: trafficLightAnswerSchema,
     media_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Medium
@@ -99,14 +99,14 @@ export const submittedReviewAnswerTextMessageSchema = z
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
     content_claims_not_debunked: trafficLightAnswerSchema,
-    content_addtional_points: trafficLightAnswerSchema,
+    content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema,
     media_no_ai_or_staging_doubts: trafficLightAnswerSchema,
     media_visualizations_not_distorted: trafficLightAnswerSchema,
-    media_addtional_points: trafficLightAnswerSchema,
+    media_additional_points: trafficLightAnswerSchema,
     media_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Quelle
@@ -134,14 +134,14 @@ export const inProgressReviewAnswerSchema = z
     content_objective_no_hate_no_panic: trafficLightAnswerSchema.optional(),
     content_headline_matches_article: trafficLightAnswerSchema.optional(),
     content_claims_not_debunked: trafficLightAnswerSchema.optional(),
-    content_addtional_points: trafficLightAnswerSchema.optional(),
+    content_additional_points: trafficLightAnswerSchema.optional(),
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Bilder/Videos
     media_objectivity: trafficLightAnswerSchema.optional(),
     media_no_ai_or_staging_doubts: trafficLightAnswerSchema.optional(),
     media_visualizations_not_distorted: trafficLightAnswerSchema.optional(),
-    media_addtional_points: trafficLightAnswerSchema.optional(),
+    media_additional_points: trafficLightAnswerSchema.optional(),
     media_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Medium

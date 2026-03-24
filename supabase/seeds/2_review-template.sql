@@ -174,11 +174,6 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -492,11 +487,6 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
           }
         ],
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Inhalt negativ beeinflussen.",
@@ -765,11 +755,6 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -1037,11 +1022,6 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -1262,11 +1242,6 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [

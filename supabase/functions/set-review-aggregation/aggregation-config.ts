@@ -56,12 +56,12 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
   },
 
   "medium_independent_no_conflicts": {
-    value0: "",
-    value1_2_3: "",
+    value0: "Finanzielle und politische Unabhängigkeit",
+    value1_2_3: "Finanzielle oder politische Färbung",
   },
   "medium_authenticity": {
-    value0: "",
-    value1_2_3: "",
+    value0: "Authentischer Internetauftritt",
+    value1_2_3: "Unauthentischer Internetauftritt",
   },
   "medium_additional_points": {
     value0: "",

@@ -67,6 +67,14 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
     value0: "Authentischer Internetauftritt",
     value1_2_3: "Unauthentischer Internetauftritt",
   },
+  "medium_no_aggressive_ads_or_trackers": {
+    value0: "Technische Merkmale",
+    value1_2_3: "Auffällige Werbung",
+  },
+  "medium_impressum": {
+    value0: "Redaktionelle Transparenz",
+    value1_2_3: "Intransparenz/fehlende Kontaktinformation",
+  },
   "medium_additional_points": {
     value0: "",
     value1_2_3: "",
@@ -95,6 +103,10 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
   "quotes_additional_points_details": {
     value0: "",
     value1_2_3: "",
+  },
+  "source_article_author_expertise": {
+    value0: "Autor*in des Beitrags",
+    value1_2_3: "Autor*in fragwüdig",
   },
   "source_text_message_author_expertise": {
     value0: "",

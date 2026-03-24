@@ -31,10 +31,13 @@ export const submittedReviewAnswerReportSchema = z
     // Medium
     medium_independent_no_conflicts: trafficLightAnswerSchema,
     medium_authenticity: trafficLightAnswerSchema,
+    medium_no_aggressive_ads_or_trackers: trafficLightAnswerSchema,
+    medium_impressum: trafficLightAnswerSchema,
     medium_additional_points: trafficLightAnswerSchema,
     medium_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Quelle
+    source_article_author_expertise: trafficLightAnswerSchema,
     source_claims_supported: trafficLightAnswerSchema,
     source_listed_and_verifiable: trafficLightAnswerSchema,
     source_additional_points: trafficLightAnswerSchema,
@@ -69,10 +72,13 @@ export const submittedReviewAnswerOpinionSchema = z
     // Medium
     medium_independent_no_conflicts: trafficLightAnswerSchema,
     medium_authenticity: trafficLightAnswerSchema,
+    medium_no_aggressive_ads_or_trackers: trafficLightAnswerSchema,
+    medium_impressum: trafficLightAnswerSchema,
     medium_additional_points: trafficLightAnswerSchema,
     medium_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Quelle
+    source_article_author_expertise: trafficLightAnswerSchema,
     source_claims_supported: trafficLightAnswerSchema,
     source_listed_and_verifiable: trafficLightAnswerSchema,
     source_additional_points: trafficLightAnswerSchema,
@@ -141,10 +147,13 @@ export const inProgressReviewAnswerSchema = z
     // Medium
     medium_independent_no_conflicts: trafficLightAnswerSchema.optional(),
     medium_authenticity: trafficLightAnswerSchema.optional(),
+    medium_no_aggressive_ads_or_trackers: trafficLightAnswerSchema.optional(),
+    medium_impressum: trafficLightAnswerSchema.optional(),
     medium_additional_points: trafficLightAnswerSchema.optional(),
     medium_additional_points_details: textAreaAnswerSchema.optional(),
 
     // Quelle
+    source_article_author_expertise: trafficLightAnswerSchema.optional(),
     source_text_message_author_expertise: trafficLightAnswerSchema.optional(),
     source_claims_supported: trafficLightAnswerSchema.optional(),
     source_listed_and_verifiable: trafficLightAnswerSchema.optional(),

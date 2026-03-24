@@ -641,6 +641,100 @@
         "shortTip": "Achte darauf, ob die URL wirklich zur Marke passt (https://www.zeit.de) vs. (https://www.zeitt.de) und ob Logo und Design stimmig wirken."
       },
       {
+        "id": "medium_no_aggressive_ads_or_trackers",
+        "type": "traffic-light",
+        "question": "Die Seite hat keine ungewöhnliche oder auffällge Tracker, Pop-Ups und/oder aggressive Werbung.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "shortTip": ""
+      },
+      {
+        "id": "medium_impressum",
+        "type": "traffic-light",
+        "question": "Das Medium hat ein Impressum, inkl. Angabe von verantwortlichen Personen und Kontaktinformationen wie Telefonnummer und E-Mail-Adresse.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "shortTip": "Das Impressum ist in der Regel im Footer der Seite zu finden."
+      },
+      {
         "id": "medium_additional_points",
         "type": "traffic-light",
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit im Bereich Medium negativ beeinflussen.",
@@ -724,6 +818,53 @@
   {
     "id": "source_question",
     "fields": [
+      {
+        "id": "source_article_author_expertise",
+        "type": "traffic-light",
+        "question": "Der Artikel ist von einer fachkundigen Person oder einer/einem beruflichen Journalist*in geschrieben.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion"]
+          }
+        ],
+        "shortTip": "Der Name steht meist im Profil. Gibt es einen prüfbaren Klarnamen + Bio oder andere Posts zum Thema?"
+      },
       {
         "id": "source_text_message_author_expertise",
         "type": "traffic-light",

@@ -36,9 +36,12 @@ VALUES
 
     "medium_independent_no_conflicts": 1,
     "medium_authenticity": 1,
+    "medium_no_aggressive_ads_or_trackers": 1,
+    "medium_impressum": 1,
     "medium_additional_points": 1,
     "medium_additional_points_details": "Es bestehen zusätzliche Zweifel an Transparenz und Unabhängigkeit.",
 
+    "source_article_author_expertise": 1,
     "source_claims_supported": 1,
     "source_listed_and_verifiable": 1,
     "source_additional_points": 1,
@@ -76,9 +79,12 @@ VALUES
 
     "medium_independent_no_conflicts": 2,
     "medium_authenticity": 2,
+    "medium_no_aggressive_ads_or_trackers": 2,
+    "medium_impressum": 2,
     "medium_additional_points": 2,
     "medium_additional_points_details": "Es gibt weitere Hinweise auf eingeschränkte Glaubwürdigkeit des Mediums.",
 
+    "source_article_author_expertise": 2,
     "source_claims_supported": 2,
     "source_listed_and_verifiable": 2,
     "source_additional_points": 2,

@@ -9,8 +9,12 @@ export const DEFAULT_FIELD_TAG: FieldTagByBucket = {
 };
 
 export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
+  "content_accuracy": {
+    value0: "Darstellung unterschiedlicher Positionen",
+    value1_2_3: "Mangelnde Darstellung unterschiedlicher Positionen",
+  },
   "content_claims_not_debunked": {
-    value0: "≈",
+    value0: "",
     value1_2_3: "",
   },
   "content_headline_matches_article": {

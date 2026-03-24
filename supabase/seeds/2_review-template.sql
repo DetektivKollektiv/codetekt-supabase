@@ -190,7 +190,8 @@ VALUES (
             "values": ["report", "opinion", "text_message"]
           }
         ],
-        "shortTip": "Achte darauf, ob KI missbräuchlich/verdeckt zum Einsatz kommt."
+        "shortTip": "Achte darauf, ob KI missbräuchlich/verdeckt zum Einsatz kommt.",
+        "show_bottom_border": false
       },
       {
         "id": "media_additional_points_details",
@@ -504,7 +505,8 @@ VALUES (
             "values": ["report", "opinion", "text_message"]
           }
         ],
-        "shortTip": "Achte auf rhetorische Manipulationstechniken (im Help Center verlinkt) oder bewusst ausgelassene Informationen"
+        "shortTip": "Achte auf rhetorische Manipulationstechniken (im Help Center verlinkt) oder bewusst ausgelassene Informationen",
+        "show_bottom_border": false
       },
       {
         "id": "content_additional_points_details",
@@ -771,7 +773,8 @@ VALUES (
             "values": ["report", "opinion"]
           }
         ],
-        "shortTip": "Achte auf fehlende Transparenz (Impressum, Redaktion), bekannte Fälle von Falschberichten oder Rügen durch den Presserat."
+        "shortTip": "Achte auf fehlende Transparenz (Impressum, Redaktion), bekannte Fälle von Falschberichten oder Rügen durch den Presserat.",
+        "show_bottom_border": false
       },
       {
         "id": "medium_additional_points_details",
@@ -1038,7 +1041,8 @@ VALUES (
             "values": ["report", "opinion", "text_message"]
           }
         ],
-        "shortTip": "Achte darauf, ob z.B. als Quelle meist eigene Artikel/Posts aufgeführt werden."
+        "shortTip": "Achte darauf, ob z.B. als Quelle meist eigene Artikel/Posts aufgeführt werden.",
+        "show_bottom_border": false
       },
       {
         "id": "source_additional_points_details",
@@ -1258,7 +1262,8 @@ VALUES (
             "values": ["report", "text_message", "opinion"]
           }
         ],
-        "shortTip": "Achte darauf, ob Zitate z. B. nur sehr verkürzt (einzelne Wörter) angegeben werden."
+        "shortTip": "Achte darauf, ob Zitate z. B. nur sehr verkürzt (einzelne Wörter) angegeben werden.",
+        "show_bottom_border": false
       },
       {
         "id": "quotes_additional_points_details",

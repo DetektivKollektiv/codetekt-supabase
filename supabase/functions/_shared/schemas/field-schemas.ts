@@ -20,6 +20,7 @@ import {
 // Base field schema with conditional properties
 export const baseFieldSchema = z.object({
   id: z.string(),
+  show_bottom_border: z.boolean().optional(),
   is_disabled: z.union([z.boolean(), z.array(conditionSchema)]).optional(),
   is_required: z.union([z.boolean(), z.array(conditionSchema)]).optional(),
   is_shown: z.union([z.boolean(), z.array(conditionSchema)]).optional(),

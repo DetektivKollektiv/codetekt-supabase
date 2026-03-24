@@ -13,7 +13,6 @@ export const submittedReviewAnswerSatireSchema = z
 export const submittedReviewAnswerReportSchema = z
   .object({
     // Inhalt
-    content_accuracy: trafficLightAnswerSchema,
     content_language: trafficLightAnswerSchema,
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
@@ -125,7 +124,6 @@ export const submittedReviewAnswerTextMessageSchema = z
 export const inProgressReviewAnswerSchema = z
   .object({
     // Inhalt
-    content_accuracy: trafficLightAnswerSchema.optional(),
     content_language: trafficLightAnswerSchema.optional(),
     content_objective_no_hate_no_panic: trafficLightAnswerSchema.optional(),
     content_headline_matches_article: trafficLightAnswerSchema.optional(),

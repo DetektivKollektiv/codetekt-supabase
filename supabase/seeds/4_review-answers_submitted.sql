@@ -20,7 +20,6 @@ VALUES
   '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com'),
   '{
-    "content_accuracy": 0,
     "content_language": 2,
     "content_objective_no_hate_no_panic": 0,
     "content_headline_matches_article": 1,
@@ -60,7 +59,6 @@ VALUES
   '11111111-1111-4111-8111-111111111111',
   (SELECT id FROM auth.users WHERE email = 'anna.schmidt@example.com'),
   '{
-    "content_accuracy": 1,
     "content_language": 3,
     "content_objective_no_hate_no_panic": 1,
     "content_headline_matches_article": 2,

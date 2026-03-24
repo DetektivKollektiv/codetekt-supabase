@@ -228,6 +228,53 @@
     "id": "content_question",
     "fields": [
       {
+        "id": "content_accuracy",
+        "type": "traffic-light",
+        "question": "Im Artikel werden unterschiedliche Positionen dargestellt.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report"]
+          }
+        ],
+        "shortTip": "Achte darauf, ob im Text verschiedene Sichtweisen und Kontroversen benannt werden."
+      },
+      {
         "id": "content_language",
         "type": "traffic-light",
         "question": "Die Grammatik und Rechtschreibung sind fehlerfrei.",

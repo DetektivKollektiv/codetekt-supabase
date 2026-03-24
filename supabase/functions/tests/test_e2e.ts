@@ -24,6 +24,7 @@ const USER_D = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // lisaweber
 
 // Valid review data for the 'report' category (all required fields)
 const REVIEW_DATA = {
+    content_accuracy: 3,
     content_sources: 2,
     content_language: 3,
     content_clarity: 3,

@@ -106,7 +106,7 @@ VALUES (
       {
         "id": "media_visualizations_not_distorted",
         "type": "traffic-light",
-        "question": "Visualisierungen (Grafiken o.Ä.) werden korrekt dargestellt und sind nicht verzerrt.",
+        "question": "Diagramme und Infografiken sind korrekt dargestellt und führen nicht bewusst in die Irre",
         "options": [
           {
             "id": "traffic-light-opt-1",
@@ -174,6 +174,11 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -488,6 +493,11 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Inhalt negativ beeinflussen.",
@@ -757,6 +767,11 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -1025,6 +1040,11 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [
@@ -1246,6 +1266,11 @@ VALUES (
             "id": "traffic-light-opt-4",
             "value": 3,
             "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
           }
         ],
         "is_required": [

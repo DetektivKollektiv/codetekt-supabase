@@ -212,15 +212,15 @@ VALUES (
         "is_required": [
           {
             "field_id": "media_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ],
         "is_shown": [
           {
             "field_id": "media_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ]
       }
@@ -532,15 +532,15 @@ VALUES (
         "is_required": [
           {
             "field_id": "content_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ],
         "is_shown": [
           {
             "field_id": "content_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ]
       }
@@ -805,15 +805,15 @@ VALUES (
         "is_required": [
           {
             "field_id": "medium_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ],
         "is_shown": [
           {
             "field_id": "medium_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ]
       }
@@ -1078,15 +1078,15 @@ VALUES (
         "is_required": [
           {
             "field_id": "source_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ],
         "is_shown": [
           {
             "field_id": "source_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ]
       }
@@ -1304,15 +1304,15 @@ VALUES (
         "is_required": [
           {
             "field_id": "quotes_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ],
         "is_shown": [
           {
             "field_id": "quotes_additional_points",
-            "operator": ">",
-            "value": 0
+            "operator": "in",
+            "values": [1, 2, 3]
           }
         ]
       }

@@ -99,7 +99,7 @@
       {
         "id": "media_visualizations_not_distorted",
         "type": "traffic-light",
-        "question": "Visualisierungen (Grafiken o.Ä.) werden korrekt dargestellt und sind nicht verzerrt.",
+        "question": "Diagramme und Infografiken sind korrekt dargestellt und führen nicht bewusst in die Irre",
         "options": [
           {
             "id": "traffic-light-opt-1",

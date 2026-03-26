@@ -43,6 +43,12 @@ import { reviewTemplateSchema } from "../_shared/schemas/template-schemas.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { buildAggregation, SubmittedReview } from "./aggregation.ts";
 
+type SubmittedReviewRow = SubmittedReview & {
+  reviewer: {
+    username: string | null;
+  } | null;
+};
+
 const MIN_REVIEWS_FOR_AGGREGATION = 2;
 
 const requestSchema = z.object({
@@ -245,7 +251,7 @@ Deno.serve(async (req) => {
     const { data: allSubmittedReviews, error: queryError } =
       await supabaseServiceRole
         .from("review_answers_submitted")
-        .select("data, reviewed_by")
+        .select("data, reviewed_by, reviewer:profiles!reviewed_by(username)")
         .eq("case_id", case_id);
 
     if (queryError) {
@@ -275,7 +281,10 @@ Deno.serve(async (req) => {
         review.data,
       );
       if (validationResult.success) {
-        validatedReviews.push(review);
+        validatedReviews.push({
+          data: review.data,
+          reviewed_by: review.reviewed_by,
+        });
       } else {
         console.warn(
           `Review by ${review.reviewed_by} failed validation:`,
@@ -286,6 +295,14 @@ Deno.serve(async (req) => {
           errors: validationResult.error.issues,
         });
       }
+    }
+
+    const reviewerUsernameMap = new Map<string, string>();
+    for (const review of (allSubmittedReviews ?? []) as SubmittedReviewRow[]) {
+      reviewerUsernameMap.set(
+        review.reviewed_by,
+        review.reviewer?.username ?? "Unbekannt",
+      );
     }
 
     // Step 5: Enforce minimum review threshold on validated reviews
@@ -313,6 +330,7 @@ Deno.serve(async (req) => {
       const aggregationResult = buildAggregation(
         validatedReviews,
         template,
+        reviewerUsernameMap,
       );
 
       aggregation = aggregationResult.aggregation;

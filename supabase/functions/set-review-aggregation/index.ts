@@ -76,6 +76,74 @@ Deno.serve(async (req) => {
       supabaseServiceRoleKey,
     );
 
+    // Step 2.1: Early bypass for case_factchecks.has_factcheck = true
+    const { data: factcheckData, error: factcheckError } =
+      await supabaseServiceRole
+        .from("case_factchecks")
+        .select("has_factcheck")
+        .eq("case_id", case_id)
+        .eq("has_factcheck", true)
+        .maybeSingle();
+
+    if (factcheckError) {
+      return new Response(
+        JSON.stringify({
+          error: "Failed to check case factcheck status",
+          details: factcheckError.message,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    if (factcheckData?.has_factcheck === true) {
+      const { data: submittedReviewers, error: submittedReviewersError } =
+        await supabaseServiceRole
+          .from("review_answers_submitted")
+          .select("reviewed_by")
+          .eq("case_id", case_id);
+
+      if (submittedReviewersError) {
+        return new Response(
+          JSON.stringify({
+            error: "Failed to query submitted reviewers",
+            details: submittedReviewersError.message,
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const reviewerIds = (submittedReviewers ?? []).map((row) =>
+        row.reviewed_by
+      );
+
+      const { error: factcheckUpsertError } = await supabaseServiceRole
+        .from("review_aggregations")
+        .upsert({
+          case_id,
+          data: { questions: [] } as never,
+          result_score: 3,
+          reviewer_ids: reviewerIds,
+          calculated_at: new Date().toISOString(),
+        }, {
+          onConflict: "case_id",
+        });
+
+      if (factcheckUpsertError) {
+        return new Response(
+          JSON.stringify({
+            error: "Failed to save factcheck aggregation",
+            details: factcheckUpsertError.message,
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     // Step 2.3: Verify all case metadata is set (title, category, keywords)
     const [
       { data: titleData, error: titleError },
@@ -192,10 +260,9 @@ Deno.serve(async (req) => {
     }
 
     // Step 4: Validate each review against the category-specific schema
-    const reviewSchema =
-      submittedReviewAnswerSchemaMap[
-        category as keyof typeof submittedReviewAnswerSchemaMap
-      ];
+    const reviewSchema = submittedReviewAnswerSchemaMap[
+      category as keyof typeof submittedReviewAnswerSchemaMap
+    ];
 
     const validatedReviews: SubmittedReview[] = [];
     const invalidReviews: {

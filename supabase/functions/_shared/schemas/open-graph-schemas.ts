@@ -22,6 +22,7 @@ export const openGraphDataSchema = z.object({
   ogLocale: z.string().optional(),
   ogImage: z.union([
     z.string().url(),
+    z.array(z.string().url()),
     z.array(ogImageObjectSchema),
   ]).optional(),
   success: z.boolean().optional(),
@@ -37,4 +38,6 @@ export const setOpenGraphDataRequestSchema = z.object({
 // Export types
 export type OpenGraphData = z.infer<typeof openGraphDataSchema>;
 export type OgImageObject = z.infer<typeof ogImageObjectSchema>;
-export type SetOpenGraphDataRequest = z.infer<typeof setOpenGraphDataRequestSchema>;
+export type SetOpenGraphDataRequest = z.infer<
+  typeof setOpenGraphDataRequestSchema
+>;

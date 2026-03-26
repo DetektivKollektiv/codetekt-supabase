@@ -267,31 +267,31 @@ export type Database = {
           case_id: string
           created_at: string
           created_by: string
-          details: string | null
           has_factcheck: boolean
           id: string
           updated_at: string
           updated_by: string | null
+          value: string | null
         }
         Insert: {
           case_id: string
           created_at?: string
           created_by: string
-          details?: string | null
           has_factcheck: boolean
           id?: string
           updated_at?: string
           updated_by?: string | null
+          value?: string | null
         }
         Update: {
           case_id?: string
           created_at?: string
           created_by?: string
-          details?: string | null
           has_factcheck?: boolean
           id?: string
           updated_at?: string
           updated_by?: string | null
+          value?: string | null
         }
         Relationships: [
           {

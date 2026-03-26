@@ -138,40 +138,75 @@ Deno.serve(async (req) => {
     // Capture updated_at for optimistic locking (race condition protection)
     const originalUpdatedAt = inProgressReview.updated_at;
 
-    // Step 3.5: Fetch category for the case to select the correct schema
-    const { data: categoryData, error: categoryError } = await supabase
-      .from("case_categories")
-      .select("value")
+    // Step 3.5: Check if case has factcheck=true (skip strict review validation)
+    const { data: factcheckData, error: factcheckError } = await supabase
+      .from("case_factchecks")
+      .select("has_factcheck")
       .eq("case_id", inProgressReview.case_id)
+      .eq("has_factcheck", true)
       .maybeSingle();
 
-    if (categoryError || !categoryData) {
+    if (factcheckError) {
       return new Response(
         JSON.stringify({
-          error:
-            "Case category not set. Please set the case category before publishing.",
+          error: "Failed to check case factcheck status",
+          details: factcheckError.message,
         }),
         {
-          status: 400,
+          status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
 
-    // Step 4: Validate data with category-specific strict schema
-    const validation = validateSubmittedData(
-      inProgressReview.data as Record<string, unknown>,
-      categoryData.value,
-    );
+    const hasFactcheck = factcheckData?.has_factcheck === true;
 
-    if (!validation.success) {
-      return new Response(
-        JSON.stringify(validation.error),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+    let submittedData: Record<string, unknown>;
+
+    if (hasFactcheck) {
+      const rawData = inProgressReview.data;
+      submittedData =
+        rawData && typeof rawData === "object" && !Array.isArray(rawData)
+          ? rawData as Record<string, unknown>
+          : {};
+    } else {
+      // Step 4: Fetch category for the case to select the correct schema
+      const { data: categoryData, error: categoryError } = await supabase
+        .from("case_categories")
+        .select("value")
+        .eq("case_id", inProgressReview.case_id)
+        .maybeSingle();
+
+      if (categoryError || !categoryData) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "Case category not set. Please set the case category before publishing.",
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      // Step 4.1: Validate data with category-specific strict schema
+      const validation = validateSubmittedData(
+        inProgressReview.data as Record<string, unknown>,
+        categoryData.value,
       );
+
+      if (!validation.success) {
+        return new Response(
+          JSON.stringify(validation.error),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      submittedData = validation.validatedData;
     }
 
     // Step 5: Create service_role client for writing to protected table
@@ -187,7 +222,7 @@ Deno.serve(async (req) => {
         .upsert({
           case_id: inProgressReview.case_id,
           reviewed_by: userId,
-          data: validation.validatedData as never,
+          data: submittedData as never,
           submitted_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }, {

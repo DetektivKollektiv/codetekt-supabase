@@ -22,6 +22,7 @@ export const openGraphDataSchema = z.object({
   ogLocale: z.string().optional(),
   ogImage: z.union([
     z.string().url(),
+    z.array(z.string().url()),
     z.array(ogImageObjectSchema),
   ]).optional(),
   success: z.boolean().optional(),

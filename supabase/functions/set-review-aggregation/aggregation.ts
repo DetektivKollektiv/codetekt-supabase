@@ -24,6 +24,11 @@ export type SubmittedReview = Pick<
   "data" | "reviewed_by"
 >;
 
+type AggregatedTextAnswer = {
+  user_name: string;
+  value: string;
+};
+
 /**
  * Extracts field IDs that should be aggregated from the review template.
  * Returns Set of traffic-light field IDs, excluding metadata and skipped questions.
@@ -177,7 +182,8 @@ export function buildAggregationFields(
 export function buildTextFields(
   submitted: SubmittedReview[],
   template: ReviewTemplateInput[],
-): Record<string, { answer_values: string[] }> {
+  usernameByReviewerId: Map<string, string>,
+): Record<string, { answer_values: AggregatedTextAnswer[] }> {
   // Build a set of text/text-area field IDs from template
   const textFieldIds = new Set<string>();
   for (const question of template) {
@@ -189,9 +195,9 @@ export function buildTextFields(
   }
 
   // Aggregate text answers
-  const textFields: Record<string, { answer_values: string[] }> = {};
+  const textFields: Record<string, { answer_values: AggregatedTextAnswer[] }> = {};
 
-  for (const { data } of submitted) {
+  for (const { data, reviewed_by } of submitted) {
     const answerRecord = data as Record<string, unknown>;
 
     for (const [fieldId, value] of Object.entries(answerRecord)) {
@@ -206,7 +212,10 @@ export function buildTextFields(
         textFields[fieldId] = { answer_values: [] };
       }
 
-      textFields[fieldId].answer_values.push(value);
+      textFields[fieldId].answer_values.push({
+        user_name: usernameByReviewerId.get(reviewed_by) ?? "Unbekannt",
+        value,
+      });
     }
   }
 
@@ -232,6 +241,7 @@ export function buildTextFields(
 export function buildAggregation(
   submitted: SubmittedReview[],
   template: ReviewTemplateInput[],
+  usernameByReviewerId: Map<string, string>,
 ): AggregationResult {
   // Step 1: Extract valid traffic-light field IDs from template
   const validFieldIds = extractAggregableFieldIds(template);
@@ -240,7 +250,11 @@ export function buildAggregation(
   const aggregatedFields = buildAggregationFields(submitted, validFieldIds);
 
   // Step 3: Aggregate text fields
-  const textFields = buildTextFields(submitted, template);
+  const textFields = buildTextFields(
+    submitted,
+    template,
+    usernameByReviewerId,
+  );
 
   // Step 4: Build questions array for aggregation (excluding skipped questions)
   const questions = template

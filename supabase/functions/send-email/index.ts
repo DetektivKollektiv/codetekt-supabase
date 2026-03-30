@@ -13,6 +13,7 @@
  *
  * - dispute: Notifies all admins with get_notifications=true when a review dispute
  *   is created. Triggered by the notify_dispute_email_trigger on public.review_disputes.
+ *   Recipient is a fixed address from DISPUTE_NOTIFICATION_EMAIL.
  *
  * - review_aggregated: Notifies the case creator that their case has received enough
  *   reviews and the result is published. Triggered by a DB trigger on
@@ -53,6 +54,9 @@ const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://codetekt.org";
 const NEW_CASE_NOTIFICATION_EMAIL = Deno.env.get(
   "NEW_CASE_NOTIFICATION_EMAIL",
+)!;
+const DISPUTE_NOTIFICATION_EMAIL = Deno.env.get(
+  "DISPUTE_NOTIFICATION_EMAIL",
 )!;
 const COMMENT_REPORT_NOTIFICATION_EMAIL = Deno.env.get(
   "COMMENT_REPORT_NOTIFICATION_EMAIL",
@@ -196,49 +200,7 @@ Deno.serve(async (req) => {
     }
 
     if (payload.type === "dispute") {
-      // ── Template 2: notify admins with notifications enabled ──
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-      const { data: admins, error } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("is_admin", true)
-        .eq("get_notifications", true);
-
-      if (error) throw new Error(`Failed to fetch admins: ${error.message}`);
-      if (!admins || admins.length === 0) {
-        return new Response(
-          JSON.stringify({ error: "No admins with notifications enabled" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
-
-      // Fetch auth emails for each admin id via the admin API
-      const adminEmails: string[] = [];
-      for (const admin of admins) {
-        const { data: userData, error: userError } = await supabase.auth.admin
-          .getUserById(admin.id);
-        if (userError || !userData.user?.email) {
-          console.warn(
-            `[send-email] Could not resolve email for admin ${admin.id}`,
-          );
-          continue;
-        }
-        adminEmails.push(userData.user.email);
-      }
-
-      if (adminEmails.length === 0) {
-        return new Response(
-          JSON.stringify({ error: "No admin emails resolved" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
+      // ── Template 2: fixed notification email for disputes ──
 
       const { subject, html } = disputeEmail({
         caseNumber: payload.caseNumber,
@@ -246,14 +208,12 @@ Deno.serve(async (req) => {
         disputedField: payload.disputedField,
       });
 
-      await Promise.all(
-        adminEmails.map((email) => sendMail(email, subject, html)),
-      );
+      await sendMail(DISPUTE_NOTIFICATION_EMAIL, subject, html);
 
       console.log(
-        `[send-email] dispute – notified ${adminEmails.length} admin(s)`,
+        `[send-email] dispute – sent to ${DISPUTE_NOTIFICATION_EMAIL}`,
       );
-      return new Response(JSON.stringify({ sent: adminEmails.length }), {
+      return new Response(JSON.stringify({ sent: 1 }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

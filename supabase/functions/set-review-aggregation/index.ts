@@ -5,7 +5,7 @@
  * Uses service role key to access all reviews regardless of RLS policies.
  *
  * Aggregation process:
- * - Verifies case metadata completeness (title, category, keywords must all exist)
+ * - Verifies case metadata completeness (title, category, case keywords must all exist)
  * - Fetches case and associated review template
  * - Fetches all submitted reviews for the specified case
  * - Validates each review against the category-specific schema (filters out invalid reviews)
@@ -16,14 +16,14 @@
  * - Stores aggregation with reviewer IDs and timestamp
  *
  * Requirements:
- * - Case must have title, category, and keywords set in their respective tables
+ * - Case must have title, category, and case keywords set in their respective tables
  * - Minimum 2 valid reviews required for aggregation
  * - Invalid reviews are logged but don't block aggregation
  * - Template must exist and be valid
  *
  * Returns:
  * - Success response when aggregation is saved
- * - Error if case metadata is incomplete (missing title, category, or keywords)
+ * - Error if case metadata is incomplete (missing title, category, or case keywords)
  * - Error if case or template not found
  * - Error if insufficient valid reviews (< 2)
  * - Error if aggregation validation fails
@@ -150,11 +150,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 2.3: Verify all case metadata is set (title, category, keywords)
+    // Step 2.3: Verify all case metadata is set (title, category, case keywords)
     const [
       { data: titleData, error: titleError },
       { data: categoryData, error: categoryError },
-      { data: keywordsData, error: keywordsError },
+      { data: caseKeywordsData, error: caseKeywordsError },
     ] = await Promise.all([
       supabaseServiceRole
         .from("case_titles")
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
     const missingMetadata: string[] = [];
     if (titleError || !titleData) missingMetadata.push("title");
     if (categoryError || !categoryData) missingMetadata.push("category");
-    if (keywordsError || !keywordsData || keywordsData.length === 0) {
+    if (caseKeywordsError || !caseKeywordsData || caseKeywordsData.length === 0) {
       missingMetadata.push("keywords");
     }
 

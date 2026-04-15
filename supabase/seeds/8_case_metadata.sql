@@ -34,7 +34,7 @@ VALUES
 ;
 
 -- ============================================
--- Case Keywords (one row per user per case, max 5 keywords)
+-- Case Keywords (one row per user per case, max 3 keywords)
 -- ============================================
 
 INSERT INTO public.case_keywords (case_id, created_by, values)
@@ -43,12 +43,12 @@ VALUES
   (
     '11111111-1111-4111-8111-111111111111',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-    ARRAY['Ukraine', 'Russland', 'Tschechien', 'Botschafter', 'Propaganda']
+    ARRAY['Ukraine', 'Russland', 'Tschechien']
   ),
   -- MDR case (1111...) - Anna's keywords
   (
     '11111111-1111-4111-8111-111111111111',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-    ARRAY['Ukraine', 'Russland', 'Tschechien', 'Botschafter', 'Propaganda']
+    ARRAY['Ukraine', 'Russland', 'Tschechien']
   )
 ;

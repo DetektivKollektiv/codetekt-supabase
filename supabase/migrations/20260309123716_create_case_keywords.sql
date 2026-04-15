@@ -1,8 +1,8 @@
 -- ============================================
 -- MIGRATION: Case Keywords
 -- One row per user per case, storing that user's keyword set as text[].
--- Max 5 keywords per user enforced by DB CHECK.
--- Max 10 total per case + first-user-gets-5/subsequent-get-3 logic: app-level only.
+-- The current per-user max-count rule is enforced by later migrations.
+-- Max 10 total per case is app-level only.
 -- ============================================
 
 CREATE TABLE public.case_keywords (

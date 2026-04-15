@@ -4,7 +4,7 @@
  * Returns a personalized review template for a case.
  *
  * Blocks access if:
- * - Case metadata (title, keywords, category) is not yet set in the DB
+ * - Case metadata (title, case keywords, category) is not yet set in the DB
  * - Case has open/pending disputes on any field
  * - User is not authenticated
  * - Case or template not found
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
         .single(),
     ]);
 
-    const [titleResult, keywordsResult, categoryResult] = metadataResult;
+    const [titleResult, caseKeywordsResult, categoryResult] = metadataResult;
     const { data: caseData, error: queryError } = caseResult;
 
     // 4. Authorization Checks
@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
     // Check metadata completeness — all three must exist before a review can start
     const missing: string[] = [];
     if (!titleResult.data) missing.push("title");
-    if (!keywordsResult.data) missing.push("keywords");
+    if (!caseKeywordsResult.data) missing.push("keywords");
     if (!categoryResult.data) missing.push("category");
 
     if (missing.length > 0) {

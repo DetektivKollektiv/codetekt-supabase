@@ -17,7 +17,6 @@ export const submittedReviewAnswerReportSchema = z
     content_language: trafficLightAnswerSchema,
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
-    content_claims_not_debunked: trafficLightAnswerSchema,
     content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
@@ -58,7 +57,6 @@ export const submittedReviewAnswerOpinionSchema = z
     content_language: trafficLightAnswerSchema,
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
-    content_claims_not_debunked: trafficLightAnswerSchema,
     content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
@@ -98,7 +96,6 @@ export const submittedReviewAnswerTextMessageSchema = z
     content_language: trafficLightAnswerSchema,
     content_objective_no_hate_no_panic: trafficLightAnswerSchema,
     content_headline_matches_article: trafficLightAnswerSchema,
-    content_claims_not_debunked: trafficLightAnswerSchema,
     content_additional_points: trafficLightAnswerSchema,
     content_additional_points_details: textAreaAnswerSchema.optional(),
 
@@ -133,7 +130,6 @@ export const inProgressReviewAnswerSchema = z
     content_language: trafficLightAnswerSchema.optional(),
     content_objective_no_hate_no_panic: trafficLightAnswerSchema.optional(),
     content_headline_matches_article: trafficLightAnswerSchema.optional(),
-    content_claims_not_debunked: trafficLightAnswerSchema.optional(),
     content_additional_points: trafficLightAnswerSchema.optional(),
     content_additional_points_details: textAreaAnswerSchema.optional(),
 

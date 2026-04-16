@@ -28,7 +28,6 @@ const REVIEW_DATA = {
     content_language: 3,
     content_objective_no_hate_no_panic: 3,
     content_headline_matches_article: 3,
-    content_claims_not_debunked: 3,
     content_additional_points: 3,
     media_objectivity: 3,
     media_no_ai_or_staging_doubts: 3,

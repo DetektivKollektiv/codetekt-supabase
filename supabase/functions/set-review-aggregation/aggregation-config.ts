@@ -13,10 +13,6 @@ export const FIELD_TAGS: Record<string, FieldTagByBucket> = {
     value0: "Darstellung unterschiedlicher Positionen",
     value1_2_3: "Mangelnde Darstellung unterschiedlicher Positionen",
   },
-  "content_claims_not_debunked": {
-    value0: "",
-    value1_2_3: "",
-  },
   "content_headline_matches_article": {
     value0: "Passende Überschrift",
     value1_2_3: "Clickbait",

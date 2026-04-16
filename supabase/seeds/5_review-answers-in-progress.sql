@@ -24,7 +24,6 @@ VALUES
     "content_language": 2,
     "content_objective_no_hate_no_panic": 0,
     "content_headline_matches_article": 1,
-    "content_claims_not_debunked": 0,
     "content_additional_points": 1,
     "content_additional_points_details": "Zusätzliche inhaltliche Auffälligkeiten wurden dokumentiert.",
 
@@ -67,7 +66,6 @@ VALUES
     "content_language": 3,
     "content_objective_no_hate_no_panic": 1,
     "content_headline_matches_article": 2,
-    "content_claims_not_debunked": 1,
     "content_additional_points": 2,
     "content_additional_points_details": "Es fehlen zusätzliche Kontextinformationen im Inhalt.",
 

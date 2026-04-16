@@ -157,7 +157,10 @@ export function buildAggregationFields(
 
     // Choose one output tag by value bucket: 0 vs 1,2,3
     const fieldTags = FIELD_TAGS[fieldId] || DEFAULT_FIELD_TAG;
-    const selectedBucket = Math.ceil(average) === 0 ? "value0" : "value1_2_3";
+
+    // For now, we will show the text of the tag for 0 only, and show the correct color
+    // const selectedBucket = Math.ceil(average) === 0 ? "value0" : "value1_2_3";
+    const selectedBucket = "value0";
 
     fields[fieldId] = {
       counts: outputCounts,
@@ -195,7 +198,8 @@ export function buildTextFields(
   }
 
   // Aggregate text answers
-  const textFields: Record<string, { answer_values: AggregatedTextAnswer[] }> = {};
+  const textFields: Record<string, { answer_values: AggregatedTextAnswer[] }> =
+    {};
 
   for (const { data, reviewed_by } of submitted) {
     const answerRecord = data as Record<string, unknown>;

@@ -1,231 +1,5 @@
 [
   {
-    "id": "media_question",
-    "fields": [
-      {
-        "id": "media_objectivity",
-        "type": "traffic-light",
-        "question": "Bilder und Videos im Artikel stellen das beschriebene Geschehen tatsächlich und objektiv dar. (falls vorhanden)",
-        "shortTip": "Achte darauf, ob sie die Szene überdramatisieren oder aus einem anderen Kontext stammen. Nutze eine Reverse Image Search (z.B. TinEye)",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ]
-      },
-      {
-        "id": "media_no_ai_or_staging_doubts",
-        "type": "traffic-light",
-        "question": "Die Bilder/Videos sind nicht offensichtlich manipuliert oder bearbeitet.",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "shortTip": "Achte z. B. auf Musik, viele Schnitte, Effekte, Filter oder schwammige Umrisse"
-      },
-      {
-        "id": "media_visualizations_not_distorted",
-        "type": "traffic-light",
-        "question": "Diagramme und Infografiken sind korrekt dargestellt und führen nicht bewusst in die Irre",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "shortTip": "Achte darauf, ob Achsen verzerrt oder Daten weggelassen werden."
-      },
-      {
-        "id": "media_additional_points",
-        "type": "traffic-light",
-        "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Bilder & Videos negativ beeinflussen. ",
-        "options": [
-          {
-            "id": "traffic-light-opt-1",
-            "value": 0,
-            "color": "hsl(var(--brand-green))"
-          },
-          {
-            "id": "traffic-light-opt-2",
-            "value": 1,
-            "color": "hsl(var(--brand-yellow))"
-          },
-          {
-            "id": "traffic-light-opt-3",
-            "value": 2,
-            "color": "hsl(var(--brand-orange))"
-          },
-          {
-            "id": "traffic-light-opt-4",
-            "value": 3,
-            "color": "hsl(var(--destructive))"
-          },
-          {
-            "id": "traffic-light-opt-5",
-            "value": 4,
-            "color": "hsl(var(--brand-gray))"
-          }
-        ],
-        "is_required": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "is_shown": [
-          {
-            "context": "category",
-            "operator": "in",
-            "values": ["report", "opinion", "text_message"]
-          }
-        ],
-        "shortTip": "Achte darauf, ob KI missbräuchlich/verdeckt zum Einsatz kommt.",
-        "show_bottom_border": false
-      },
-      {
-        "id": "media_additional_points_details",
-        "type": "text-area",
-        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit der Bilder/Videos schädigen.",
-        "options": [
-          {
-            "id": "media_additional_points_details_opt",
-            "placeholder": "Beschreibe die zusätzlichen Punkte hier...",
-            "max_length": 500
-          }
-        ],
-        "is_required": [
-          {
-            "field_id": "media_additional_points",
-            "operator": "in",
-            "values": [1, 2, 3]
-          }
-        ],
-        "is_shown": [
-          {
-            "field_id": "media_additional_points",
-            "operator": "in",
-            "values": [1, 2, 3]
-          }
-        ]
-      }
-    ],
-    "metadata": {
-      "text": "Bewerte die folgenden Aussagen sorgfältig.",
-      "title": "Bilder/Videos",
-      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-bilder-videos-und-grafiken/",
-      "indent_level": 0
-    }
-  },
-  {
     "id": "content_question",
     "fields": [
       {
@@ -495,6 +269,232 @@
       "text": "Bewerte die folgenden Aussagen sorgfältig.",
       "title": "Inhalt",
       "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-inhalt/",
+      "indent_level": 0
+    }
+  },
+  {
+    "id": "media_question",
+    "fields": [
+      {
+        "id": "media_objectivity",
+        "type": "traffic-light",
+        "question": "Bilder und Videos im Artikel stellen das beschriebene Geschehen tatsächlich und objektiv dar. (falls vorhanden)",
+        "shortTip": "Achte darauf, ob sie die Szene überdramatisieren oder aus einem anderen Kontext stammen. Nutze eine Reverse Image Search (z.B. TinEye)",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ]
+      },
+      {
+        "id": "media_no_ai_or_staging_doubts",
+        "type": "traffic-light",
+        "question": "Die Bilder/Videos sind nicht offensichtlich manipuliert oder bearbeitet.",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "shortTip": "Achte z. B. auf Musik, viele Schnitte, Effekte, Filter oder schwammige Umrisse"
+      },
+      {
+        "id": "media_visualizations_not_distorted",
+        "type": "traffic-light",
+        "question": "Diagramme und Infografiken sind korrekt dargestellt und führen nicht bewusst in die Irre",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "shortTip": "Achte darauf, ob Achsen verzerrt oder Daten weggelassen werden."
+      },
+      {
+        "id": "media_additional_points",
+        "type": "traffic-light",
+        "question": "Es gibt keine weiteren Punkte, die die Vertrauenswürdigkeit des Kriteriums Bilder & Videos negativ beeinflussen. ",
+        "options": [
+          {
+            "id": "traffic-light-opt-1",
+            "value": 0,
+            "color": "hsl(var(--brand-green))"
+          },
+          {
+            "id": "traffic-light-opt-2",
+            "value": 1,
+            "color": "hsl(var(--brand-yellow))"
+          },
+          {
+            "id": "traffic-light-opt-3",
+            "value": 2,
+            "color": "hsl(var(--brand-orange))"
+          },
+          {
+            "id": "traffic-light-opt-4",
+            "value": 3,
+            "color": "hsl(var(--destructive))"
+          },
+          {
+            "id": "traffic-light-opt-5",
+            "value": 4,
+            "color": "hsl(var(--brand-gray))"
+          }
+        ],
+        "is_required": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "is_shown": [
+          {
+            "context": "category",
+            "operator": "in",
+            "values": ["report", "opinion", "text_message"]
+          }
+        ],
+        "shortTip": "Achte darauf, ob KI missbräuchlich/verdeckt zum Einsatz kommt.",
+        "show_bottom_border": false
+      },
+      {
+        "id": "media_additional_points_details",
+        "type": "text-area",
+        "question": "Gib weitere Punkte an, die die Vertrauenswürdigkeit der Bilder/Videos schädigen.",
+        "options": [
+          {
+            "id": "media_additional_points_details_opt",
+            "placeholder": "Beschreibe die zusätzlichen Punkte hier...",
+            "max_length": 500
+          }
+        ],
+        "is_required": [
+          {
+            "field_id": "media_additional_points",
+            "operator": "in",
+            "values": [1, 2, 3]
+          }
+        ],
+        "is_shown": [
+          {
+            "field_id": "media_additional_points",
+            "operator": "in",
+            "values": [1, 2, 3]
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "text": "Bewerte die folgenden Aussagen sorgfältig.",
+      "title": "Bilder/Videos",
+      "help_url": "https://codetekt.org/informationen/trust-checking-im-detail-bilder-videos-und-grafiken/",
       "indent_level": 0
     }
   },

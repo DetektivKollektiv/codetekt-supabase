@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { DOMParser } from "jsr:@b-fuze/deno-dom";
@@ -10,25 +11,244 @@ import {
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const enc = new TextEncoder();
+const FETCH_TIMEOUT_MS = 5000;
+const MAX_RESPONSE_BYTES = 1024 * 1024;
+const ALLOWED_CONTENT_TYPES = new Set([
+  "application/xhtml+xml",
+  "text/html",
+]);
+const BLOCKED_HOSTNAMES = new Set([
+  "host.containers.internal",
+  "host.docker.internal",
+  "localhost",
+]);
+const BLOCKED_HOSTNAME_SUFFIXES = [
+  ".docker",
+  ".home",
+  ".internal",
+  ".lan",
+  ".local",
+  ".localhost",
+];
+
+class OpenGraphFetchError extends Error {
+  constructor(message: string, readonly statusCode: number | null = null) {
+    super(message);
+    this.name = "OpenGraphFetchError";
+  }
+}
+
+function normalizeHostname(hostname: string) {
+  return hostname.toLowerCase().replace(/^\[/, "").replace(/\]$/, "");
+}
+
+function parseIpv4(hostname: string): number[] | null {
+  if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) {
+    return null;
+  }
+
+  const parts = hostname.split(".").map((part) => Number.parseInt(part, 10));
+  if (parts.some((part) => Number.isNaN(part) || part < 0 || part > 255)) {
+    return null;
+  }
+
+  return parts;
+}
+
+function isPrivateOrLocalIpv4(hostname: string) {
+  const parts = parseIpv4(hostname);
+  if (!parts) {
+    return false;
+  }
+
+  const [first, second] = parts;
+  return first === 10 ||
+    first === 127 ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168);
+}
+
+function isPrivateOrLocalIpv6(hostname: string) {
+  const normalized = normalizeHostname(hostname);
+  return normalized === "::1" ||
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe8") ||
+    normalized.startsWith("fe9") ||
+    normalized.startsWith("fea") ||
+    normalized.startsWith("feb");
+}
+
+function isPrivateOrLocalIpLiteral(hostname: string) {
+  return isPrivateOrLocalIpv4(hostname) || isPrivateOrLocalIpv6(hostname);
+}
+
+async function resolvePublicIpAddresses(hostname: string) {
+  const resolvedAddresses = new Set<string>();
+
+  for (const recordType of ["A", "AAAA"] as const) {
+    try {
+      const addresses = await Deno.resolveDns(hostname, recordType);
+      for (const address of addresses) {
+        resolvedAddresses.add(normalizeHostname(address));
+      }
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        continue;
+      }
+
+      throw new OpenGraphFetchError(
+        `Could not resolve hostname: ${hostname}`,
+      );
+    }
+  }
+
+  if (resolvedAddresses.size === 0) {
+    throw new OpenGraphFetchError(`Could not resolve hostname: ${hostname}`);
+  }
+
+  for (const address of resolvedAddresses) {
+    if (isPrivateOrLocalIpLiteral(address)) {
+      throw new OpenGraphFetchError(
+        "Private, loopback, and link-local IP targets are not allowed",
+      );
+    }
+  }
+}
+
+function isBlockedHostname(hostname: string) {
+  const normalized = normalizeHostname(hostname);
+  return normalized.length === 0 ||
+    BLOCKED_HOSTNAMES.has(normalized) ||
+    BLOCKED_HOSTNAME_SUFFIXES.some((suffix) => normalized.endsWith(suffix)) ||
+    !normalized.includes(".");
+}
+
+async function assertSafeOpenGraphUrl(rawUrl: string) {
+  const parsedUrl = new URL(rawUrl);
+  const hostname = normalizeHostname(parsedUrl.hostname);
+
+  if (parsedUrl.protocol !== "https:") {
+    throw new OpenGraphFetchError("Only https URLs are allowed");
+  }
+
+  if (isBlockedHostname(hostname)) {
+    throw new OpenGraphFetchError("Internal hostnames are not allowed");
+  }
+
+  if (isPrivateOrLocalIpLiteral(hostname)) {
+    throw new OpenGraphFetchError(
+      "Private, loopback, and link-local IP targets are not allowed",
+    );
+  }
+
+  await resolvePublicIpAddresses(hostname);
+  return parsedUrl;
+}
+
+function isAllowedContentType(contentType: string | null) {
+  if (!contentType) {
+    return false;
+  }
+
+  const mimeType = contentType.split(";")[0].trim().toLowerCase();
+  return ALLOWED_CONTENT_TYPES.has(mimeType);
+}
+
+async function readResponseTextWithLimit(response: Response) {
+  const contentLength = response.headers.get("content-length");
+  if (contentLength) {
+    const parsedLength = Number.parseInt(contentLength, 10);
+    if (!Number.isNaN(parsedLength) && parsedLength > MAX_RESPONSE_BYTES) {
+      throw new OpenGraphFetchError(
+        `Response body exceeds ${MAX_RESPONSE_BYTES} bytes`,
+        response.status,
+      );
+    }
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    return "";
+  }
+
+  const decoder = new TextDecoder();
+  let totalBytes = 0;
+  let html = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+
+    totalBytes += value.byteLength;
+    if (totalBytes > MAX_RESPONSE_BYTES) {
+      await reader.cancel();
+      throw new OpenGraphFetchError(
+        `Response body exceeds ${MAX_RESPONSE_BYTES} bytes`,
+        response.status,
+      );
+    }
+
+    html += decoder.decode(value, { stream: true });
+  }
+
+  html += decoder.decode();
+  return html;
+}
 
 // Helper function to extract Open Graph data from HTML
 async function fetchOpenGraphData(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; Codetekt/1.0; +https://codetekt.com/bot)",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; Codetekt/1.0; +https://codetekt.com/bot)",
+      },
+      redirect: "manual",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+  } catch (error) {
+    if (
+      error instanceof DOMException &&
+      (error.name === "AbortError" || error.name === "TimeoutError")
+    ) {
+      throw new OpenGraphFetchError(
+        `Request timed out after ${FETCH_TIMEOUT_MS}ms`,
+      );
+    }
+    throw error;
   }
 
-  const html = await response.text();
+  if (response.status >= 300 && response.status < 400) {
+    throw new OpenGraphFetchError("Redirects are not allowed", response.status);
+  }
+
+  if (!response.ok) {
+    throw new OpenGraphFetchError(
+      `HTTP ${response.status}: ${response.statusText}`,
+      response.status,
+    );
+  }
+
+  const contentType = response.headers.get("content-type");
+  if (!isAllowedContentType(contentType)) {
+    throw new OpenGraphFetchError(
+      `Unsupported content-type: ${contentType ?? "missing"}`,
+      response.status,
+    );
+  }
+
+  const html = await readResponseTextWithLimit(response);
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
   if (!doc) {
-    throw new Error("Failed to parse HTML");
+    throw new OpenGraphFetchError("Failed to parse HTML", response.status);
   }
 
   // Extract Open Graph meta tags
@@ -77,6 +297,21 @@ async function fetchOpenGraphData(url: string) {
 
 Deno.serve(async (req) => {
   try {
+    const expected = Deno.env.get("DB_WEBHOOK_SECRET") ?? "";
+    const incoming = req.headers.get("x-db-secret") ?? "";
+    const expectedBytes = enc.encode(expected);
+    const incomingBytes = enc.encode(incoming);
+    const authorized = expectedBytes.length > 0 &&
+      expectedBytes.length === incomingBytes.length &&
+      timingSafeEqual(expectedBytes, incomingBytes);
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Step 1: Parse and validate request payload
     const json = await req.json().catch(() => null);
     const parsed = setOpenGraphDataRequestSchema.safeParse(json);
@@ -158,6 +393,35 @@ Deno.serve(async (req) => {
     }
 
     const url = urlValidation.data;
+    let safeUrl: URL;
+    try {
+      safeUrl = await assertSafeOpenGraphUrl(url);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unsafe URL";
+
+      await supabaseServiceRole
+        .from("open_graph_data")
+        .upsert(
+          {
+            case_id: case_id,
+            fetch_status: "failed",
+            fetch_error: message,
+            last_fetched_at: new Date().toISOString(),
+          } as never,
+          {
+            onConflict: "case_id",
+          },
+        );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          fetch_status: "failed",
+          error: message,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     // Step 6: Fetch Open Graph data
     let ogData;
@@ -166,25 +430,21 @@ Deno.serve(async (req) => {
     let httpStatusCode: number | null = null;
 
     try {
-      const { error, result, response } = await fetchOpenGraphData(url);
+      const { result, response } = await fetchOpenGraphData(safeUrl.toString());
+      ogData = result;
+      httpStatusCode = response.status;
 
-      if (error) {
-        fetchStatus = "failed";
-        fetchError = "Failed to fetch Open Graph data";
-        console.error("OG fetch error:", error);
-      } else {
-        ogData = result;
-        httpStatusCode = response?.status || null;
-
-        // Check if we got partial data (no essential OG tags)
-        if (!result.ogTitle && !result.ogDescription && !result.ogImage) {
-          fetchStatus = "partial";
-          console.warn("Partial OG data - missing essential tags");
-        }
+      // Check if we got partial data (no essential OG tags)
+      if (!result.ogTitle && !result.ogDescription && !result.ogImage) {
+        fetchStatus = "partial";
+        console.warn("Partial OG data - missing essential tags");
       }
     } catch (err) {
       fetchStatus = "failed";
       fetchError = err instanceof Error ? err.message : "Unknown error";
+      if (err instanceof OpenGraphFetchError) {
+        httpStatusCode = err.statusCode;
+      }
       console.error("OG fetch exception:", err);
     }
 
@@ -229,7 +489,7 @@ Deno.serve(async (req) => {
           fetch_error: fetchError,
           http_status_code: httpStatusCode,
           last_fetched_at: new Date().toISOString(),
-        },
+        } as never,
         {
           onConflict: "case_id",
         },
@@ -273,6 +533,7 @@ Deno.serve(async (req) => {
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/set-open-graph-data' \
     --header 'Content-Type: application/json' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
     --data '{"case_id":"11111111-1111-4111-8111-111111111111"}'
 
 */

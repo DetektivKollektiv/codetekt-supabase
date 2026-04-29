@@ -2,6 +2,7 @@
  * SET REVIEW AGGREGATION EDGE FUNCTION
  *
  * Aggregates all submitted reviews for a case into a single consensus result.
+ * Called by database triggers via pg_net and authenticated with X-Db-Secret.
  * Uses service role key to access all reviews regardless of RLS policies.
  *
  * Aggregation process:
@@ -34,6 +35,7 @@
  * - Stores: aggregated data, result_score, reviewer_ids, calculated_at timestamp
  */
 
+import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
@@ -50,6 +52,7 @@ type SubmittedReviewRow = SubmittedReview & {
 };
 
 const MIN_REVIEWS_FOR_AGGREGATION = 2;
+const enc = new TextEncoder();
 
 const requestSchema = z.object({
   case_id: z.string().uuid("Invalid case_id: must be a valid UUID"),
@@ -60,6 +63,21 @@ const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 Deno.serve(async (req) => {
   try {
+    const expected = Deno.env.get("DB_WEBHOOK_SECRET") ?? "";
+    const incoming = req.headers.get("x-db-secret") ?? "";
+    const expectedBytes = enc.encode(expected);
+    const incomingBytes = enc.encode(incoming);
+    const authorized = expectedBytes.length > 0 &&
+      expectedBytes.length === incomingBytes.length &&
+      timingSafeEqual(expectedBytes, incomingBytes);
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Step 1: Parse and validate request payload
     const json = await req.json().catch(() => null);
     const parsed = requestSchema.safeParse(json);
@@ -411,6 +429,7 @@ Deno.serve(async (req) => {
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/set-review-aggregation' \
     --header 'Content-Type: application/json' \
+    --header 'x-db-secret: super-secret-db-webhook-key-123' \
     --data '{"case_id":"11111111-1111-4111-8111-111111111111"}'
 
 */

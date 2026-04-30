@@ -20,7 +20,7 @@ values (
       {
         "id": "faq-community",
         "title": "Wo kann ich Fragen an die Community stellen?",
-        "answerHtml": "Nutze den Community-Link im Tutorial, um mit anderen Detektiv*innen in Kontakt zu kommen. Bis der finale Discord-Link steht, ist dort zunächst ein Platzhalter hinterlegt."
+        "answerHtml": "Nutze den Community-Link im Tutorial, um mit anderen co:detectives in Kontakt zu kommen. Bis der finale Discord-Link steht, ist dort zunächst ein Platzhalter hinterlegt."
       },
       {
         "id": "faq-factcheck",
@@ -98,7 +98,7 @@ values (
     ],
     "communityCard": {
       "title": "Fragen? Tausche dich mit der Community aus",
-      "description": "Wenn du Hilfe brauchst oder dich mit anderen Detektiv*innen austauschen möchtest, findest du hier den Einstieg in den Community-Bereich.",
+      "description": "Wenn du Hilfe brauchst oder dich mit anderen co:detectives austauschen möchtest, findest du hier den Einstieg in den Community-Bereich.",
       "buttonLabel": "Zum Discord",
       "url": "https://example.com/discord",
       "illustrationSrc": "/images/community-people.svg",

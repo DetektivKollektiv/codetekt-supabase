@@ -608,6 +608,7 @@ export type Database = {
           id: string
           is_admin: boolean
           is_deactivated: boolean
+          tutorial_completed_at: string | null
           updated_at: string | null
           username: string | null
         }
@@ -617,6 +618,7 @@ export type Database = {
           id: string
           is_admin?: boolean
           is_deactivated?: boolean
+          tutorial_completed_at?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -626,6 +628,7 @@ export type Database = {
           id?: string
           is_admin?: boolean
           is_deactivated?: boolean
+          tutorial_completed_at?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -812,6 +815,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tutorial_content: {
+        Row: {
+          content: Json
+          created_at: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1119,3 +1143,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

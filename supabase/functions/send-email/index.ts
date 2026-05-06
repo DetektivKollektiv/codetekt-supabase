@@ -19,7 +19,8 @@
  *   reviews and the result is published. Triggered by a DB trigger on
  *   public.review_aggregations.
  *
- * - review_milestone: Notifies the case creator when their case reaches the
+ * - review_milestone: Notifies the fixed new-case address when the first review
+ *   is submitted, and notifies the case creator when their case reaches the
  *   configured review count threshold (REVIEW_MILESTONE_COUNT in config.ts).
  *   Triggered by a DB trigger on public.review_answers_submitted.
  *
@@ -43,6 +44,7 @@ import {
   aggregationEmail,
   commentReportEmail,
   disputeEmail,
+  firstReviewEmail,
   newCaseEmail,
   reviewMilestoneEmail,
 } from "./email-templates.ts";
@@ -263,6 +265,25 @@ Deno.serve(async (req) => {
     }
 
     if (payload.type === "review_milestone") {
+      // ── First review: fixed notification email for Slack bridge ──
+      if (payload.reviewCount === 1) {
+        const { subject, html } = firstReviewEmail({
+          caseNumber: payload.caseNumber,
+          caseId: payload.caseId,
+          siteUrl: SITE_URL,
+        });
+
+        await sendMail(NEW_CASE_NOTIFICATION_EMAIL, subject, html);
+
+        console.log(
+          `[send-email] first_review – sent to ${NEW_CASE_NOTIFICATION_EMAIL} for case ${payload.caseId}`,
+        );
+        return new Response(JSON.stringify({ sent: 1 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       // ── Template 4: notify case creator at configured review count milestone ──
       if (payload.reviewCount !== REVIEW_MILESTONE_COUNT) {
         // Not the configured milestone — ignore silently

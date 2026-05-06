@@ -249,6 +249,67 @@ export function reviewMilestoneEmail(
   };
 }
 
+// ─── Template 4a: Erstes Review eingegangen (Slack-Benachrichtigung) ─────────
+
+export type FirstReviewEmailParams = {
+  caseNumber: number;
+  caseId: string;
+  siteUrl: string;
+};
+
+export function firstReviewEmail(
+  { caseNumber, caseId, siteUrl }: FirstReviewEmailParams,
+): EmailTemplate {
+  const reviewUrl = `${siteUrl}/review/${caseId}`;
+
+  const html = wrapLayout(`
+    <!-- Subheadline -->
+    <tr>
+      <td style="padding: 0 0 8px 0">
+        <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8c8c9f;">
+          Erstes Review
+        </div>
+      </td>
+    </tr>
+
+    <!-- Headline -->
+    <tr>
+      <td style="padding: 0 0 14px 0">
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;">
+          Fall ${caseNumber} hat das erste Review erhalten
+        </div>
+      </td>
+    </tr>
+
+    <!-- Copy -->
+    <tr>
+      <td style="padding: 0 0 24px 0">
+        <p style="margin: 0; font-size: 15px; line-height: 1.65">
+          Für <strong>Fall ${caseNumber}</strong> wurde das erste Review eingereicht.
+          Weitere Bewertungen können jetzt folgen.
+        </p>
+      </td>
+    </tr>
+
+    <!-- CTA -->
+    <tr>
+      <td align="left">
+        <a
+          href="${reviewUrl}"
+          style="display: inline-block; background: #5f38fa; color: #ffffff; text-decoration: none; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;"
+        >
+          Fall bewerten
+        </a>
+      </td>
+    </tr>
+  `);
+
+  return {
+    subject: `Fall ${caseNumber} – erstes Review eingegangen`,
+    html,
+  };
+}
+
 // ─── Template 2: Einspruch erhoben (Admin-Benachrichtigung) ──────────────────
 
 export type DisputeField = string; // field_id from review_disputes (e.g. keyword_type, content_type)

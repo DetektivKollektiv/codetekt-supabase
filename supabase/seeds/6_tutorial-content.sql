@@ -8,24 +8,99 @@ values (
   '{
     "faqItems": [
       {
-        "id": "faq-review-start",
-        "title": "Wie starte ich mit dem Prüfen eines Falls?",
-        "answerHtml": "Gehe in deinem Dashboard zu den offenen Fällen und öffne einen Fall mit <strong>Fall checken</strong>. Eine ausführliche Einführung findest du auch im <a href=\"https://codetekt.org/informationen/trust-checking-im-detail-inhalt/\" target=\"_blank\" rel=\"noopener noreferrer\">Help Center</a>."
+        "id": "faq-platform",
+        "title": "Was ist die codetekt Trust-Checking-Plattform?",
+        "answerHtml": "Die Trust-Checking-Plattform ist eine community-basierte Plattform, auf der sich alle beteiligen können, um die Vertrauenswürdigkeit digitaler Inhalte gemeinsam zu bewerten."
       },
       {
-        "id": "faq-trust-checking",
-        "title": "Was ist Trust-Checking?",
-        "answerHtml": "Trust-Checking ist der Ansatz von codetekt, um Informationen anhand klarer Kriterien einzuordnen. Die fünf Bereiche werden in den verlinkten Artikeln Schritt für Schritt erklärt."
+        "id": "faq-purpose",
+        "title": "Wozu dient die Plattform?",
+        "answerHtml": "Sie soll dabei helfen, Desinformation zu reduzieren und zu besserer Nachrichtenkompetenz, konstruktiveren Debatten und einer informierteren Öffentlichkeit beizutragen."
       },
       {
-        "id": "faq-community",
-        "title": "Wo kann ich Fragen an die Community stellen?",
-        "answerHtml": "Nutze den Community-Link im Tutorial, um mit anderen co:detectives in Kontakt zu kommen. Bis der finale Discord-Link steht, ist dort zunächst ein Platzhalter hinterlegt."
+        "id": "faq-participation",
+        "title": "Wer kann mitmachen?",
+        "answerHtml": "Es können sich alle registrieren, die sich gegen Desinformation und für eine besser informierte Öffentlichkeit engagieren wollen. Nutzende, die wiederholt gegen die Nutzungsbedingungen verstoßen, können von der Nutzung ausgeschlossen werden."
       },
       {
-        "id": "faq-factcheck",
-        "title": "Was mache ich, wenn es bereits einen Faktencheck gibt?",
-        "answerHtml": "Im Review kannst du im Bereich <strong>Faktencheck</strong> angeben, ob bereits ein Faktencheck existiert. Für einen Überblick zu passenden Quellen hilft dir zum Beispiel die Recherche über bekannte Faktencheck-Angebote oder die Hinweise im <a href=\"https://codetekt.org/informationen/trust-checking-im-detail-quelle/\" target=\"_blank\" rel=\"noopener noreferrer\">Artikel zur Quelle</a>."
+        "id": "faq-main-functions",
+        "title": "Welche Hauptfunktionen gibt es?",
+        "answerHtml": "<p>Es gibt drei grundlegende Bereiche:</p><ul><li>Fall einreichen</li><li>Fall checken</li><li>Gelöste Fälle einsehen (Archiv)</li></ul>"
+      },
+      {
+        "id": "faq-submit-case",
+        "title": "Wie reiche ich einen Fall ein?",
+        "answerHtml": "<p>Du erstellst einen Account und klickst in der Navigation auf <strong>Fall einreichen</strong>. Dann gibt es zwei Fälle:</p><ul><li><strong>Online-Artikel:</strong> Link zum Artikel angeben</li><li><strong>Textnachricht</strong> (z. B. WhatsApp/Telegram): Text ins Textfeld kopieren</li></ul><p>Danach einfach auf <strong>Fall einreichen</strong> klicken.</p>"
+      },
+      {
+        "id": "faq-solved-cases",
+        "title": "Kann ich auch gelöste Fälle bearbeiten?",
+        "answerHtml": "Ja. Du kannst nicht nur neue eingereichte Fälle bearbeiten, sondern auch im Archiv (<strong>Gelöste Fälle</strong>) stöbern und dort ebenfalls Bewertungen abgeben."
+      },
+      {
+        "id": "faq-needed-cases",
+        "title": "Wie finde ich Fälle, die gerade Mitarbeit brauchen?",
+        "answerHtml": "Über <strong>Fall bearbeiten</strong> in der Navigation bekommst du Vorschläge für Fälle, die deine Mitarbeit benötigen."
+      },
+      {
+        "id": "faq-case-title",
+        "title": "Wie kommt der Titel eines Falls zustande?",
+        "answerHtml": "Die erste Person, die einen Fall checkt, kann den Titel vergeben. Spätere co:detectives können den Titel beanstanden. Bei einer Beanstandung wird der Titel gemeldet, das Moderationsteam prüft die Beanstandung und passt den Titel gegebenenfalls an."
+      },
+      {
+        "id": "faq-keywords",
+        "title": "Wofür sind Stichwörter da - und wie viele kann ich vergeben?",
+        "answerHtml": "<p>Stichwörter helfen, schnell zu erfassen, worum es im Fall geht:</p><ul><li>Jede*r co:detective kann bis zu 3 Stichwörter vergeben.</li><li>Wenn schon genug gute Stichwörter vorhanden sind, musst du keine hinzufügen.</li></ul><p>Wichtig: neutral und beschreibend bleiben.</p>"
+      },
+      {
+        "id": "faq-content-type",
+        "title": "Was bedeutet Inhaltstyp und welche gibt es?",
+        "answerHtml": "<p>Der Inhaltstyp wird von der ersten Person, die den Fall bearbeitet, festgelegt. Danach bekommt man passende Fragen. Genannt werden:</p><ul><li><strong>Textnachricht:</strong> z. B. Messenger-Weiterleitungen oder Social-Media-Posts</li><li><strong>Meinung:</strong> Kommentare, Glossen, Essays etc.</li><li><strong>Bericht:</strong> informierende journalistische Formen, wenn nicht klar als Meinung gekennzeichnet</li><li><strong>Satire:</strong> beendet die Bewertung; wird im Archiv als Satire markiert</li></ul>"
+      },
+      {
+        "id": "faq-trust-checking-criteria",
+        "title": "Was sind die Trust-Checking-Kriterien?",
+        "answerHtml": "<p>Die Trust-Checking-Kriterien sind 5 übergreifende Bereiche, die beim Checken eines Falles geprüft werden:</p><ul><li>Inhalt</li><li>Bilder/Videos</li><li>Quelle</li><li>Zitate</li><li>Medium</li></ul><p>Beim Check werden zu jedem Kriterium mehrere Aussagen auf einer Skala von grün (vertrauenswürdig) bis rot (nicht vertrauenswürdig) bewertet.</p>"
+      },
+      {
+        "id": "faq-colors",
+        "title": "Was bedeuten die Farben (Grün bis Grau)?",
+        "answerHtml": "<p>Die Antwortoptionen werden so erklärt:</p><ul><li><strong>Grün:</strong> trifft zu oder kleine Mängel ohne relevante Auswirkung</li><li><strong>Gelb:</strong> trifft nicht ganz zu, beeinträchtigt aber nur gering</li><li><strong>Orange:</strong> trifft nicht zu und beeinträchtigt die Vertrauenswürdigkeit</li><li><strong>Rot:</strong> trifft nicht zu und macht den Fall insgesamt nicht vertrauenswürdig</li><li><strong>Grau:</strong> nicht anwendbar oder unsicher</li></ul>"
+      },
+      {
+        "id": "faq-additional-points",
+        "title": "Kann ich zusätzliche Punkte anmerken, die nicht abgefragt wurden?",
+        "answerHtml": "Ja. Die letzte Frage eines Falls bietet laut Seite die Möglichkeit, weitere Punkte aufzunehmen. Wenn du dort gelb, orange oder rot wählst, kannst du die negativen Punkte in einem Textfeld begründen."
+      },
+      {
+        "id": "faq-final-comment",
+        "title": "Was ist der Abschlusskommentar?",
+        "answerHtml": "Nach der Bewertung kannst du einen abschließenden Kommentar hinzufügen, um deine Einschätzung zusammenzufassen oder zusätzliche Aspekte zu nennen. Dieser Kommentar gibt Kontext, wird aber nicht in die Gesamtbewertung eingerechnet."
+      },
+      {
+        "id": "faq-archive",
+        "title": "Was sehe ich im Archiv (Gelöste Fälle)?",
+        "answerHtml": "<p>Im Archiv findest du:</p><ul><li>eine Übersicht gelöster Fälle</li><li>eine Suchfunktion, z. B. nach Stichworten</li><li>pro Fall die Gesamtbewertung und wichtigste Kriterien</li><li>über <strong>Fall ansehen</strong> Details zum Fall</li></ul>"
+      },
+      {
+        "id": "faq-statement-rating",
+        "title": "Wie entsteht die Bewertung einer einzelnen Aussage?",
+        "answerHtml": "Die Vertrauenswürdigkeit einer Aussage ergibt sich aus dem Durchschnitt der Bewertungen der co:detectives (Grün = 1, Rot = 4; dazwischen entsprechend). Liegt das Ergebnis genau zwischen zwei Stufen, wird die weniger vertrauenswürdige Stufe genommen."
+      },
+      {
+        "id": "faq-criterion-rating",
+        "title": "Wie wird ein ganzes Kriterium bewertet?",
+        "answerHtml": "Ein Kriterium wird durch die am schlechtesten bewertete Aussage in diesem Kriterium bestimmt. Zum Beispiel führt eine orange bewertete Aussage dazu, dass das Kriterium insgesamt orange ist."
+      },
+      {
+        "id": "faq-overall-rating",
+        "title": "Wie entsteht die Gesamtbewertung eines Falls?",
+        "answerHtml": "Die Gesamt-Vertrauenswürdigkeit eines Falls entspricht dem am schlechtesten bewerteten Kriterium. Wenn also nur <strong>Quelle</strong> orange ist, wird der ganze Fall orange angezeigt - auch wenn alles andere grün ist."
+      },
+      {
+        "id": "faq-discord",
+        "title": "Wo kann ich mich mit anderen austauschen oder mehr über die Zusammenarbeit erfahren?",
+        "answerHtml": "In unserem Discord-Channel kannst du dich mit anderen co:detectives austauschen, Fragen stellen und Feedback hinterlassen. <a href=\"https://discord.gg/fFABTPSxXA\" target=\"_blank\" rel=\"noopener noreferrer\">Hier geht's zum Discord</a>."
       }
     ],
     "blogArticles": [
@@ -100,7 +175,7 @@ values (
       "title": "Fragen? Tausche dich mit der Community aus",
       "description": "Wenn du Hilfe brauchst oder dich mit anderen co:detectives austauschen möchtest, findest du hier den Einstieg in den Community-Bereich.",
       "buttonLabel": "Zum Discord",
-      "url": "https://example.com/discord",
+      "url": "https://discord.gg/fFABTPSxXA",
       "illustrationSrc": "/images/community-people.svg",
       "illustrationAlt": "Illustration einer Community"
     }

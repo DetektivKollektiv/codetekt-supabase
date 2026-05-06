@@ -242,7 +242,7 @@ VALUES (
             "values": ["report", "opinion", "text_message"]
           }
         ],
-        "shortTip": "Achte auf rhetorische Manipulationstechniken (im Help Center verlinkt) oder bewusst ausgelassene Informationen",
+        "shortTip": "Achte auf rhetorische <a href='https://codetekt.org/informationen/beliebte-manipulationstechniken-und-wie-du-sie-entlarven-kannst/' target='_blank' rel='noopener noreferrer'>Manipulationstechniken</a> oder bewusst ausgelassene Informationen",
         "show_bottom_border": false
       },
       {
@@ -286,7 +286,7 @@ VALUES (
         "id": "media_objectivity",
         "type": "traffic-light",
         "question": "Bilder und Videos im Artikel stellen das beschriebene Geschehen tatsächlich und objektiv dar. (falls vorhanden)",
-        "shortTip": "Achte darauf, ob sie die Szene überdramatisieren oder aus einem anderen Kontext stammen. Nutze eine Reverse Image Search (z.B. <a href=''https://www.tineye.com/'' target=''_blank'' rel=''noopener noreferrer''>TinEye</a>)",
+        "shortTip": "Achte darauf, ob sie die Szene überdramatisieren oder aus einem anderen Kontext stammen. Nutze eine Reverse Image Search (z.B. <a href='https://www.tineye.com/' target='_blank' rel='noopener noreferrer'>TinEye</a>)",
         "options": [
           {
             "id": "traffic-light-opt-1",

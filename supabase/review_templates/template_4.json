@@ -235,7 +235,7 @@
             "values": ["report", "opinion", "text_message"]
           }
         ],
-        "shortTip": "Achte auf rhetorische Manipulationstechniken (im Help Center verlinkt) oder bewusst ausgelassene Informationen",
+        "shortTip": "Achte auf rhetorische <a href='https://codetekt.org/informationen/beliebte-manipulationstechniken-und-wie-du-sie-entlarven-kannst/' target='_blank' rel='noopener noreferrer'>Manipulationstechniken</a> oder bewusst ausgelassene Informationen",
         "show_bottom_border": false
       },
       {

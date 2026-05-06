@@ -5,7 +5,7 @@
 INSERT INTO public.review_templates (version, template, created_by)
 VALUES (
   1,
-  '[
+  $review_template$[
   {
     "id": "content_question",
     "fields": [
@@ -1278,6 +1278,6 @@ VALUES (
     }
   }
 ]
-'::jsonb,
+$review_template$::jsonb,
   (SELECT id FROM auth.users WHERE email = 'gorm-labenz@hotmail.com')
 );

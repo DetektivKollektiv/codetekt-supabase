@@ -172,9 +172,9 @@ values (
       }
     ],
     "communityCard": {
-      "title": "Fragen? Tausche dich mit der Community aus",
-      "description": "Wenn du Hilfe brauchst oder dich mit anderen co:detectives austauschen möchtest, findest du hier den Einstieg in den Community-Bereich.",
-      "buttonLabel": "Zum Discord",
+      "title": "Tausche dich mit der Community aus",
+      "description": "Auf unserem Discord-Server kannst du dich mit anderen co:detectives und dem codetekt-Team austauschen, Fragen stellen und aktiv werden!",
+      "buttonLabel": "Tritt dem codetekt community-Discord-Server bei!",
       "url": "https://discord.gg/fFABTPSxXA",
       "illustrationSrc": "/images/community-people.svg",
       "illustrationAlt": "Illustration einer Community"

@@ -5,7 +5,7 @@
 insert into public.tutorial_content (id, content)
 values (
   1,
-  '{
+  $${
     "faqItems": [
       {
         "id": "faq-platform",
@@ -179,7 +179,7 @@ values (
       "illustrationSrc": "/images/community-people.svg",
       "illustrationAlt": "Illustration einer Community"
     }
-  }'::jsonb
+  }$$::jsonb
 )
 on conflict (id) do update
 set

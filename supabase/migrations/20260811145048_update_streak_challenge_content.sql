@@ -20,9 +20,9 @@ values (
       "totalTarget": 100,
       "milestones": [0, 50, 100],
       "dailyGoals": [3, 5, 10],
-      "descriptionColumns": [
-        "Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen!",
-        "Unsere Community-Ziele lauten: 1) Daily Streak am Leben halten, also jeden Tag mindestens 1 gemeinsam gelöster Fall (z. B. ein Online-Artikel). 2) Trust-Barometer füllen und 100 Fälle erreichen. 3) So viele Trust-Shares wie möglich! Infos zur Anleitung und den Gewinnen gibt’s hier."
+      "descriptionColumnsHtml": [
+        "<p>Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen!</p>",
+        "<p>Unsere Community-Ziele lauten: 1) Daily Streak am Leben halten, also jeden Tag mindestens 1 gemeinsam gelöster Fall (z. B. ein Online-Artikel). 2) Trust-Barometer füllen und 100 Fälle erreichen. 3) So viele Trust-Shares wie möglich! Infos zur Anleitung und den Gewinnen gibt’s <a href=\"/streak_challenge_2026_teilnahmebedingungen\">hier</a>.</p>"
       ],
       "intro": {
         "eyebrow": "Aktion zu den Landtagswahlen 2026",
@@ -49,7 +49,10 @@ values (
           }
         ]
       },
-      "leaderboardLimit": 5
+      "leaderboardLimit": 5,
+      "leaderboardReviewCaps": {
+        "gormlabenz": 5
+      }
     }
   $json$::jsonb,
   $json$

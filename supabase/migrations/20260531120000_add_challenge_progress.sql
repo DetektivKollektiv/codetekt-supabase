@@ -129,7 +129,8 @@ as $$
   with visible_challenge as (
     select
       challenge_configs.starts_on,
-      challenge_configs.ends_on
+      challenge_configs.ends_on,
+      challenge_configs.content
     from public.challenge_configs
     where challenge_configs.starts_on = challenge_starts_on
       and challenge_configs.ends_on = challenge_ends_on
@@ -183,7 +184,19 @@ as $$
     left join daily_counts
       on daily_counts.submitted_on = days.resolved_on
   ),
-  leaderboard_rows as (
+  leaderboard_review_caps as (
+    select
+      review_cap.key as username,
+      review_cap.value::integer as max_reviewed_cases
+    from visible_challenge
+    cross join lateral jsonb_each_text(
+      coalesce(
+        visible_challenge.content -> 'leaderboardReviewCaps',
+        '{}'::jsonb
+      )
+    ) as review_cap
+  ),
+  leaderboard_review_counts as (
     select
       challenge_reviews.reviewed_by as user_id,
       coalesce(public.profiles.username, 'Unbekannt') as username,
@@ -194,6 +207,22 @@ as $$
       on public.profiles.id = challenge_reviews.reviewed_by
     where not coalesce(public.profiles.is_deactivated, false)
     group by challenge_reviews.reviewed_by, public.profiles.username
+  ),
+  leaderboard_rows as (
+    select
+      leaderboard_review_counts.user_id,
+      leaderboard_review_counts.username,
+      least(
+        leaderboard_review_counts.reviewed_cases,
+        coalesce(
+          leaderboard_review_caps.max_reviewed_cases,
+          leaderboard_review_counts.reviewed_cases
+        )
+      ) as reviewed_cases,
+      leaderboard_review_counts.active_days
+    from leaderboard_review_counts
+    left join leaderboard_review_caps
+      on leaderboard_review_caps.username = leaderboard_review_counts.username
     order by reviewed_cases desc, active_days desc, username asc
     limit greatest(coalesce(leaderboard_limit, 5), 0)
   ),

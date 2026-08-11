@@ -198,7 +198,7 @@ set
       "Das Leaderboard zeigt, welche co:detectives besonders aktiv sind."
     ],
     "intro": {
-      "eyebrow": "Community Challenge",
+      "eyebrow": "Trust Barometer",
       "title": "Mach mit bei unserer Streak-Challenge!",
       "descriptionHtml": "Im September wird in vier Bundesländern gewählt und Falschinformationen haben wieder Hochsaison. Sie verunsichern, spalten und beeinflussen Entscheidungen. Unsere Antwort: <strong>Flood the zone with trust!</strong>",
       "imageSrc": "/images/title.svg",

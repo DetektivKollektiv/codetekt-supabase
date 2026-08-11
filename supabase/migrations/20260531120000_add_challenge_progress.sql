@@ -193,7 +193,7 @@ values (
   '2026-09-25',
   '{
     "eyebrow": "Landtagswahlen 2026",
-    "title": "Community Challenge",
+    "title": "Trust Barometer",
     "totalTarget": 200,
     "milestones": [0, 50, 100, 150, 200],
     "dailyGoals": [3, 5, 10],

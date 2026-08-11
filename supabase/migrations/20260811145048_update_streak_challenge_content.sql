@@ -37,7 +37,7 @@ values (
           },
           {
             "heading": "Wie kann ich mitmachen?",
-            "bodyHtml": "<p>Werde co:detective! Erstelle ein Userkonto und sammle vom 1. bis 20. September deine Trust-Checks. Für alle Teilnehmenden gibt es die Chance auf vertrauenswürdige Geschenke. Jeder Check zählt - egal, ob du einmal mitmachst oder die ganzen 20 Tage im September dran bleibst. Mehr Infos zu den Gewinnen gibt’s hier!</p>"
+            "bodyHtml": "<p>Werde co:detective! Erstelle ein Userkonto und sammle vom 1. bis 20. September deine Trust-Checks. Für alle Teilnehmenden gibt es die Chance auf vertrauenswürdige Geschenke. Jeder Check zählt - egal, ob du einmal mitmachst oder die ganzen 20 Tage im September dran bleibst. <a href=\"/streak_challenge_2026_teilnahmebedingungen\">Mehr Infos zu den Gewinnen und Teilnahmebedingungen gibt’s hier!</a></p>"
           },
           {
             "heading": "Warum mitmachen?",

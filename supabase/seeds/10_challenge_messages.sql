@@ -6,9 +6,9 @@ update public.challenge_configs
 set
   messages = $$[
     {
-      "contentHtml": "<p>Die Challenge ist live: Löst gemeinsam 200 Fälle bis zum 1. August und schaut täglich rein, welche Ziele die Community erreicht.</p>",
-      "visibleFrom": "2026-07-14T00:00:00+00:00",
-      "visibleUntil": "2026-08-01T23:59:59.999+00:00"
+      "contentHtml": "<p>Die Challenge ist live: Löst gemeinsam 200 Fälle bis zum 20. August und schaut täglich rein, welche Ziele die Community erreicht.</p>",
+      "visibleFrom": "2026-08-01T00:00:00+00:00",
+      "visibleUntil": "2026-08-20T23:59:59.999+00:00"
     }
   ]$$::jsonb,
   updated_at = now()

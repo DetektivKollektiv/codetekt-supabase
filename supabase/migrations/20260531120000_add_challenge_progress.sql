@@ -1,38 +1,71 @@
-create table if not exists public.challenge_configs (
+create table public.challenge_configs (
   id uuid primary key default gen_random_uuid(),
-  is_active boolean not null default false,
   starts_on date not null,
   ends_on date not null,
+  visible_from timestamptz not null,
+  visible_until timestamptz not null,
   content jsonb not null,
+  messages jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint challenge_configs_valid_date_range check (ends_on >= starts_on),
-  constraint challenge_configs_content_is_object check (jsonb_typeof(content) = 'object')
+  constraint challenge_configs_valid_visibility_range check (visible_until >= visible_from),
+  constraint challenge_configs_content_is_object check (jsonb_typeof(content) = 'object'),
+  constraint challenge_configs_messages_is_array check (jsonb_typeof(messages) = 'array')
 );
-
-create unique index if not exists challenge_configs_single_active_idx
-  on public.challenge_configs (is_active)
-  where is_active;
 
 alter table public.challenge_configs enable row level security;
 
-drop policy if exists "Anyone can read active challenge configs" on public.challenge_configs;
-create policy "Anyone can read active challenge configs"
+create policy "Anonymous users can read visible challenge configs"
   on public.challenge_configs
   for select
-  to anon, authenticated
-  using (is_active);
+  to anon
+  using (
+    now() >= visible_from
+    and now() <= visible_until
+  );
 
-drop policy if exists "Admins can manage challenge configs" on public.challenge_configs;
-create policy "Admins can manage challenge configs"
+create policy "Authenticated users can read visible challenge configs"
   on public.challenge_configs
-  for all
+  for select
+  to authenticated
+  using (
+    (
+      now() >= visible_from
+      and now() <= visible_until
+    )
+    or exists (
+      select 1
+      from public.profiles
+      where profiles.id = (select auth.uid())
+        and profiles.is_admin
+        and not profiles.is_deactivated
+    )
+  );
+
+create policy "Admins can insert challenge configs"
+  on public.challenge_configs
+  for insert
+  to authenticated
+  with check (
+    exists (
+      select 1
+      from public.profiles
+      where profiles.id = (select auth.uid())
+        and profiles.is_admin
+        and not profiles.is_deactivated
+    )
+  );
+
+create policy "Admins can update challenge configs"
+  on public.challenge_configs
+  for update
   to authenticated
   using (
     exists (
       select 1
       from public.profiles
-      where profiles.id = auth.uid()
+      where profiles.id = (select auth.uid())
         and profiles.is_admin
         and not profiles.is_deactivated
     )
@@ -41,45 +74,93 @@ create policy "Admins can manage challenge configs"
     exists (
       select 1
       from public.profiles
-      where profiles.id = auth.uid()
+      where profiles.id = (select auth.uid())
         and profiles.is_admin
         and not profiles.is_deactivated
     )
   );
 
+create policy "Admins can delete challenge configs"
+  on public.challenge_configs
+  for delete
+  to authenticated
+  using (
+    exists (
+      select 1
+      from public.profiles
+      where profiles.id = (select auth.uid())
+        and profiles.is_admin
+        and not profiles.is_deactivated
+    )
+  );
+
+grant select on table public.challenge_configs to anon, authenticated;
+grant insert, update, delete on table public.challenge_configs to authenticated;
+
+alter table public.profiles
+  add column challenge_intro_seen_at timestamptz;
+
+grant update (
+  username,
+  get_notifications,
+  tutorial_completed_at,
+  challenge_intro_seen_at,
+  updated_at
+)
+on table public.profiles
+to authenticated;
+
 create or replace function public.get_challenge_progress(
   challenge_starts_on date,
   challenge_ends_on date,
-  tag_values text[] default '{}'::text[],
   leaderboard_limit integer default 5
 )
 returns table (
   total_resolved_cases integer,
   daily_resolved_cases jsonb,
-  tag_goal_results jsonb,
-  leaderboard jsonb
+  leaderboard jsonb,
+  user_resolved_points jsonb
 )
 language sql
 stable
 security definer
-set search_path = public
+set search_path = ''
 as $$
-  with challenge_reviews as (
+  with visible_challenge as (
+    select
+      challenge_configs.starts_on,
+      challenge_configs.ends_on
+    from public.challenge_configs
+    where challenge_configs.starts_on = challenge_starts_on
+      and challenge_configs.ends_on = challenge_ends_on
+      and now() >= challenge_configs.visible_from
+      and now() <= challenge_configs.visible_until
+    limit 1
+  ),
+  challenge_reviews as (
     select
       review_answers_submitted.id,
       review_answers_submitted.case_id,
       review_answers_submitted.reviewed_by,
-      review_answers_submitted.submitted_at::date as submitted_on
+      review_answers_submitted.submitted_at,
+      review_answers_submitted.submitted_at::date as submitted_on,
+      row_number() over (
+        order by
+          review_answers_submitted.submitted_at asc,
+          review_answers_submitted.id asc
+      )::integer as progress_point
     from public.review_answers_submitted
+    cross join visible_challenge
     where review_answers_submitted.submitted_at::date
-      between challenge_starts_on and challenge_ends_on
+      between visible_challenge.starts_on and visible_challenge.ends_on
   ),
   days as (
     select generate_series(
-      challenge_starts_on,
-      challenge_ends_on,
+      visible_challenge.starts_on,
+      visible_challenge.ends_on,
       '1 day'::interval
     )::date as resolved_on
+    from visible_challenge
   ),
   daily_counts as (
     select
@@ -101,40 +182,6 @@ as $$
     from days
     left join daily_counts
       on daily_counts.submitted_on = days.resolved_on
-  ),
-  tag_input as (
-    select unnest(coalesce(tag_values, '{}'::text[])) as tag_value
-  ),
-  tagged_reviews as (
-    select distinct
-      tag_input.tag_value,
-      challenge_reviews.id as review_id
-    from tag_input
-    join public.case_keywords
-      on tag_input.tag_value = any(public.case_keywords.values)
-    join challenge_reviews
-      on challenge_reviews.case_id = public.case_keywords.case_id
-  ),
-  tag_counts as (
-    select
-      tag_input.tag_value,
-      count(tagged_reviews.review_id)::integer as resolved_cases
-    from tag_input
-    left join tagged_reviews
-      on tagged_reviews.tag_value = tag_input.tag_value
-    group by tag_input.tag_value
-  ),
-  tag_json as (
-    select jsonb_agg(
-      jsonb_build_object(
-        'tagValue',
-        tag_counts.tag_value,
-        'resolvedCases',
-        tag_counts.resolved_cases
-      )
-      order by array_position(coalesce(tag_values, '{}'::text[]), tag_counts.tag_value)
-    ) as data
-    from tag_counts
   ),
   leaderboard_rows as (
     select
@@ -167,64 +214,24 @@ as $$
         leaderboard_rows.username asc
     ) as data
     from leaderboard_rows
+  ),
+  user_points_json as (
+    select jsonb_agg(
+      challenge_reviews.progress_point
+      order by challenge_reviews.progress_point
+    ) as data
+    from challenge_reviews
+    where challenge_reviews.reviewed_by = (select auth.uid())
   )
   select
     (select count(*)::integer from challenge_reviews) as total_resolved_cases,
     coalesce((select data from daily_json), '[]'::jsonb) as daily_resolved_cases,
-    coalesce((select data from tag_json), '[]'::jsonb) as tag_goal_results,
-    coalesce((select data from leaderboard_json), '[]'::jsonb) as leaderboard;
+    coalesce((select data from leaderboard_json), '[]'::jsonb) as leaderboard,
+    coalesce((select data from user_points_json), '[]'::jsonb) as user_resolved_points;
 $$;
 
-grant select on public.challenge_configs to anon, authenticated;
-grant execute on function public.get_challenge_progress(date, date, text[], integer)
-  to anon, authenticated;
+revoke all on function public.get_challenge_progress(date, date, integer)
+  from public;
 
-insert into public.challenge_configs (
-  id,
-  is_active,
-  starts_on,
-  ends_on,
-  content
-)
-values (
-  'd8d52b11-f3f9-4a0e-a4f6-1f4bb9f6b8ef',
-  true,
-  '2026-09-01',
-  '2026-09-25',
-  '{
-    "eyebrow": "Landtagswahlen 2026",
-    "title": "Trust Barometer",
-    "totalTarget": 200,
-    "milestones": [0, 50, 100, 150, 200],
-    "dailyGoals": [3, 5, 10],
-    "descriptionColumns": [
-      "codetekt e. V. ist eine gemeinnützige Organisation mit dem Ziel, Strategien zum Erkennen und Eindämmen von Desinformation zu entwickeln.",
-      "Gemeinsam fördern wir Medien- und Nachrichtenkompetenz und machen sichtbar, wie weit die Community in der Challenge schon gekommen ist."
-    ],
-    "tagGoals": [
-      {
-        "label": "Landtagswahl 2026",
-        "tagValue": "Landtagswahl 2026",
-        "target": 12
-      },
-      {
-        "label": "KI-Fakes",
-        "tagValue": "KI-Fakes",
-        "target": 12
-      },
-      {
-        "label": "Demokratie",
-        "tagValue": "Demokratie",
-        "target": 12
-      }
-    ],
-    "leaderboardLimit": 5
-  }'::jsonb
-)
-on conflict (id) do update
-set
-  is_active = excluded.is_active,
-  starts_on = excluded.starts_on,
-  ends_on = excluded.ends_on,
-  content = excluded.content,
-  updated_at = now();
+grant execute on function public.get_challenge_progress(date, date, integer)
+  to anon, authenticated;

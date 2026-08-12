@@ -8,6 +8,19 @@ alter table public.review_aggregations
   alter column created_at set default now(),
   alter column created_at set not null;
 
+create or replace view public.review_aggregations_without_open_disputes as
+select *
+from public.review_aggregations
+where not exists (
+  select 1
+  from public.cases_metadata_disputes
+  where cases_metadata_disputes.case_id = review_aggregations.case_id
+    and cases_metadata_disputes.resolution is null
+);
+
+alter view public.review_aggregations_without_open_disputes
+  set (security_invoker = on);
+
 create index review_aggregations_created_at_idx
   on public.review_aggregations (created_at);
 

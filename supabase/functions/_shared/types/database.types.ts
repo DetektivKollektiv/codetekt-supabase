@@ -638,6 +638,7 @@ export type Database = {
         Row: {
           calculated_at: string
           case_id: string
+          created_at: string
           data: Json
           result_score: number
           reviewer_ids: string[]
@@ -645,6 +646,7 @@ export type Database = {
         Insert: {
           calculated_at?: string
           case_id: string
+          created_at?: string
           data: Json
           result_score: number
           reviewer_ids: string[]
@@ -652,6 +654,7 @@ export type Database = {
         Update: {
           calculated_at?: string
           case_id?: string
+          created_at?: string
           data?: Json
           result_score?: number
           reviewer_ids?: string[]
@@ -1143,4 +1146,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

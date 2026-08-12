@@ -21,7 +21,7 @@ values (
       "milestones": [0, 50, 100],
       "dailyGoals": [3, 5, 10],
       "descriptionColumnsHtml": [
-        "<p>Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen!</p>",
+        "<p>Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust-Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen!</p>",
         "<p>Unsere Community-Ziele lauten: 1) Daily Streak am Leben halten, also jeden Tag mindestens 1 gemeinsam gelöster Fall (z. B. ein Online-Artikel). 2) Trust-Barometer füllen und 100 Fälle erreichen. 3) So viele Trust-Shares wie möglich! Infos zur Anleitung und den Gewinnen gibt’s <a href=\"/streak_challenge_2026_teilnahmebedingungen\">hier</a>.</p>"
       ],
       "intro": {
@@ -33,7 +33,7 @@ values (
         "sections": [
           {
             "heading": "Wie funktioniert die Streak-Challenge?",
-            "bodyHtml": "<p>Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen! Unsere Community-Ziele lauten: 1) Daily Streak am Leben halten, also jeden Tag mindestens 1 gemeinsam gelöster Fall (z. B. ein Online-Artikel). 2) Trust-Barometer füllen und 100 Fälle erreichen. 3) So viele Trust-Shares wie möglich!</p>"
+            "bodyHtml": "<p>Gemeinsam prüfen wir Nachrichten auf ihre Vertrauenswürdigkeit (Trust-Checks) und machen unsere Ergebnisse sichtbar für andere (Trust-Shares) – online, im persönlichen Umfeld und überall dort, wo Falschinformationen ihre Wellen schlagen! Unsere Community-Ziele lauten: 1) Daily Streak am Leben halten, also jeden Tag mindestens 1 gemeinsam gelöster Fall (z. B. ein Online-Artikel). 2) Trust-Barometer füllen und 100 Fälle erreichen. 3) So viele Trust-Shares wie möglich!</p>"
           },
           {
             "heading": "Wie kann ich mitmachen?",

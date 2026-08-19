@@ -50,9 +50,8 @@ values (
         ]
       },
       "leaderboardLimit": 5,
-      "leaderboardReviewCaps": {
-        "gormlabenz": 5
-      }
+      "leaderboardReviewCap": 5,
+      "leaderboardReviewCapUsernames": ["gormlabenz"]
     }
   $json$::jsonb,
   $json$

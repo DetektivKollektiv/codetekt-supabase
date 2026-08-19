@@ -123,8 +123,10 @@ Deno.serve(async (req) => {
       const { data: submittedReviewers, error: submittedReviewersError } =
         await supabaseServiceRole
           .from("review_answers_submitted")
-          .select("reviewed_by")
-          .eq("case_id", case_id);
+          .select("id, reviewed_by, created_at")
+          .eq("case_id", case_id)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true });
 
       if (submittedReviewersError) {
         return new Response(
@@ -269,8 +271,12 @@ Deno.serve(async (req) => {
     const { data: allSubmittedReviews, error: queryError } =
       await supabaseServiceRole
         .from("review_answers_submitted")
-        .select("data, reviewed_by, reviewer:profiles!reviewed_by(username)")
-        .eq("case_id", case_id);
+        .select(
+          "id, created_at, data, reviewed_by, reviewer:profiles!reviewed_by(username)",
+        )
+        .eq("case_id", case_id)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true });
 
     if (queryError) {
       console.error("Failed to query submitted reviews:", queryError);

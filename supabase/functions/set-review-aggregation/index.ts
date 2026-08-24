@@ -3,7 +3,7 @@
  *
  * Aggregates all submitted reviews for a case into a single consensus result.
  * Called by database triggers via pg_net and authenticated with X-Db-Secret.
- * Uses service role key to access all reviews regardless of RLS policies.
+ * Uses a secret key to access all reviews regardless of RLS policies.
  *
  * Aggregation process:
  * - Verifies case metadata completeness (title, category, case keywords must all exist)
@@ -42,6 +42,7 @@ import { z } from "npm:zod@4.1.13";
 import { reviewAggregationSchema } from "../_shared/schemas/aggregation-schemas.ts";
 import { submittedReviewAnswerSchemaMap } from "../_shared/schemas/review-schemas.ts";
 import { reviewTemplateSchema } from "../_shared/schemas/template-schemas.ts";
+import { getSupabaseSecretKey } from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { buildAggregation, SubmittedReview } from "./aggregation.ts";
 
@@ -59,7 +60,7 @@ const requestSchema = z.object({
 });
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabaseSecretKey = getSupabaseSecretKey();
 
 Deno.serve(async (req) => {
   try {
@@ -94,15 +95,15 @@ Deno.serve(async (req) => {
 
     const { case_id } = parsed.data;
 
-    // Step 2: Create service role client
-    const supabaseServiceRole = createClient<Database>(
+    // Step 2: Create an admin client
+    const supabaseAdmin = createClient<Database>(
       supabaseUrl,
-      supabaseServiceRoleKey,
+      supabaseSecretKey,
     );
 
     // Step 2.1: Early bypass for case_factchecks.has_factcheck = true
     const { data: factcheckData, error: factcheckError } =
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("case_factchecks")
         .select("has_factcheck")
         .eq("case_id", case_id)
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
 
     if (factcheckData?.has_factcheck === true) {
       const { data: submittedReviewers, error: submittedReviewersError } =
-        await supabaseServiceRole
+        await supabaseAdmin
           .from("review_answers_submitted")
           .select("id, reviewed_by, created_at")
           .eq("case_id", case_id)
@@ -142,7 +143,7 @@ Deno.serve(async (req) => {
         row.reviewed_by
       );
 
-      const { error: factcheckUpsertError } = await supabaseServiceRole
+      const { error: factcheckUpsertError } = await supabaseAdmin
         .from("review_aggregations")
         .upsert({
           case_id,
@@ -176,17 +177,17 @@ Deno.serve(async (req) => {
       { data: categoryData, error: categoryError },
       { data: caseKeywordsData, error: caseKeywordsError },
     ] = await Promise.all([
-      supabaseServiceRole
+      supabaseAdmin
         .from("case_titles")
         .select("id")
         .eq("case_id", case_id)
         .maybeSingle(),
-      supabaseServiceRole
+      supabaseAdmin
         .from("case_categories")
         .select("value")
         .eq("case_id", case_id)
         .maybeSingle(),
-      supabaseServiceRole
+      supabaseAdmin
         .from("case_keywords")
         .select("id")
         .eq("case_id", case_id)
@@ -213,7 +214,7 @@ Deno.serve(async (req) => {
     const category = categoryData!.value;
 
     // Step 2.5: Fetch case to get template_version
-    const { data: caseData, error: caseError } = await supabaseServiceRole
+    const { data: caseData, error: caseError } = await supabaseAdmin
       .from("cases")
       .select("template_version")
       .eq("id", case_id)
@@ -232,7 +233,7 @@ Deno.serve(async (req) => {
 
     // Step 2.6: Fetch template
     const { data: templateData, error: templateError } =
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("review_templates")
         .select("template")
         .eq("version", caseData.template_version)
@@ -269,7 +270,7 @@ Deno.serve(async (req) => {
 
     // Step 3: Query all submitted reviews for the case
     const { data: allSubmittedReviews, error: queryError } =
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("review_answers_submitted")
         .select(
           "id, created_at, data, reviewed_by, reviewer:profiles!reviewed_by(username)",
@@ -388,7 +389,7 @@ Deno.serve(async (req) => {
     const reviewerIds = validatedReviews.map((r) => r.reviewed_by);
 
     // Step 9: Upsert aggregation to database
-    const { error: upsertError } = await supabaseServiceRole
+    const { error: upsertError } = await supabaseAdmin
       .from("review_aggregations")
       .upsert({
         case_id: case_id,

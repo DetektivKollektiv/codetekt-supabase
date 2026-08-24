@@ -39,6 +39,7 @@ import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
+import { getSupabaseSecretKey } from "../_shared/supabase-api-keys.ts";
 import { REVIEW_MILESTONE_COUNT } from "./config.ts";
 import {
   aggregationEmail,
@@ -64,8 +65,7 @@ const COMMENT_REPORT_NOTIFICATION_EMAIL = Deno.env.get(
   "COMMENT_REPORT_NOTIFICATION_EMAIL",
 )!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-  "";
+const SUPABASE_SECRET_KEY = getSupabaseSecretKey();
 
 // ─── Mailgun helper ───────────────────────────────────────────────────────────
 
@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
 
     if (payload.type === "review_aggregated") {
       // ── Template 3: notify the case creator that their case is published ──
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
 
       // Look up the case owner
       const { data: caseRow, error: caseError } = await supabase
@@ -293,7 +293,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
 
       const { data: caseRow, error: caseError } = await supabase
         .from("cases")

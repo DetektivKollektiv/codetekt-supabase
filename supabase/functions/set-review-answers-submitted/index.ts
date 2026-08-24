@@ -8,7 +8,7 @@
  * 1. Authenticates user and verifies draft ownership
  * 2. Fetches in-progress review by in_progress_id
  * 3. Validates data against strict submission schema (all required fields must be filled)
- * 4. Uses service role to write to protected review_answers_submitted table
+ * 4. Uses an admin client to write to protected review_answers_submitted table
  * 5. Updates in-progress tracking with optimistic locking (race condition protection)
  * 6. Links submitted review ID back to in-progress record
  *
@@ -39,19 +39,23 @@
  * Database updates:
  * - Upserts to review_answers_submitted (on conflict: case_id, reviewed_by)
  * - Updates review_answers_in_progress: sets submitted_review_answers_id, clears has_unpublished_changes
- * - Uses service role key for writing to protected submitted table
+ * - Uses a secret key for writing to the protected submitted table
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  getSupabasePublishableKey,
+  getSupabaseSecretKey,
+} from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { validateSubmittedData } from "./validation.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabasePublishableKey = getSupabasePublishableKey();
+const supabaseSecretKey = getSupabaseSecretKey();
 
 const requestBodySchema = z.object({
   in_progress_id: z.string().uuid(),
@@ -75,7 +79,7 @@ Deno.serve(async (req) => {
       );
     }
     console.log("set-review-answers-submitted: Authenticating user");
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
@@ -209,15 +213,15 @@ Deno.serve(async (req) => {
       submittedData = validation.validatedData;
     }
 
-    // Step 5: Create service_role client for writing to protected table
-    const supabaseServiceRole = createClient<Database>(
+    // Step 5: Create an admin client for writing to the protected table
+    const supabaseAdmin = createClient<Database>(
       supabaseUrl,
-      supabaseServiceRoleKey,
+      supabaseSecretKey,
     );
 
     // Step 6: Upsert to review_answers_submitted table
     const { data: submittedReview, error: upsertError } =
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("review_answers_submitted")
         .upsert({
           case_id: inProgressReview.case_id,

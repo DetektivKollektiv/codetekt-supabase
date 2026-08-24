@@ -7,7 +7,7 @@
  * Process flow:
  * 1. Validates input (email, password, username)
  * 2. Checks username availability (must be unique)
- * 3. Creates user account using admin client (service role key)
+ * 3. Creates user account using an admin client (secret key)
  * 5. Updates profile with username (profile created by handle_new_user trigger)
  * 6. Signs in user to create session
  * 7. Returns user and session data for immediate authentication
@@ -41,11 +41,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  getSupabasePublishableKey,
+  getSupabaseSecretKey,
+} from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { signUpSchema } from "./validation.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabasePublishableKey = getSupabasePublishableKey();
+const supabaseSecretKey = getSupabaseSecretKey();
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -76,7 +81,7 @@ Deno.serve(async (req) => {
     // Step 2: Create Supabase admin client
     const supabaseAdmin = createClient<Database>(
       supabaseUrl,
-      supabaseServiceRoleKey,
+      supabaseSecretKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -118,7 +123,7 @@ Deno.serve(async (req) => {
     // Step 4: Create user with normal signUp (sends email automatically!)
     const supabaseClient = createClient<Database>(
       supabaseUrl,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
+      supabasePublishableKey,
     );
 
     const siteUrl = Deno.env.get("SITE_URL") ||

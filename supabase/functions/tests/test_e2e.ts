@@ -4,17 +4,24 @@
  * Mirrors test_e2e.sh but written in Deno TypeScript.
  *
  * Run:
- *   deno test --allow-net --allow-env test_e2e.ts
+ *   SUPABASE_PUBLISHABLE_KEY=... SUPABASE_SECRET_KEY=... \
+ *     deno test --allow-net --allow-env test_e2e.ts
  */
 import { assert, assertEquals, assertExists } from "jsr:@std/assert@1";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const API = "http://127.0.0.1:54321";
 
-const ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+function readRequiredEnv(name: string): string {
+    const value = Deno.env.get(name);
+    if (!value) {
+        throw new Error("Missing required environment variable: " + name);
+    }
+    return value;
+}
 
-const SERVICE_ROLE_KEY = "sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz";
+const SUPABASE_PUBLISHABLE_KEY = readRequiredEnv("SUPABASE_PUBLISHABLE_KEY");
+const SUPABASE_SECRET_KEY = readRequiredEnv("SUPABASE_SECRET_KEY");
 
 const CASE_ID = "99999999-9999-4999-8999-999999999999";
 const USER_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // gormlabenz (admin)
@@ -52,7 +59,7 @@ const REVIEW_DATA = {
 
 interface RestOpts {
     token?: string;
-    serviceRole?: boolean;
+    secretKey?: boolean;
     body?: unknown;
     prefer?: string;
 }
@@ -63,7 +70,9 @@ async function rest(
     path: string,
     opts: RestOpts = {},
 ): Promise<{ status: number; data: unknown }> {
-    const apikey = opts.serviceRole ? SERVICE_ROLE_KEY : ANON_KEY;
+    const apikey = opts.secretKey
+        ? SUPABASE_SECRET_KEY
+        : SUPABASE_PUBLISHABLE_KEY;
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
         "apikey": apikey,
@@ -71,8 +80,6 @@ async function rest(
     };
     if (opts.token) {
         headers["Authorization"] = `Bearer ${opts.token}`;
-    } else if (opts.serviceRole) {
-        headers["Authorization"] = `Bearer ${SERVICE_ROLE_KEY}`;
     }
     if (opts.prefer) headers["Prefer"] = opts.prefer;
 
@@ -102,7 +109,7 @@ async function invoke(
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
-            "apikey": ANON_KEY,
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify(body),
     });
@@ -162,13 +169,13 @@ Deno.test({
         await t.step("Setup: delete stale test case", async () => {
             // Cascades to all related tables
             await rest("DELETE", `/rest/v1/cases?id=eq.${CASE_ID}`, {
-                serviceRole: true,
+                secretKey: true,
             });
         });
 
         await t.step("Setup: insert test case", async () => {
             const { status, data } = await rest("POST", "/rest/v1/cases", {
-                serviceRole: true,
+                secretKey: true,
                 prefer: "return=representation",
                 body: {
                     id: CASE_ID,
@@ -185,7 +192,7 @@ Deno.test({
 
         await t.step("Setup: insert case metadata", async () => {
             const { status: s1 } = await rest("POST", "/rest/v1/case_titles", {
-                serviceRole: true,
+                secretKey: true,
                 body: {
                     case_id: CASE_ID,
                     value: "E2E Test Article",
@@ -198,7 +205,7 @@ Deno.test({
                 "POST",
                 "/rest/v1/case_categories",
                 {
-                    serviceRole: true,
+                    secretKey: true,
                     body: {
                         case_id: CASE_ID,
                         value: "report",
@@ -212,7 +219,7 @@ Deno.test({
                 "POST",
                 "/rest/v1/case_keywords",
                 {
-                    serviceRole: true,
+                    secretKey: true,
                     body: {
                         case_id: CASE_ID,
                         created_by: USER_A,
@@ -568,13 +575,13 @@ Deno.test({
         );
 
         await t.step(
-            "Phase E: Admin resolves dispute via service_role",
+            "Phase E: Admin resolves dispute with the secret key",
             async () => {
                 const { status, data } = await rest(
                     "PATCH",
                     `/rest/v1/cases_metadata_disputes?id=eq.${disputeId}`,
                     {
-                        serviceRole: true,
+                        secretKey: true,
                         prefer: "return=representation",
                         body: {
                             resolution: "original_kept",

@@ -2,10 +2,14 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@4.1.13";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+    getSupabasePublishableKey,
+    getSupabaseSecretKey,
+} from "../_shared/supabase-api-keys.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabasePublishableKey = getSupabasePublishableKey();
+const supabaseSecretKey = getSupabaseSecretKey();
 
 const requestBodySchema = z.object({
     confirmation: z.literal("DEAKTIVIEREN"),
@@ -50,7 +54,7 @@ Deno.serve(async (req) => {
             );
         }
 
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        const supabase = createClient(supabaseUrl, supabasePublishableKey, {
             global: { headers: { Authorization: authHeader } },
         });
 
@@ -74,7 +78,7 @@ Deno.serve(async (req) => {
 
         const supabaseAdmin = createClient(
             supabaseUrl,
-            supabaseServiceRoleKey,
+            supabaseSecretKey,
             {
                 auth: {
                     autoRefreshToken: false,

@@ -6,15 +6,17 @@ Backend for Codetekt, review system for cases, drafts, published reviews, aggreg
 
 1. Install the Supabase CLI, Docker, and Deno 2.
 2. Start the local stack with `supabase start`.
-3. Use the local API credentials from the CLI output for `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+3. Use the local publishable and secret credentials from the CLI output. The edge runtime injects its keys automatically; standalone E2E tests expect `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`.
 4. If you run the webhook or email functions locally, also set `DB_WEBHOOK_SECRET` plus the Mailgun and notification email variables listed below.
 5. Stop the stack with `supabase stop`.
 
 ## Environment variables
 
 - `SUPABASE_URL`: Local or remote Supabase API URL used by the edge functions.
-- `SUPABASE_ANON_KEY`: Public client key used for authenticated requests.
-- `SUPABASE_SERVICE_ROLE_KEY`: Admin key used by edge functions that must bypass RLS.
+- `SUPABASE_PUBLISHABLE_KEYS`: Named publishable-key map injected into hosted and local edge functions; the functions use its `default` entry for user-authenticated requests.
+- `SUPABASE_SECRET_KEYS`: Named secret-key map injected into hosted and local edge functions; the functions use its `default` entry for privileged requests that bypass RLS.
+- `SUPABASE_PUBLISHABLE_KEY`: Single publishable key used by the standalone E2E test.
+- `SUPABASE_SECRET_KEY`: Single secret key used by the standalone E2E test.
 - `DB_WEBHOOK_SECRET`: Shared secret that database triggers send to webhook-backed edge functions.
 - `MAILGUN_API_KEY`: Mailgun API key used by `send-email`.
 - `MAILGUN_DOMAIN`: Mailgun domain used by `send-email`.

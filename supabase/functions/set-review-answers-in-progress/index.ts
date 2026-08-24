@@ -37,11 +37,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { getSupabasePublishableKey } from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import { payloadSchema, validateInProgressData } from "./validation.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+const supabasePublishableKey = getSupabasePublishableKey();
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
     global: { headers: { Authorization: authHeader } },
   });
 

@@ -2,6 +2,7 @@ import { timingSafeEqual } from "jsr:@std/crypto/timing-safe-equal";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { DOMParser } from "jsr:@b-fuze/deno-dom";
+import { getSupabaseSecretKey } from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   openGraphDataSchema,
@@ -10,7 +11,7 @@ import {
 } from "../_shared/schemas/index.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabaseSecretKey = getSupabaseSecretKey();
 const enc = new TextEncoder();
 const FETCH_TIMEOUT_MS = 5000;
 const MAX_RESPONSE_BYTES = 1024 * 1024;
@@ -328,14 +329,14 @@ Deno.serve(async (req) => {
 
     const { case_id } = parsed.data;
 
-    // Step 2: Create service role client
-    const supabaseServiceRole = createClient<Database>(
+    // Step 2: Create an admin client
+    const supabaseAdmin = createClient<Database>(
       supabaseUrl,
-      supabaseServiceRoleKey,
+      supabaseSecretKey,
     );
 
     // Step 3: Fetch case data and verify it exists
-    const { data: caseData, error: caseError } = await supabaseServiceRole
+    const { data: caseData, error: caseError } = await supabaseAdmin
       .from("cases")
       .select("id, content, content_type")
       .eq("id", case_id)
@@ -368,7 +369,7 @@ Deno.serve(async (req) => {
       console.error("Invalid URL format:", urlValidation.error);
 
       // Store failed status with validation error
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("open_graph_data")
         .upsert(
           {
@@ -399,7 +400,7 @@ Deno.serve(async (req) => {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unsafe URL";
 
-      await supabaseServiceRole
+      await supabaseAdmin
         .from("open_graph_data")
         .upsert(
           {
@@ -465,7 +466,7 @@ Deno.serve(async (req) => {
       ? (Array.isArray(ogData.ogImage) ? ogData.ogImage[0] : ogData.ogImage)
       : null;
 
-    const { error: upsertError } = await supabaseServiceRole
+    const { error: upsertError } = await supabaseAdmin
       .from("open_graph_data")
       .upsert(
         {

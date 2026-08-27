@@ -23,6 +23,7 @@ import { z } from "npm:zod@4.1.13";
 import { corsHeaders } from "../_shared/cors.ts";
 import { Field } from "../_shared/schemas/field-schemas.ts";
 import { ReviewTemplateInput } from "../_shared/schemas/template-schemas.ts";
+import { getSupabasePublishableKey } from "../_shared/supabase-api-keys.ts";
 import { Database } from "../_shared/types/database.types.ts";
 import {
   deepCloneTemplate,
@@ -38,7 +39,7 @@ const requestSchema = z.object({
 
 // Environment variables
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+const supabasePublishableKey = getSupabasePublishableKey();
 
 // Type definitions
 type CaseWithRelations = {
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
 
-    const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
@@ -285,7 +286,7 @@ Deno.serve(async (req) => {
   2. Make an HTTP request:
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/get-review-template' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJhYWFhYWFhYS1hYWFhLWFhYWEtYWFhYS1hYWFhYWFhYWFhYWEiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzY1Mzg4NTkzLCJpYXQiOjE3NjUzODQ5OTMsImVtYWlsIjoiZ29ybS1sYWJlbnpAaG90bWFpbC5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImZ1bGxfbmFtZSI6Ikdvcm0gTGFiZW56In0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjUzODQ5OTN9XSwic2Vzc2lvbl9pZCI6ImNhMjI5ZWVmLWY5MmEtNDhmMy04MWQ3LTdjNWEyZjc2NzZmZCIsImlzX2Fub255bW91cyI6ZmFsc2V9.YWmrB9w8o7afDlMgk6Abo24qTInBTcZd2LJeTApuBZ4' \
+    --header 'Authorization: Bearer YOUR_USER_JWT' \
     --header 'Content-Type: application/json' \
     --data '{"case_id":"11111111-1111-4111-8111-111111111111"}'
 

@@ -442,3 +442,9 @@ enabled = true
 verify_jwt = false  # Server-to-server API authenticated with X-API-Key
 import_map = "./functions/wedium/deno.json"
 entrypoint = "./functions/wedium/index.ts"
+
+[functions.set-wedium-review-aggregation]
+enabled = true
+verify_jwt = false  # Database webhook authenticated with X-Db-Secret
+import_map = "./functions/set-wedium-review-aggregation/deno.json"
+entrypoint = "./functions/set-wedium-review-aggregation/index.ts"

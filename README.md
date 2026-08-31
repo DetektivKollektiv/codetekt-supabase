@@ -2,12 +2,14 @@
 
 Backend for Codetekt, review system for cases, drafts, published reviews, aggregations, disputes, comments, and notification emails.
 
+The separate Wedium Community Checks contract is documented in [WEDIUM_API.md](./WEDIUM_API.md) and [WEDIUM_OPENAPI.json](./WEDIUM_OPENAPI.json).
+
 ## Local setup
 
 1. Install the Supabase CLI, Docker, and Deno 2.
 2. Start the local stack with `supabase start`.
 3. Use the local publishable and secret credentials from the CLI output. The edge runtime injects its keys automatically; standalone E2E tests expect `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`.
-4. If you run the webhook or email functions locally, also set `DB_WEBHOOK_SECRET` plus the Mailgun and notification email variables listed below.
+4. If you run the webhook, email, or Wedium functions locally, also set `DB_WEBHOOK_SECRET`, `WEDIUM_API_KEY`, and the Mailgun and notification email variables listed below.
 5. Stop the stack with `supabase stop`.
 
 ## Environment variables
@@ -18,6 +20,7 @@ Backend for Codetekt, review system for cases, drafts, published reviews, aggreg
 - `SUPABASE_PUBLISHABLE_KEY`: Single publishable key used by the standalone E2E test.
 - `SUPABASE_SECRET_KEY`: Single secret key used by the standalone E2E test.
 - `DB_WEBHOOK_SECRET`: Shared secret that database triggers send to webhook-backed edge functions.
+- `WEDIUM_API_KEY`: Server-to-server key required in the Wedium API's `X-API-Key` header.
 - `MAILGUN_API_KEY`: Mailgun API key used by `send-email`.
 - `MAILGUN_DOMAIN`: Mailgun domain used by `send-email`.
 - `SITE_URL`: Public site URL used in email links.
@@ -52,6 +55,8 @@ Backend for Codetekt, review system for cases, drafts, published reviews, aggreg
 - `case_factchecks`: One fact-check row per case.
 - `open_graph_data`: Fetched Open Graph metadata for URL cases.
 - `tutorial_content`: JSON tutorial content shown to users.
+- `wedium_users`, `wedium_posts`, `wedium_reviews`: Separate pseudonymized Wedium identities and current reviews.
+- `wedium_review_aggregations`: Revision-protected Wedium community results.
 
 ### Views
 
@@ -69,3 +74,5 @@ Backend for Codetekt, review system for cases, drafts, published reviews, aggreg
 - `set-open-graph-data`: Fetches and stores Open Graph metadata for a case URL.
 - `send-email`: Sends transactional emails for database-triggered events.
 - `deactivate-account`: Soft-deactivates the current user account.
+- `wedium`: Routes the separate Wedium Community Checks API.
+- `set-wedium-review-aggregation`: Recomputes Wedium aggregates after review changes.

@@ -1,0 +1,915 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "Wedium Community Checks API",
+    "version": "1.0.0",
+    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht vorerst aus fünf Platzhalterfragen. Aggregationen werden asynchron ab zwei Reviews berechnet."
+  },
+  "servers": [
+    {
+      "url": "https://{projectRef}.supabase.co/functions/v1/wedium",
+      "description": "Supabase-Projekt",
+      "variables": {
+        "projectRef": {
+          "default": "your-project-ref",
+          "description": "Supabase Project Reference"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:54321/functions/v1/wedium",
+      "description": "Lokale Supabase-Instanz"
+    }
+  ],
+  "security": [
+    {
+      "WediumApiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Aggregations",
+      "description": "Veröffentlichte Community-Ergebnisse"
+    },
+    {
+      "name": "Reviews",
+      "description": "Aktuelles Review eines pseudonymisierten Users für einen Post"
+    },
+    {
+      "name": "Users",
+      "description": "Pseudonymisierte Wedium-User"
+    }
+  ],
+  "paths": {
+    "/review-aggregations": {
+      "post": {
+        "operationId": "getWediumReviewAggregations",
+        "tags": [
+          "Aggregations"
+        ],
+        "summary": "Aggregationen mehrerer Posts abrufen",
+        "description": "Gibt vorhandene Aggregationen in der Reihenfolge der angefragten Post-Hashes zurück. Nicht vorhandene Posts und Posts ohne veröffentlichbares Aggregat erscheinen in `missing_post_hashes`. Der Endpunkt stößt keine Neuberechnung an. Nach einem PUT kann bis zur nächsten erfolgreichen Berechnung noch das vorherige Aggregat sichtbar sein; nach einem DELETE bleibt der Post bis zur Neuberechnung `missing`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AggregationRequest"
+              },
+              "example": {
+                "post_hashes": [
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vorhandene und fehlende Aggregationen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AggregationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/users/{user_hash}/reviews/{post_hash}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/UserHash"
+        },
+        {
+          "$ref": "#/components/parameters/PostHash"
+        }
+      ],
+      "put": {
+        "operationId": "putWediumReview",
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Review speichern oder vollständig überschreiben",
+        "description": "Legt User und Post bei Bedarf an. Ein vorhandenes Review desselben Users für denselben Post wird vollständig ersetzt. Jede erfolgreiche Änderung stößt die asynchrone Neuberechnung an.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewUpsertRequest"
+              },
+              "example": {
+                "answers": {
+                  "placeholder_question_1": 0,
+                  "placeholder_question_2": 1,
+                  "placeholder_question_3": 2,
+                  "placeholder_question_4": 3,
+                  "placeholder_question_5": 4
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review gespeichert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewSavedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "get": {
+        "operationId": "getWediumReview",
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Review abrufen",
+        "responses": {
+          "200": {
+            "description": "Aktuelles Review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWediumReview",
+        "tags": [
+          "Reviews"
+        ],
+        "summary": "Review löschen",
+        "description": "Idempotent. Der Wedium-User bleibt bestehen. Ein entferntes Aggregat bleibt bis zur erfolgreichen Neuberechnung `missing`.",
+        "responses": {
+          "200": {
+            "description": "Löschstatus",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteReviewResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/users/{user_hash}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/UserHash"
+        }
+      ],
+      "get": {
+        "operationId": "getWediumUser",
+        "tags": [
+          "Users"
+        ],
+        "summary": "User abrufen",
+        "responses": {
+          "200": {
+            "description": "User-Metadaten",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWediumUser",
+        "tags": [
+          "Users"
+        ],
+        "summary": "User und dessen Reviews löschen",
+        "description": "Idempotent. Posts bleiben bestehen. Alle Reviews des Users werden entfernt und die betroffenen Aggregationen asynchron neu berechnet.",
+        "responses": {
+          "200": {
+            "description": "Löschstatus und Anzahl betroffener Reviews und Posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteUserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "WediumApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Server-to-Server-Schlüssel aus `WEDIUM_API_KEY`."
+      }
+    },
+    "parameters": {
+      "UserHash": {
+        "name": "user_hash",
+        "in": "path",
+        "required": true,
+        "description": "Pseudonymisierte User-ID als SHA-256-kompatibler Hex-String.",
+        "schema": {
+          "$ref": "#/components/schemas/Hash"
+        }
+      },
+      "PostHash": {
+        "name": "post_hash",
+        "in": "path",
+        "required": true,
+        "description": "Pseudonymisierte Post-ID als SHA-256-kompatibler Hex-String.",
+        "schema": {
+          "$ref": "#/components/schemas/Hash"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Fehlender oder ungültiger Wedium API Key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "unauthorized",
+                "message": "Unauthorized"
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ressource nicht gefunden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "Review not found"
+              }
+            }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "HTTP-Methode für diese Route nicht unterstützt",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "method_not_allowed",
+                "message": "Method not allowed"
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Pfadparameter oder Request Body ungültig",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "validation_error",
+                "message": "Invalid review",
+                "issues": [
+                  {
+                    "path": [
+                      "answers",
+                      "placeholder_question_1"
+                    ],
+                    "message": "Invalid input"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Unerwarteter interner Fehler",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "internal_error",
+                "message": "Internal server error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Hash": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64,
+        "example": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "QuestionId": {
+        "type": "string",
+        "enum": [
+          "placeholder_question_1",
+          "placeholder_question_2",
+          "placeholder_question_3",
+          "placeholder_question_4",
+          "placeholder_question_5"
+        ]
+      },
+      "RatingValue": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "description": "0 = Grün, 1 = Gelb, 2 = Orange, 3 = Rot, 4 = Nicht anwendbar."
+      },
+      "Answers": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "placeholder_question_1",
+          "placeholder_question_2",
+          "placeholder_question_3",
+          "placeholder_question_4",
+          "placeholder_question_5"
+        ],
+        "properties": {
+          "placeholder_question_1": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "placeholder_question_2": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "placeholder_question_3": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "placeholder_question_4": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "placeholder_question_5": {
+            "$ref": "#/components/schemas/RatingValue"
+          }
+        }
+      },
+      "ReviewUpsertRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "answers"
+        ],
+        "properties": {
+          "answers": {
+            "$ref": "#/components/schemas/Answers"
+          }
+        }
+      },
+      "ReviewSavedResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "saved",
+          "submitted_at",
+          "updated_at"
+        ],
+        "properties": {
+          "saved": {
+            "type": "boolean",
+            "const": true
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "post_hash",
+          "answers",
+          "submitted_at",
+          "updated_at"
+        ],
+        "properties": {
+          "post_hash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "answers": {
+            "$ref": "#/components/schemas/Answers"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DeleteReviewResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deleted"
+        ],
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "`true`, wenn bei diesem Aufruf ein Review gelöscht wurde."
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "user_hash",
+          "review_count",
+          "created_at",
+          "last_reviewed_at"
+        ],
+        "properties": {
+          "user_hash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "review_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_reviewed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Zeitpunkt des zuletzt aktualisierten Reviews oder `null`, wenn der User keine Reviews hat."
+          }
+        }
+      },
+      "DeleteUserResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deleted",
+          "deleted_review_count",
+          "affected_post_count"
+        ],
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "`true`, wenn bei diesem Aufruf ein User gelöscht wurde."
+          },
+          "deleted_review_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "affected_post_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Anzahl der Posts, deren Review-Bestand sich geändert hat. Entspricht wegen genau eines Reviews pro User und Post der Anzahl gelöschter Reviews."
+          }
+        }
+      },
+      "AggregationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "post_hashes"
+        ],
+        "properties": {
+          "post_hashes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            }
+          }
+        }
+      },
+      "RatingCounts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "properties": {
+          "0": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "1": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "2": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "3": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "RatingPercentages": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "properties": {
+          "0": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "1": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "2": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "3": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      },
+      "ResultLevel": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "description": "Aufgerundeter Score: 0 = vertrauenswürdig, 1 = eher vertrauenswürdig, 2 = eher nicht vertrauenswürdig, 3 = nicht vertrauenswürdig."
+      },
+      "ResultCode": {
+        "type": "string",
+        "enum": [
+          "trustworthy",
+          "rather_trustworthy",
+          "rather_not_trustworthy",
+          "not_trustworthy"
+        ]
+      },
+      "AggregationField": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "counts",
+          "percentages",
+          "average",
+          "level"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/QuestionId"
+          },
+          "type": {
+            "type": "string",
+            "const": "traffic-light"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/RatingCounts"
+          },
+          "percentages": {
+            "$ref": "#/components/schemas/RatingPercentages"
+          },
+          "average": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "level": {
+            "$ref": "#/components/schemas/ResultLevel"
+          }
+        }
+      },
+      "AggregationQuestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "score",
+          "level",
+          "fields"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/QuestionId"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "level": {
+            "$ref": "#/components/schemas/ResultLevel"
+          },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "description": "Enthält aktuell genau ein `traffic-light`-Feld mit derselben ID wie die Frage.",
+            "items": {
+              "$ref": "#/components/schemas/AggregationField"
+            }
+          }
+        }
+      },
+      "AggregationData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "questions"
+        ],
+        "properties": {
+          "questions": {
+            "type": "array",
+            "maxItems": 5,
+            "description": "Fragen mit mindestens 50 Prozent `Nicht anwendbar` werden vollständig ausgelassen. Wert 4 fließt weder in Counts, Prozente noch Mittelwert ein.",
+            "items": {
+              "$ref": "#/components/schemas/AggregationQuestion"
+            }
+          }
+        }
+      },
+      "AggregationResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "post_hash",
+          "review_count",
+          "result_score",
+          "result_level",
+          "result_code",
+          "data",
+          "calculated_at"
+        ],
+        "properties": {
+          "post_hash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "review_count": {
+            "type": "integer",
+            "minimum": 2,
+            "description": "Aus den intern gespeicherten `reviewer_ids` abgeleitet; IDs werden nicht ausgegeben."
+          },
+          "result_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3,
+            "description": "Schlechtester, also höchster Score der enthaltenen Fragen."
+          },
+          "result_level": {
+            "$ref": "#/components/schemas/ResultLevel"
+          },
+          "result_code": {
+            "$ref": "#/components/schemas/ResultCode"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AggregationData"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AggregationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "results",
+          "missing_post_hashes"
+        ],
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "Vorhandene Ergebnisse in der Reihenfolge der Anfrage.",
+            "items": {
+              "$ref": "#/components/schemas/AggregationResult"
+            }
+          },
+          "missing_post_hashes": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "Angefragte Hashes ohne veröffentlichbares Aggregat, ebenfalls in Anfragereihenfolge.",
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            }
+          }
+        }
+      },
+      "ApiErrorCode": {
+        "type": "string",
+        "enum": [
+          "unauthorized",
+          "not_found",
+          "method_not_allowed",
+          "validation_error",
+          "internal_error"
+        ]
+      },
+      "ApiErrorIssue": {
+        "type": "object",
+        "description": "Validierungsdetail. Zusätzliche Zod-Felder können enthalten sein.",
+        "properties": {
+          "path": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "integer"
+              ]
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ApiErrorCode"
+          },
+          "message": {
+            "type": "string"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiErrorIssue"
+            }
+          }
+        }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ApiError"
+          }
+        }
+      }
+    }
+  }
+}

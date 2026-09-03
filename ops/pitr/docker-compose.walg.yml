@@ -1,0 +1,10 @@
+services:
+  db:
+    build:
+      context: ./ops/pitr
+      dockerfile: Dockerfile
+    image: codetekt/supabase-postgres-walg:17.6.1.136-v3.0.9
+    env_file:
+      - ./.env.walg
+    volumes:
+      - ./ops/pitr/postgresql-walg.conf:/etc/postgresql-custom/wal-g.conf:ro

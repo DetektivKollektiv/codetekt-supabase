@@ -1,0 +1,16 @@
+[Unit]
+Description=Codetekt PostgreSQL WAL-G full backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=gorm
+WorkingDirectory=/home/gorm/services/codetekt-supabase
+ExecStart=/home/gorm/services/codetekt-supabase/ops/pitr/backup-full.sh
+ExecStartPost=/home/gorm/services/codetekt-supabase/ops/pitr/verify-pitr.sh
+TimeoutStartSec=2h
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

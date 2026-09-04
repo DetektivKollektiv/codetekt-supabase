@@ -4,7 +4,7 @@
   "info": {
     "title": "Wedium Community Checks API",
     "version": "1.0.0",
-    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht vorerst aus fünf Platzhalterfragen. Aggregationen werden asynchron ab zwei Reviews berechnet."
+    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht aus 24 kategorisierten Frage-IDs. Aggregationen werden asynchron ab zwei Reviews berechnet und enthalten immer alle 24 Fragen."
   },
   "servers": [
     {
@@ -116,11 +116,30 @@
               },
               "example": {
                 "answers": {
-                  "placeholder_question_1": 0,
-                  "placeholder_question_2": 1,
-                  "placeholder_question_3": 2,
-                  "placeholder_question_4": 3,
-                  "placeholder_question_5": 4
+                  "content_manipulated_or_deepfake": 0,
+                  "content_false_context": 1,
+                  "content_missing_context": 2,
+                  "content_advertising": 3,
+                  "content_one_sided": 0,
+                  "content_illogical_or_contradictory": 0,
+                  "content_clickbait": 1,
+                  "tone_emotionalized": 1,
+                  "tone_inflammatory": 2,
+                  "tone_distracting": 0,
+                  "tone_generalizing": 1,
+                  "tone_polarizing": 2,
+                  "account_anonymous": 0,
+                  "account_unreliable": 1,
+                  "account_not_objective": 0,
+                  "account_not_independent": 0,
+                  "external_sources_missing": 3,
+                  "external_sources_not_verifiable": 2,
+                  "external_sources_false_context": 1,
+                  "external_sources_forged": 0,
+                  "external_sources_missing_context": 1,
+                  "external_sources_not_expert": 0,
+                  "external_sources_factually_incorrect": 2,
+                  "external_sources_heavily_abridged": 1
                 }
               }
             }
@@ -385,7 +404,7 @@
                   {
                     "path": [
                       "answers",
-                      "placeholder_question_1"
+                      "content_manipulated_or_deepfake"
                     ],
                     "message": "Invalid input"
                   }
@@ -423,11 +442,30 @@
       "QuestionId": {
         "type": "string",
         "enum": [
-          "placeholder_question_1",
-          "placeholder_question_2",
-          "placeholder_question_3",
-          "placeholder_question_4",
-          "placeholder_question_5"
+          "content_manipulated_or_deepfake",
+          "content_false_context",
+          "content_missing_context",
+          "content_advertising",
+          "content_one_sided",
+          "content_illogical_or_contradictory",
+          "content_clickbait",
+          "tone_emotionalized",
+          "tone_inflammatory",
+          "tone_distracting",
+          "tone_generalizing",
+          "tone_polarizing",
+          "account_anonymous",
+          "account_unreliable",
+          "account_not_objective",
+          "account_not_independent",
+          "external_sources_missing",
+          "external_sources_not_verifiable",
+          "external_sources_false_context",
+          "external_sources_forged",
+          "external_sources_missing_context",
+          "external_sources_not_expert",
+          "external_sources_factually_incorrect",
+          "external_sources_heavily_abridged"
         ]
       },
       "RatingValue": {
@@ -436,35 +474,110 @@
           0,
           1,
           2,
-          3,
-          4
+          3
         ],
-        "description": "0 = Grün, 1 = Gelb, 2 = Orange, 3 = Rot, 4 = Nicht anwendbar."
+        "description": "0 = passt/unauffällig (Grün), 1 = leicht problematisch (Gelb), 2 = problematisch (Orange), 3 = stark problematisch (Rot)."
       },
       "Answers": {
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "placeholder_question_1",
-          "placeholder_question_2",
-          "placeholder_question_3",
-          "placeholder_question_4",
-          "placeholder_question_5"
+          "content_manipulated_or_deepfake",
+          "content_false_context",
+          "content_missing_context",
+          "content_advertising",
+          "content_one_sided",
+          "content_illogical_or_contradictory",
+          "content_clickbait",
+          "tone_emotionalized",
+          "tone_inflammatory",
+          "tone_distracting",
+          "tone_generalizing",
+          "tone_polarizing",
+          "account_anonymous",
+          "account_unreliable",
+          "account_not_objective",
+          "account_not_independent",
+          "external_sources_missing",
+          "external_sources_not_verifiable",
+          "external_sources_false_context",
+          "external_sources_forged",
+          "external_sources_missing_context",
+          "external_sources_not_expert",
+          "external_sources_factually_incorrect",
+          "external_sources_heavily_abridged"
         ],
         "properties": {
-          "placeholder_question_1": {
+          "content_manipulated_or_deepfake": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "placeholder_question_2": {
+          "content_false_context": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "placeholder_question_3": {
+          "content_missing_context": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "placeholder_question_4": {
+          "content_advertising": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "placeholder_question_5": {
+          "content_one_sided": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "content_illogical_or_contradictory": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "content_clickbait": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "tone_emotionalized": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "tone_inflammatory": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "tone_distracting": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "tone_generalizing": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "tone_polarizing": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "account_anonymous": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "account_unreliable": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "account_not_objective": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "account_not_independent": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_missing": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_not_verifiable": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_false_context": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_forged": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_missing_context": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_not_expert": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_factually_incorrect": {
+            "$ref": "#/components/schemas/RatingValue"
+          },
+          "external_sources_heavily_abridged": {
             "$ref": "#/components/schemas/RatingValue"
           }
         }
@@ -771,8 +884,9 @@
         "properties": {
           "questions": {
             "type": "array",
-            "maxItems": 5,
-            "description": "Fragen mit mindestens 50 Prozent `Nicht anwendbar` werden vollständig ausgelassen. Wert 4 fließt weder in Counts, Prozente noch Mittelwert ein.",
+            "minItems": 24,
+            "maxItems": 24,
+            "description": "Enthält alle 24 Fragen in der Reihenfolge des Fragenkatalogs. Jede Frage wird aus sämtlichen Bewertungen mit Werten von 0 bis 3 aggregiert.",
             "items": {
               "$ref": "#/components/schemas/AggregationQuestion"
             }

@@ -1,29 +1,28 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import {
   putWediumReviewBodySchema,
+  WEDIUM_QUESTION_IDS,
   wediumAggregationRequestSchema,
+  type WediumAnswers,
 } from "./schemas.ts";
 
 const HASH_A = "a".repeat(64);
 const HASH_B = "b".repeat(64);
 
-const validAnswers = {
-  placeholder_question_1: 0,
-  placeholder_question_2: 1,
-  placeholder_question_3: 2,
-  placeholder_question_4: 3,
-  placeholder_question_5: 4,
-};
+const validAnswers = Object.fromEntries(
+  WEDIUM_QUESTION_IDS.map((questionId, index) => [questionId, index % 4]),
+) as WediumAnswers;
 
-Deno.test("Wedium review schema accepts all five rating values", () => {
+Deno.test("Wedium review schema accepts all 24 questions and rating values", () => {
   assertEquals(
     putWediumReviewBodySchema.safeParse({ answers: validAnswers }).success,
     true,
   );
+  assertEquals(WEDIUM_QUESTION_IDS.length, 24);
 });
 
-Deno.test("Wedium review schema requires every placeholder question", () => {
-  const { placeholder_question_5: _removed, ...incompleteAnswers } =
+Deno.test("Wedium review schema requires every question", () => {
+  const { external_sources_heavily_abridged: _removed, ...incompleteAnswers } =
     validAnswers;
 
   assertEquals(
@@ -41,13 +40,13 @@ Deno.test("Wedium review schema rejects unknown fields and invalid values", () =
   );
   assertEquals(
     putWediumReviewBodySchema.safeParse({
-      answers: { ...validAnswers, placeholder_question_1: 5 },
+      answers: { ...validAnswers, content_manipulated_or_deepfake: 4 },
     }).success,
     false,
   );
   assertEquals(
     putWediumReviewBodySchema.safeParse({
-      answers: { ...validAnswers, placeholder_question_1: null },
+      answers: { ...validAnswers, content_manipulated_or_deepfake: null },
     }).success,
     false,
   );

@@ -1,4 +1,5 @@
 import { assert, assertEquals } from "jsr:@std/assert@1";
+import { WEDIUM_QUESTION_IDS, type WediumAnswers } from "../_wedium/schemas.ts";
 
 const API = Deno.env.get("SUPABASE_API_URL") ?? "http://127.0.0.1:54321";
 const WEDIUM_API_KEY = readRequiredEnv("WEDIUM_API_KEY");
@@ -36,15 +37,13 @@ async function apiRequest(
   return { status: response.status, data };
 }
 
-function answers(overrides: Record<string, number> = {}) {
-  return {
-    placeholder_question_1: 0,
-    placeholder_question_2: 0,
-    placeholder_question_3: 0,
-    placeholder_question_4: 0,
-    placeholder_question_5: 0,
-    ...overrides,
-  };
+function answers(overrides: Partial<WediumAnswers> = {}): WediumAnswers {
+  return Object.fromEntries(
+    WEDIUM_QUESTION_IDS.map((questionId) => [
+      questionId,
+      overrides[questionId] ?? 0,
+    ]),
+  ) as WediumAnswers;
 }
 
 async function waitForAggregation(
@@ -84,17 +83,26 @@ Deno.test({
     const invalidReview = await apiRequest(
       "PUT",
       `/users/${USER_A}/reviews/${POST_A}`,
-      { answers: { placeholder_question_1: 0 } },
+      { answers: { content_manipulated_or_deepfake: 0 } },
     );
     assertEquals(invalidReview.status, 422);
+
+    const invalidRating = await apiRequest(
+      "PUT",
+      `/users/${USER_A}/reviews/${POST_A}`,
+      {
+        answers: { ...answers(), content_manipulated_or_deepfake: 4 },
+      },
+    );
+    assertEquals(invalidRating.status, 422);
 
     const firstReview = await apiRequest(
       "PUT",
       `/users/${USER_A}/reviews/${POST_A}`,
       {
         answers: answers({
-          placeholder_question_1: 0,
-          placeholder_question_2: 4,
+          content_manipulated_or_deepfake: 0,
+          content_false_context: 1,
         }),
       },
     );
@@ -109,8 +117,8 @@ Deno.test({
     assertEquals(storedReview.status, 200);
     assertEquals(
       (storedReview.data.answers as Record<string, number>)
-        .placeholder_question_2,
-      4,
+        .content_false_context,
+      1,
     );
 
     const user = await apiRequest("GET", `/users/${USER_A}`);
@@ -133,24 +141,25 @@ Deno.test({
       `/users/${USER_B}/reviews/${POST_A}`,
       {
         answers: answers({
-          placeholder_question_1: 2,
-          placeholder_question_2: 2,
+          content_manipulated_or_deepfake: 2,
+          content_false_context: 3,
         }),
       },
     );
     assertEquals(secondReview.status, 200);
 
-    const firstAggregation = await waitForAggregation(1);
+    const firstAggregation = await waitForAggregation(2);
     assertEquals(firstAggregation.review_count, 2);
-    assertEquals(firstAggregation.result_level, 1);
-    assertEquals(firstAggregation.result_code, "rather_trustworthy");
+    assertEquals(firstAggregation.result_level, 2);
+    assertEquals(firstAggregation.result_code, "rather_not_trustworthy");
 
     const questions = (firstAggregation.data as {
       questions: Array<{ id: string }>;
     }).questions;
+    assertEquals(questions.length, WEDIUM_QUESTION_IDS.length);
     assertEquals(
-      questions.some(({ id }) => id === "placeholder_question_2"),
-      false,
+      questions.map(({ id }) => id),
+      [...WEDIUM_QUESTION_IDS],
     );
 
     const updatedReview = await apiRequest(
@@ -158,8 +167,8 @@ Deno.test({
       `/users/${USER_A}/reviews/${POST_A}`,
       {
         answers: answers({
-          placeholder_question_1: 3,
-          placeholder_question_2: 4,
+          content_manipulated_or_deepfake: 3,
+          content_false_context: 1,
         }),
       },
     );

@@ -5,8 +5,6 @@ import {
 } from "./schemas.ts";
 
 export const MIN_WEDIUM_REVIEWS = 2;
-export const NOT_APPLICABLE_VALUE = 4;
-export const NOT_APPLICABLE_THRESHOLD = 0.5;
 
 type RatingLevel = 0 | 1 | 2 | 3;
 type RatingCounts = Record<RatingLevel, number>;
@@ -66,38 +64,23 @@ export function buildWediumAggregation(
   const questions: WediumAggregationData["questions"] = [];
 
   for (const questionId of WEDIUM_QUESTION_IDS) {
-    const allCounts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 };
+    const counts: RatingCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
 
     for (const review of reviews) {
       const value = review.data[questionId];
-      allCounts[value] += 1;
+      counts[value] += 1;
     }
 
-    const notApplicableShare = reviews.length > 0
-      ? allCounts[NOT_APPLICABLE_VALUE] / reviews.length
-      : 0;
-
-    if (notApplicableShare >= NOT_APPLICABLE_THRESHOLD) {
-      continue;
-    }
-
-    const counts: RatingCounts = {
-      0: allCounts[0],
-      1: allCounts[1],
-      2: allCounts[2],
-      3: allCounts[3],
-    };
-    const applicableCount = counts[0] + counts[1] + counts[2] + counts[3];
     const percentages: RatingPercentages = { 0: 0, 1: 0, 2: 0, 3: 0 };
 
     for (const value of [0, 1, 2, 3] as const) {
-      percentages[value] = applicableCount > 0
-        ? (counts[value] / applicableCount) * 100
+      percentages[value] = reviews.length > 0
+        ? (counts[value] / reviews.length) * 100
         : 0;
     }
 
-    const average = applicableCount > 0
-      ? (counts[1] + counts[2] * 2 + counts[3] * 3) / applicableCount
+    const average = reviews.length > 0
+      ? (counts[1] + counts[2] * 2 + counts[3] * 3) / reviews.length
       : 0;
     const level = scoreToLevel(average);
 

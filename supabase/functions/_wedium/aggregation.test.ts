@@ -4,46 +4,37 @@ import {
   levelToResultCode,
   scoreToLevel,
 } from "./aggregation.ts";
-import type { WediumAnswers } from "./schemas.ts";
+import { WEDIUM_QUESTION_IDS, type WediumAnswers } from "./schemas.ts";
 
 function answers(values: Partial<WediumAnswers>): WediumAnswers {
-  return {
-    placeholder_question_1: 0,
-    placeholder_question_2: 0,
-    placeholder_question_3: 0,
-    placeholder_question_4: 0,
-    placeholder_question_5: 0,
-    ...values,
-  };
+  return Object.fromEntries(
+    WEDIUM_QUESTION_IDS.map((questionId) => [
+      questionId,
+      values[questionId] ?? 0,
+    ]),
+  ) as WediumAnswers;
 }
 
-Deno.test("Wedium aggregation excludes not applicable votes from statistics", () => {
+Deno.test("Wedium aggregation returns every question with values from zero to three", () => {
   const result = buildWediumAggregation([
     {
       reviewed_by: "reviewer-a",
       data: answers({
-        placeholder_question_1: 0,
-        placeholder_question_3: 1,
+        content_manipulated_or_deepfake: 0,
+        tone_polarizing: 2,
       }),
     },
     {
       reviewed_by: "reviewer-b",
       data: answers({
-        placeholder_question_1: 1,
-        placeholder_question_3: 2,
-      }),
-    },
-    {
-      reviewed_by: "reviewer-c",
-      data: answers({
-        placeholder_question_1: 4,
-        placeholder_question_3: 3,
+        content_manipulated_or_deepfake: 1,
+        tone_polarizing: 3,
       }),
     },
   ]);
 
   const question = result.data.questions.find(
-    ({ id }) => id === "placeholder_question_1",
+    ({ id }) => id === "content_manipulated_or_deepfake",
   );
   assertEquals(question?.fields[0].counts, { 0: 1, 1: 1, 2: 0, 3: 0 });
   assertEquals(question?.fields[0].percentages, {
@@ -54,44 +45,28 @@ Deno.test("Wedium aggregation excludes not applicable votes from statistics", ()
   });
   assertEquals(question?.score, 0.5);
   assertEquals(question?.level, 1);
-  assertEquals(result.resultScore, 2);
-  assertEquals(result.reviewerIds, ["reviewer-a", "reviewer-b", "reviewer-c"]);
-});
-
-Deno.test("Wedium aggregation removes a question at fifty percent not applicable", () => {
-  const result = buildWediumAggregation([
-    {
-      reviewed_by: "reviewer-a",
-      data: answers({ placeholder_question_2: 4 }),
-    },
-    {
-      reviewed_by: "reviewer-b",
-      data: answers({ placeholder_question_2: 2 }),
-    },
-  ]);
-
+  assertEquals(result.resultScore, 2.5);
+  assertEquals(result.reviewerIds, ["reviewer-a", "reviewer-b"]);
   assertEquals(
-    result.data.questions.some(
-      ({ id }) => id === "placeholder_question_2",
-    ),
-    false,
+    result.data.questions.map(({ id }) => id),
+    [...WEDIUM_QUESTION_IDS],
   );
 });
 
-Deno.test("Wedium aggregation returns an empty neutral result when all answers are not applicable", () => {
-  const notApplicable = answers({
-    placeholder_question_1: 4,
-    placeholder_question_2: 4,
-    placeholder_question_3: 4,
-    placeholder_question_4: 4,
-    placeholder_question_5: 4,
-  });
+Deno.test("Wedium aggregation returns all neutral questions when every answer is zero", () => {
+  const neutralAnswers = answers({});
   const result = buildWediumAggregation([
-    { reviewed_by: "reviewer-a", data: notApplicable },
-    { reviewed_by: "reviewer-b", data: notApplicable },
+    { reviewed_by: "reviewer-a", data: neutralAnswers },
+    { reviewed_by: "reviewer-b", data: neutralAnswers },
   ]);
 
-  assertEquals(result.data.questions, []);
+  assertEquals(result.data.questions.length, WEDIUM_QUESTION_IDS.length);
+  assertEquals(
+    result.data.questions.every(({ score, level }) =>
+      score === 0 && level === 0
+    ),
+    true,
+  );
   assertEquals(result.resultScore, 0);
 });
 

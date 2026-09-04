@@ -65,39 +65,39 @@ Frage-ID; die API verarbeitet keine separaten Kategorieobjekte.
 
 Die Werte werden von passend bis zunehmend problematisch bewertet:
 
-| Wert | Bedeutung                        |
-| ---- | -------------------------------- |
-| `0`  | Passt / unauffällig (grün)       |
-| `1`  | Leicht problematisch (gelb)      |
-| `2`  | Problematisch (orange)            |
-| `3`  | Stark problematisch (rot)         |
+| Wert | Bedeutung                   |
+| ---- | --------------------------- |
+| `0`  | Passt / unauffällig (grün)  |
+| `1`  | Leicht problematisch (gelb) |
+| `2`  | Problematisch (orange)      |
+| `3`  | Stark problematisch (rot)   |
 
-| Kategorie | Frage-ID | Anzeige |
-| --- | --- | --- |
-| Inhalt | `content_manipulated_or_deepfake` | Manipuliert/Deepfake |
-| Inhalt | `content_false_context` | Falscher Kontext |
-| Inhalt | `content_missing_context` | Fehlender Kontext |
-| Inhalt | `content_advertising` | Werbung |
-| Inhalt | `content_one_sided` | Einseitig |
-| Inhalt | `content_illogical_or_contradictory` | Unlogisch/widersprüchlich |
-| Inhalt | `content_clickbait` | Clickbait |
-| Tonfall | `tone_emotionalized` | Emotionalisiert |
-| Tonfall | `tone_inflammatory` | Hetzerisch |
-| Tonfall | `tone_distracting` | Ablenkend |
-| Tonfall | `tone_generalizing` | Pauschalisierend |
-| Tonfall | `tone_polarizing` | Polarisierend |
-| Account | `account_anonymous` | Anonym |
-| Account | `account_unreliable` | Unseriös |
-| Account | `account_not_objective` | Nicht objektiv |
-| Account | `account_not_independent` | Nicht unabhängig |
-| Externe Quellen | `external_sources_missing` | Nicht vorhanden |
-| Externe Quellen | `external_sources_not_verifiable` | Nicht nachprüfbar |
-| Externe Quellen | `external_sources_false_context` | Falscher Kontext |
-| Externe Quellen | `external_sources_forged` | Gefälscht |
-| Externe Quellen | `external_sources_missing_context` | Fehlender Kontext |
-| Externe Quellen | `external_sources_not_expert` | Nicht vom Fach |
-| Externe Quellen | `external_sources_factually_incorrect` | Inhaltlich falsch |
-| Externe Quellen | `external_sources_heavily_abridged` | Stark gekürzt |
+| Kategorie       | Frage-ID                               | Anzeige                   |
+| --------------- | -------------------------------------- | ------------------------- |
+| Inhalt          | `content_manipulated_or_deepfake`      | Manipuliert/Deepfake      |
+| Inhalt          | `content_false_context`                | Falscher Kontext          |
+| Inhalt          | `content_missing_context`              | Fehlender Kontext         |
+| Inhalt          | `content_advertising`                  | Werbung                   |
+| Inhalt          | `content_one_sided`                    | Einseitig                 |
+| Inhalt          | `content_illogical_or_contradictory`   | Unlogisch/widersprüchlich |
+| Inhalt          | `content_clickbait`                    | Clickbait                 |
+| Tonfall         | `tone_emotionalized`                   | Emotionalisiert           |
+| Tonfall         | `tone_inflammatory`                    | Hetzerisch                |
+| Tonfall         | `tone_distracting`                     | Ablenkend                 |
+| Tonfall         | `tone_generalizing`                    | Pauschalisierend          |
+| Tonfall         | `tone_polarizing`                      | Polarisierend             |
+| Account         | `account_anonymous`                    | Anonym                    |
+| Account         | `account_unreliable`                   | Unseriös                  |
+| Account         | `account_not_objective`                | Nicht objektiv            |
+| Account         | `account_not_independent`              | Nicht unabhängig          |
+| Externe Quellen | `external_sources_missing`             | Nicht vorhanden           |
+| Externe Quellen | `external_sources_not_verifiable`      | Nicht nachprüfbar         |
+| Externe Quellen | `external_sources_false_context`       | Falscher Kontext          |
+| Externe Quellen | `external_sources_forged`              | Gefälscht                 |
+| Externe Quellen | `external_sources_missing_context`     | Fehlender Kontext         |
+| Externe Quellen | `external_sources_not_expert`          | Nicht vom Fach            |
+| Externe Quellen | `external_sources_factually_incorrect` | Inhaltlich falsch         |
+| Externe Quellen | `external_sources_heavily_abridged`    | Stark gekürzt             |
 
 Jedes veröffentlichte Aggregat enthält alle 24 Fragen in dieser Reihenfolge.
 Das Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu.
@@ -205,20 +205,3 @@ DELETE /functions/v1/wedium/users/{user_hash}
 
 Die Posts selbst bleiben bestehen. Eine Wiederholung liefert `deleted: false`
 und beide Counts als `0`.
-
-## Aktualität und Revisionen
-
-Jede Review-Änderung erhöht die interne `review_revision` des Posts. Ein Worker
-darf sein Aggregat nur speichern, wenn diese Revision noch seiner
-`source_revision` entspricht. Verspätete Worker können daher kein neueres
-Ergebnis überschreiben.
-
-- Nach einem PUT bleibt das letzte erfolgreich berechnete Aggregat sichtbar, bis
-  ein aktueller Worker es ersetzt.
-- Nach einem DELETE wird das alte Aggregat sofort entfernt. Es bleibt `missing`,
-  bis ein aktuelles Aggregat aus mindestens zwei Reviews vorliegt.
-- Worker führen keine eigenen Retries aus. Jede Review-Änderung löst einen neuen
-  Worker aus.
-- Schlägt der Webhook oder Worker fehl, bleibt nach PUT der alte Stand und nach
-  DELETE der `missing`-Zustand bestehen, bis eine spätere Änderung erneut einen
-  Worker auslöst.

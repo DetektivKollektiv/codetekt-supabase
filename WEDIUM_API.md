@@ -1,6 +1,6 @@
 # Wedium Community Checks API
 
-Status: technische v1-Spezifikation mit provisorischem Fragenkatalog.
+Status: technische v1-Spezifikation.
 
 Maschinenlesbarer Vertrag: [WEDIUM_OPENAPI.json](./WEDIUM_OPENAPI.json)
 
@@ -27,35 +27,83 @@ Fehler verwenden dieses Format:
 
 Verwendete Statuscodes: `401`, `404`, `405`, `422` und `500`.
 
-## Provisorischer Fragenkatalog
+## Fragenkatalog
 
-Ein Review muss exakt diese fünf Antworten enthalten:
+Ein Review muss alle 24 Antworten enthalten. Die Kategorie ist Bestandteil der
+Frage-ID; die API verarbeitet keine separaten Kategorieobjekte.
 
 ```json
 {
   "answers": {
-    "placeholder_question_1": 0,
-    "placeholder_question_2": 1,
-    "placeholder_question_3": 2,
-    "placeholder_question_4": 3,
-    "placeholder_question_5": 4
+    "content_manipulated_or_deepfake": 0,
+    "content_false_context": 1,
+    "content_missing_context": 2,
+    "content_advertising": 3,
+    "content_one_sided": 0,
+    "content_illogical_or_contradictory": 0,
+    "content_clickbait": 1,
+    "tone_emotionalized": 1,
+    "tone_inflammatory": 2,
+    "tone_distracting": 0,
+    "tone_generalizing": 1,
+    "tone_polarizing": 2,
+    "account_anonymous": 0,
+    "account_unreliable": 1,
+    "account_not_objective": 0,
+    "account_not_independent": 0,
+    "external_sources_missing": 3,
+    "external_sources_not_verifiable": 2,
+    "external_sources_false_context": 1,
+    "external_sources_forged": 0,
+    "external_sources_missing_context": 1,
+    "external_sources_not_expert": 0,
+    "external_sources_factually_incorrect": 2,
+    "external_sources_heavily_abridged": 1
   }
 }
 ```
 
-Die Werte entsprechen der Plattform:
+Die Werte werden von passend bis zunehmend problematisch bewertet:
 
-| Wert | Bedeutung       |
-| ---- | --------------- |
-| `0`  | Grün            |
-| `1`  | Gelb            |
-| `2`  | Orange          |
-| `3`  | Rot             |
-| `4`  | Nicht anwendbar |
+| Wert | Bedeutung                        |
+| ---- | -------------------------------- |
+| `0`  | Passt / unauffällig (grün)       |
+| `1`  | Leicht problematisch (gelb)      |
+| `2`  | Problematisch (orange)            |
+| `3`  | Stark problematisch (rot)         |
 
-`4` wird nicht in Mittelwert und Prozentverteilung eingerechnet. Wählen
-mindestens 50 Prozent bei einer Frage `4`, entfällt diese Frage aus dem
-Aggregationsergebnis.
+| Kategorie | Frage-ID | Anzeige |
+| --- | --- | --- |
+| Inhalt | `content_manipulated_or_deepfake` | Manipuliert/Deepfake |
+| Inhalt | `content_false_context` | Falscher Kontext |
+| Inhalt | `content_missing_context` | Fehlender Kontext |
+| Inhalt | `content_advertising` | Werbung |
+| Inhalt | `content_one_sided` | Einseitig |
+| Inhalt | `content_illogical_or_contradictory` | Unlogisch/widersprüchlich |
+| Inhalt | `content_clickbait` | Clickbait |
+| Tonfall | `tone_emotionalized` | Emotionalisiert |
+| Tonfall | `tone_inflammatory` | Hetzerisch |
+| Tonfall | `tone_distracting` | Ablenkend |
+| Tonfall | `tone_generalizing` | Pauschalisierend |
+| Tonfall | `tone_polarizing` | Polarisierend |
+| Account | `account_anonymous` | Anonym |
+| Account | `account_unreliable` | Unseriös |
+| Account | `account_not_objective` | Nicht objektiv |
+| Account | `account_not_independent` | Nicht unabhängig |
+| Externe Quellen | `external_sources_missing` | Nicht vorhanden |
+| Externe Quellen | `external_sources_not_verifiable` | Nicht nachprüfbar |
+| Externe Quellen | `external_sources_false_context` | Falscher Kontext |
+| Externe Quellen | `external_sources_forged` | Gefälscht |
+| Externe Quellen | `external_sources_missing_context` | Fehlender Kontext |
+| Externe Quellen | `external_sources_not_expert` | Nicht vom Fach |
+| Externe Quellen | `external_sources_factually_incorrect` | Inhaltlich falsch |
+| Externe Quellen | `external_sources_heavily_abridged` | Stark gekürzt |
+
+Jedes veröffentlichte Aggregat enthält alle 24 Fragen in dieser Reihenfolge.
+Das Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu.
+Eine Frage mit einem Durchschnitt über `0` wird in der Farbe ihres
+aufgerundeten Levels angezeigt. Sind alle Fragen einer Kategorie `0`, kann das
+Frontend dort „Alles passt“ anzeigen.
 
 ## Endpunkte
 
@@ -96,7 +144,7 @@ IDs selbst werden nicht ausgegeben. Der Endpunkt berechnet nichts neu.
 PUT /functions/v1/wedium/users/{user_hash}/reviews/{post_hash}
 ```
 
-Body: vollständiges `answers`-Objekt aus dem provisorischen Fragenkatalog.
+Body: vollständiges `answers`-Objekt aus dem Fragenkatalog.
 
 ```json
 {

@@ -83,7 +83,7 @@ Deno.test({
     const invalidReview = await apiRequest(
       "PUT",
       `/users/${USER_A}/reviews/${POST_A}`,
-      { answers: { content_manipulated_or_deepfake: 0 } },
+      { answers: { content_deepfake: 0 } },
     );
     assertEquals(invalidReview.status, 422);
 
@@ -91,7 +91,7 @@ Deno.test({
       "PUT",
       `/users/${USER_A}/reviews/${POST_A}`,
       {
-        answers: { ...answers(), content_manipulated_or_deepfake: 4 },
+        answers: { ...answers(), content_deepfake: 4 },
       },
     );
     assertEquals(invalidRating.status, 422);
@@ -101,7 +101,7 @@ Deno.test({
       `/users/${USER_A}/reviews/${POST_A}`,
       {
         answers: answers({
-          content_manipulated_or_deepfake: 0,
+          content_deepfake: 0,
           content_false_context: 1,
         }),
       },
@@ -141,7 +141,7 @@ Deno.test({
       `/users/${USER_B}/reviews/${POST_A}`,
       {
         answers: answers({
-          content_manipulated_or_deepfake: 2,
+          content_deepfake: 2,
           content_false_context: 3,
         }),
       },
@@ -167,7 +167,7 @@ Deno.test({
       `/users/${USER_A}/reviews/${POST_A}`,
       {
         answers: answers({
-          content_manipulated_or_deepfake: 3,
+          content_deepfake: 3,
           content_false_context: 1,
         }),
       },

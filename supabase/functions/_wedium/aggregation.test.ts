@@ -20,21 +20,21 @@ Deno.test("Wedium aggregation returns every question with values from zero to th
     {
       reviewed_by: "reviewer-a",
       data: answers({
-        content_manipulated_or_deepfake: 0,
-        tone_polarizing: 2,
+        content_deepfake: 0,
+        presentation_generalizing: 2,
       }),
     },
     {
       reviewed_by: "reviewer-b",
       data: answers({
-        content_manipulated_or_deepfake: 1,
-        tone_polarizing: 3,
+        content_deepfake: 1,
+        presentation_generalizing: 3,
       }),
     },
   ]);
 
   const question = result.data.questions.find(
-    ({ id }) => id === "content_manipulated_or_deepfake",
+    ({ id }) => id === "content_deepfake",
   );
   assertEquals(question?.fields[0].counts, { 0: 1, 1: 1, 2: 0, 3: 0 });
   assertEquals(question?.fields[0].percentages, {

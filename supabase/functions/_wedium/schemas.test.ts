@@ -13,17 +13,16 @@ const validAnswers = Object.fromEntries(
   WEDIUM_QUESTION_IDS.map((questionId, index) => [questionId, index % 4]),
 ) as WediumAnswers;
 
-Deno.test("Wedium review schema accepts all 24 questions and rating values", () => {
+Deno.test("Wedium review schema accepts all 15 questions and rating values", () => {
   assertEquals(
     putWediumReviewBodySchema.safeParse({ answers: validAnswers }).success,
     true,
   );
-  assertEquals(WEDIUM_QUESTION_IDS.length, 24);
+  assertEquals(WEDIUM_QUESTION_IDS.length, 15);
 });
 
 Deno.test("Wedium review schema requires every question", () => {
-  const { external_sources_heavily_abridged: _removed, ...incompleteAnswers } =
-    validAnswers;
+  const { sources_missing: _removed, ...incompleteAnswers } = validAnswers;
 
   assertEquals(
     putWediumReviewBodySchema.safeParse({ answers: incompleteAnswers }).success,
@@ -40,13 +39,13 @@ Deno.test("Wedium review schema rejects unknown fields and invalid values", () =
   );
   assertEquals(
     putWediumReviewBodySchema.safeParse({
-      answers: { ...validAnswers, content_manipulated_or_deepfake: 4 },
+      answers: { ...validAnswers, content_deepfake: 4 },
     }).success,
     false,
   );
   assertEquals(
     putWediumReviewBodySchema.safeParse({
-      answers: { ...validAnswers, content_manipulated_or_deepfake: null },
+      answers: { ...validAnswers, content_deepfake: null },
     }).success,
     false,
   );

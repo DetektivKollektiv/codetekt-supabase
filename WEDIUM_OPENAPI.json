@@ -4,7 +4,7 @@
   "info": {
     "title": "Wedium Community Checks API",
     "version": "1.0.0",
-    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht aus 24 kategorisierten Frage-IDs. Aggregationen werden asynchron ab zwei Reviews berechnet und enthalten immer alle 24 Fragen."
+    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht aus 15 kategorisierten Frage-IDs. Aggregationen werden asynchron ab zwei Reviews berechnet und enthalten immer alle 15 Fragen."
   },
   "servers": [
     {
@@ -116,30 +116,21 @@
               },
               "example": {
                 "answers": {
-                  "content_manipulated_or_deepfake": 0,
                   "content_false_context": 1,
-                  "content_missing_context": 2,
-                  "content_advertising": 3,
-                  "content_one_sided": 0,
-                  "content_illogical_or_contradictory": 0,
+                  "content_contradictory": 2,
+                  "content_covert_advertising": 3,
                   "content_clickbait": 1,
-                  "tone_emotionalized": 1,
-                  "tone_inflammatory": 2,
-                  "tone_distracting": 0,
-                  "tone_generalizing": 1,
-                  "tone_polarizing": 2,
-                  "account_anonymous": 0,
-                  "account_unreliable": 1,
-                  "account_not_objective": 0,
-                  "account_not_independent": 0,
-                  "external_sources_missing": 3,
-                  "external_sources_not_verifiable": 2,
-                  "external_sources_false_context": 1,
-                  "external_sources_forged": 0,
-                  "external_sources_missing_context": 1,
-                  "external_sources_not_expert": 0,
-                  "external_sources_factually_incorrect": 2,
-                  "external_sources_heavily_abridged": 1
+                  "content_deepfake": 0,
+                  "presentation_derogatory": 1,
+                  "presentation_aggressive": 2,
+                  "presentation_fear_inducing": 0,
+                  "presentation_generalizing": 1,
+                  "account_biased": 2,
+                  "account_unclear_identity": 0,
+                  "account_impersonated_identity": 1,
+                  "sources_unreliable": 2,
+                  "sources_debunked": 3,
+                  "sources_missing": 1
                 }
               }
             }
@@ -404,7 +395,7 @@
                   {
                     "path": [
                       "answers",
-                      "content_manipulated_or_deepfake"
+                      "content_deepfake"
                     ],
                     "message": "Invalid input"
                   }
@@ -442,30 +433,21 @@
       "QuestionId": {
         "type": "string",
         "enum": [
-          "content_manipulated_or_deepfake",
           "content_false_context",
-          "content_missing_context",
-          "content_advertising",
-          "content_one_sided",
-          "content_illogical_or_contradictory",
+          "content_contradictory",
+          "content_covert_advertising",
           "content_clickbait",
-          "tone_emotionalized",
-          "tone_inflammatory",
-          "tone_distracting",
-          "tone_generalizing",
-          "tone_polarizing",
-          "account_anonymous",
-          "account_unreliable",
-          "account_not_objective",
-          "account_not_independent",
-          "external_sources_missing",
-          "external_sources_not_verifiable",
-          "external_sources_false_context",
-          "external_sources_forged",
-          "external_sources_missing_context",
-          "external_sources_not_expert",
-          "external_sources_factually_incorrect",
-          "external_sources_heavily_abridged"
+          "content_deepfake",
+          "presentation_derogatory",
+          "presentation_aggressive",
+          "presentation_fear_inducing",
+          "presentation_generalizing",
+          "account_biased",
+          "account_unclear_identity",
+          "account_impersonated_identity",
+          "sources_unreliable",
+          "sources_debunked",
+          "sources_missing"
         ]
       },
       "RatingValue": {
@@ -482,102 +464,66 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "content_manipulated_or_deepfake",
           "content_false_context",
-          "content_missing_context",
-          "content_advertising",
-          "content_one_sided",
-          "content_illogical_or_contradictory",
+          "content_contradictory",
+          "content_covert_advertising",
           "content_clickbait",
-          "tone_emotionalized",
-          "tone_inflammatory",
-          "tone_distracting",
-          "tone_generalizing",
-          "tone_polarizing",
-          "account_anonymous",
-          "account_unreliable",
-          "account_not_objective",
-          "account_not_independent",
-          "external_sources_missing",
-          "external_sources_not_verifiable",
-          "external_sources_false_context",
-          "external_sources_forged",
-          "external_sources_missing_context",
-          "external_sources_not_expert",
-          "external_sources_factually_incorrect",
-          "external_sources_heavily_abridged"
+          "content_deepfake",
+          "presentation_derogatory",
+          "presentation_aggressive",
+          "presentation_fear_inducing",
+          "presentation_generalizing",
+          "account_biased",
+          "account_unclear_identity",
+          "account_impersonated_identity",
+          "sources_unreliable",
+          "sources_debunked",
+          "sources_missing"
         ],
         "properties": {
-          "content_manipulated_or_deepfake": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
           "content_false_context": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "content_missing_context": {
+          "content_contradictory": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "content_advertising": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "content_one_sided": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "content_illogical_or_contradictory": {
+          "content_covert_advertising": {
             "$ref": "#/components/schemas/RatingValue"
           },
           "content_clickbait": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "tone_emotionalized": {
+          "content_deepfake": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "tone_inflammatory": {
+          "presentation_derogatory": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "tone_distracting": {
+          "presentation_aggressive": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "tone_generalizing": {
+          "presentation_fear_inducing": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "tone_polarizing": {
+          "presentation_generalizing": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "account_anonymous": {
+          "account_biased": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "account_unreliable": {
+          "account_unclear_identity": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "account_not_objective": {
+          "account_impersonated_identity": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "account_not_independent": {
+          "sources_unreliable": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "external_sources_missing": {
+          "sources_debunked": {
             "$ref": "#/components/schemas/RatingValue"
           },
-          "external_sources_not_verifiable": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_false_context": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_forged": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_missing_context": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_not_expert": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_factually_incorrect": {
-            "$ref": "#/components/schemas/RatingValue"
-          },
-          "external_sources_heavily_abridged": {
+          "sources_missing": {
             "$ref": "#/components/schemas/RatingValue"
           }
         }
@@ -884,9 +830,9 @@
         "properties": {
           "questions": {
             "type": "array",
-            "minItems": 24,
-            "maxItems": 24,
-            "description": "Enthält alle 24 Fragen in der Reihenfolge des Fragenkatalogs. Jede Frage wird aus sämtlichen Bewertungen mit Werten von 0 bis 3 aggregiert.",
+            "minItems": 15,
+            "maxItems": 15,
+            "description": "Enthält alle 15 Fragen in der Reihenfolge des Fragenkatalogs. Jede Frage wird aus sämtlichen Bewertungen mit Werten von 0 bis 3 aggregiert.",
             "items": {
               "$ref": "#/components/schemas/AggregationQuestion"
             }

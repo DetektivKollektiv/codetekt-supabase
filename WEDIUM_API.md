@@ -29,36 +29,27 @@ Verwendete Statuscodes: `401`, `404`, `405`, `422` und `500`.
 
 ## Fragenkatalog
 
-Ein Review muss alle 24 Antworten enthalten. Die Kategorie ist Bestandteil der
+Ein Review muss alle 15 Antworten enthalten. Die Kategorie ist Bestandteil der
 Frage-ID; die API verarbeitet keine separaten Kategorieobjekte.
 
 ```json
 {
   "answers": {
-    "content_manipulated_or_deepfake": 0,
     "content_false_context": 1,
-    "content_missing_context": 2,
-    "content_advertising": 3,
-    "content_one_sided": 0,
-    "content_illogical_or_contradictory": 0,
+    "content_contradictory": 2,
+    "content_covert_advertising": 3,
     "content_clickbait": 1,
-    "tone_emotionalized": 1,
-    "tone_inflammatory": 2,
-    "tone_distracting": 0,
-    "tone_generalizing": 1,
-    "tone_polarizing": 2,
-    "account_anonymous": 0,
-    "account_unreliable": 1,
-    "account_not_objective": 0,
-    "account_not_independent": 0,
-    "external_sources_missing": 3,
-    "external_sources_not_verifiable": 2,
-    "external_sources_false_context": 1,
-    "external_sources_forged": 0,
-    "external_sources_missing_context": 1,
-    "external_sources_not_expert": 0,
-    "external_sources_factually_incorrect": 2,
-    "external_sources_heavily_abridged": 1
+    "content_deepfake": 0,
+    "presentation_derogatory": 1,
+    "presentation_aggressive": 2,
+    "presentation_fear_inducing": 0,
+    "presentation_generalizing": 1,
+    "account_biased": 2,
+    "account_unclear_identity": 0,
+    "account_impersonated_identity": 1,
+    "sources_unreliable": 2,
+    "sources_debunked": 3,
+    "sources_missing": 1
   }
 }
 ```
@@ -72,38 +63,29 @@ Die Werte werden von passend bis zunehmend problematisch bewertet:
 | `2`  | Problematisch (orange)      |
 | `3`  | Stark problematisch (rot)   |
 
-| Kategorie       | Frage-ID                               | Anzeige                   |
-| --------------- | -------------------------------------- | ------------------------- |
-| Inhalt          | `content_manipulated_or_deepfake`      | Manipuliert/Deepfake      |
-| Inhalt          | `content_false_context`                | Falscher Kontext          |
-| Inhalt          | `content_missing_context`              | Fehlender Kontext         |
-| Inhalt          | `content_advertising`                  | Werbung                   |
-| Inhalt          | `content_one_sided`                    | Einseitig                 |
-| Inhalt          | `content_illogical_or_contradictory`   | Unlogisch/widersprüchlich |
-| Inhalt          | `content_clickbait`                    | Clickbait                 |
-| Tonfall         | `tone_emotionalized`                   | Emotionalisiert           |
-| Tonfall         | `tone_inflammatory`                    | Hetzerisch                |
-| Tonfall         | `tone_distracting`                     | Ablenkend                 |
-| Tonfall         | `tone_generalizing`                    | Pauschalisierend          |
-| Tonfall         | `tone_polarizing`                      | Polarisierend             |
-| Account         | `account_anonymous`                    | Anonym                    |
-| Account         | `account_unreliable`                   | Unseriös                  |
-| Account         | `account_not_objective`                | Nicht objektiv            |
-| Account         | `account_not_independent`              | Nicht unabhängig          |
-| Externe Quellen | `external_sources_missing`             | Nicht vorhanden           |
-| Externe Quellen | `external_sources_not_verifiable`      | Nicht nachprüfbar         |
-| Externe Quellen | `external_sources_false_context`       | Falscher Kontext          |
-| Externe Quellen | `external_sources_forged`              | Gefälscht                 |
-| Externe Quellen | `external_sources_missing_context`     | Fehlender Kontext         |
-| Externe Quellen | `external_sources_not_expert`          | Nicht vom Fach            |
-| Externe Quellen | `external_sources_factually_incorrect` | Inhaltlich falsch         |
-| Externe Quellen | `external_sources_heavily_abridged`    | Stark gekürzt             |
+| Kategorie   | Frage-ID                        | Anzeige                 |
+| ----------- | ------------------------------- | ----------------------- |
+| Inhalt      | `content_false_context`         | Falscher Kontext        |
+| Inhalt      | `content_contradictory`         | Widersprüchlich         |
+| Inhalt      | `content_covert_advertising`    | Schleichwerbung         |
+| Inhalt      | `content_clickbait`             | Clickbait               |
+| Inhalt      | `content_deepfake`              | Deepfake                |
+| Darstellung | `presentation_derogatory`       | Abwertend               |
+| Darstellung | `presentation_aggressive`       | Aggressiv               |
+| Darstellung | `presentation_fear_inducing`    | Angsteinflößend         |
+| Darstellung | `presentation_generalizing`     | Pauschalisierend        |
+| Account     | `account_biased`                | Voreingenommen          |
+| Account     | `account_unclear_identity`      | Unklare Identität       |
+| Account     | `account_impersonated_identity` | Vorgetäuschte Identität |
+| Quellen     | `sources_unreliable`            | Unseriös                |
+| Quellen     | `sources_debunked`              | Widerlegt               |
+| Quellen     | `sources_missing`               | Quelle fehlt            |
 
-Jedes veröffentlichte Aggregat enthält alle 24 Fragen in dieser Reihenfolge.
-Das Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu.
-Eine Frage mit einem Durchschnitt über `0` wird in der Farbe ihres
-aufgerundeten Levels angezeigt. Sind alle Fragen einer Kategorie `0`, kann das
-Frontend dort „Alles passt“ anzeigen.
+Jedes veröffentlichte Aggregat enthält alle 15 Fragen in dieser Reihenfolge. Das
+Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu. Eine
+Frage mit einem Durchschnitt über `0` wird in der Farbe ihres aufgerundeten
+Levels angezeigt. Sind alle Fragen einer Kategorie `0`, kann das Frontend dort
+„Alles passt“ anzeigen.
 
 ## Endpunkte
 

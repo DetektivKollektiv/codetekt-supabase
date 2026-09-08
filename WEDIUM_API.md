@@ -63,6 +63,10 @@ Die Werte werden von passend bis zunehmend problematisch bewertet:
 | `2`  | Problematisch (orange)      |
 | `3`  | Stark problematisch (rot)   |
 
+Die API-Skala `0` bis `3` entspricht einer externen Skala `1` bis `4` mit
+denselben vier Farbstufen. Beispielsweise ist Rot extern `4` und in der API `3`.
+Wedium hat keine zusätzliche Antwort für „nicht anwendbar“.
+
 | Kategorie   | Frage-ID                        | Anzeige                 |
 | ----------- | ------------------------------- | ----------------------- |
 | Inhalt      | `content_false_context`         | Falscher Kontext        |
@@ -82,10 +86,30 @@ Die Werte werden von passend bis zunehmend problematisch bewertet:
 | Quellen     | `sources_missing`               | Quelle fehlt            |
 
 Jedes veröffentlichte Aggregat enthält alle 15 Fragen in dieser Reihenfolge. Das
-Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu. Eine
-Frage mit einem Durchschnitt über `0` wird in der Farbe ihres aufgerundeten
-Levels angezeigt. Sind alle Fragen einer Kategorie `0`, kann das Frontend dort
-„Alles passt“ anzeigen.
+Frontend ordnet sie anhand der ID einer Kategorie und einem Anzeigetext zu. Sind
+alle Fragen einer Kategorie `0`, kann das Frontend dort „Alles passt“ anzeigen.
+
+## Ergebnisberechnung
+
+Ein Ergebnis wird ab zwei vollständigen Reviews veröffentlicht. Für jede Frage
+wird zunächst der Durchschnitt aller Antworten berechnet. Bei zwei bis acht
+Reviews wird davon `2 / Anzahl Reviews` abgezogen; ab neun Reviews entfällt die
+Korrektur. Der korrigierte Wert wird bei `0` begrenzt und auf zwei
+Dezimalstellen gerundet. Das Farb-Level entsteht anschließend durch
+kaufmännisches Runden auf `0`, `1`, `2` oder `3`.
+
+Beispiele, wenn alle Reviews eine Frage mit Rot (`3`) beantworten:
+
+| Reviews | Korrektur | Score | Level      |
+| ------- | --------- | ----- | ---------- |
+| 2       | 1,00      | 2,00  | 2 / Orange |
+| 3       | 0,67      | 2,33  | 2 / Orange |
+| 4       | 0,50      | 2,50  | 3 / Rot    |
+| 8       | 0,25      | 2,75  | 3 / Rot    |
+| 9       | 0,00      | 3,00  | 3 / Rot    |
+
+`result_score` ist der höchste korrigierte Score aller Fragen. Die Korrektur
+wird nicht noch einmal auf das Gesamtergebnis angewendet.
 
 ## Endpunkte
 
@@ -118,7 +142,14 @@ Jedes Ergebnis enthält:
 - `calculated_at`
 
 `review_count` wird aus den intern gespeicherten `reviewer_ids` abgeleitet; die
-IDs selbst werden nicht ausgegeben. Der Endpunkt berechnet nichts neu.
+IDs selbst werden nicht ausgegeben. `result_score`, `data.questions[].score` und
+`data.questions[].fields[].average` enthalten den korrigierten Wert. `counts`
+und `percentages` zeigen weiterhin die tatsächlich eingegangenen Antworten. Der
+Endpunkt berechnet nichts neu.
+
+Bereits gespeicherte Aggregate werden nach einer Änderung der Berechnungslogik
+nicht automatisch neu berechnet. Sie werden mit der nächsten Änderung eines
+Reviews für den jeweiligen Post aktualisiert.
 
 ### Review speichern oder überschreiben
 

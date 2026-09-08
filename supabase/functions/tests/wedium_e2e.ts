@@ -148,19 +148,44 @@ Deno.test({
     );
     assertEquals(secondReview.status, 200);
 
-    const firstAggregation = await waitForAggregation(2);
+    const firstAggregation = await waitForAggregation(1);
     assertEquals(firstAggregation.review_count, 2);
-    assertEquals(firstAggregation.result_level, 2);
-    assertEquals(firstAggregation.result_code, "rather_not_trustworthy");
+    assertEquals(firstAggregation.result_level, 1);
+    assertEquals(firstAggregation.result_code, "rather_trustworthy");
 
     const questions = (firstAggregation.data as {
-      questions: Array<{ id: string }>;
+      questions: Array<{
+        id: string;
+        score: number;
+        level: number;
+        fields: Array<{
+          id: string;
+          type: "traffic-light";
+          counts: Record<string, number>;
+          percentages: Record<string, number>;
+          average: number;
+          level: number;
+        }>;
+      }>;
     }).questions;
     assertEquals(questions.length, WEDIUM_QUESTION_IDS.length);
     assertEquals(
       questions.map(({ id }) => id),
       [...WEDIUM_QUESTION_IDS],
     );
+    const falseContext = questions.find(
+      ({ id }) => id === "content_false_context",
+    );
+    assertEquals(falseContext?.score, 1);
+    assertEquals(falseContext?.level, 1);
+    assertEquals(falseContext?.fields[0], {
+      id: "content_false_context",
+      type: "traffic-light",
+      counts: { 0: 0, 1: 1, 2: 0, 3: 1 },
+      percentages: { 0: 0, 1: 50, 2: 0, 3: 50 },
+      average: 1,
+      level: 1,
+    });
 
     const updatedReview = await apiRequest(
       "PUT",
@@ -174,9 +199,9 @@ Deno.test({
     );
     assertEquals(updatedReview.status, 200);
     assert(updatedReview.data.submitted_at !== firstSubmittedAt);
-    const updatedAggregation = await waitForAggregation(2.5);
-    assertEquals(updatedAggregation.result_level, 3);
-    assertEquals(updatedAggregation.result_code, "not_trustworthy");
+    const updatedAggregation = await waitForAggregation(1.5);
+    assertEquals(updatedAggregation.result_level, 2);
+    assertEquals(updatedAggregation.result_code, "rather_not_trustworthy");
 
     const updatedUser = await apiRequest("GET", `/users/${USER_A}`);
     assertEquals(updatedUser.data.created_at, firstUserCreatedAt);

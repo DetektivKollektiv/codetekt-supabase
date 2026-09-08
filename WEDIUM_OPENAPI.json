@@ -3,8 +3,8 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
     "title": "Wedium Community Checks API",
-    "version": "1.0.0",
-    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht aus 15 kategorisierten Frage-IDs. Aggregationen werden asynchron ab zwei Reviews berechnet und enthalten immer alle 15 Fragen."
+    "version": "1.0.1",
+    "description": "Technischer Vertrag der separaten Wedium Community Checks API. Der Fragenkatalog besteht aus 15 kategorisierten Frage-IDs. Aggregationen werden asynchron ab zwei Reviews berechnet und enthalten immer alle 15 Fragen. Bei zwei bis acht Reviews wird jeder Fragenscore um 2 geteilt durch die Reviewanzahl in Richtung Grün korrigiert; ab neun Reviews entfällt die Korrektur."
   },
   "servers": [
     {
@@ -49,7 +49,7 @@
           "Aggregations"
         ],
         "summary": "Aggregationen mehrerer Posts abrufen",
-        "description": "Gibt vorhandene Aggregationen in der Reihenfolge der angefragten Post-Hashes zurück. Nicht vorhandene Posts und Posts ohne veröffentlichbares Aggregat erscheinen in `missing_post_hashes`. Der Endpunkt stößt keine Neuberechnung an. Nach einem PUT kann bis zur nächsten erfolgreichen Berechnung noch das vorherige Aggregat sichtbar sein; nach einem DELETE bleibt der Post bis zur Neuberechnung `missing`.",
+        "description": "Gibt vorhandene Aggregationen in der Reihenfolge der angefragten Post-Hashes zurück. Nicht vorhandene Posts und Posts ohne veröffentlichbares Aggregat erscheinen in `missing_post_hashes`. Der Endpunkt stößt keine Neuberechnung an. Nach einem PUT kann bis zur nächsten erfolgreichen Berechnung noch das vorherige Aggregat sichtbar sein; nach einem DELETE bleibt der Post bis zur Neuberechnung `missing`. Bereits gespeicherte Aggregate werden erst mit der nächsten Review-Änderung nach der aktuellen Berechnungslogik neu erstellt.",
         "requestBody": {
           "required": true,
           "content": {
@@ -743,7 +743,7 @@
           2,
           3
         ],
-        "description": "Aufgerundeter Score: 0 = vertrauenswürdig, 1 = eher vertrauenswürdig, 2 = eher nicht vertrauenswürdig, 3 = nicht vertrauenswürdig."
+        "description": "Kaufmännisch gerundeter korrigierter Score: 0 = vertrauenswürdig, 1 = eher vertrauenswürdig, 2 = eher nicht vertrauenswürdig, 3 = nicht vertrauenswürdig."
       },
       "ResultCode": {
         "type": "string",
@@ -782,7 +782,9 @@
           "average": {
             "type": "number",
             "minimum": 0,
-            "maximum": 3
+            "maximum": 3,
+            "multipleOf": 0.01,
+            "description": "Um 2 / Reviewanzahl korrigierter Wert bei zwei bis acht Reviews, auf zwei Dezimalstellen gerundet. Ab neun Reviews entspricht er dem ungekürzten Durchschnitt."
           },
           "level": {
             "$ref": "#/components/schemas/ResultLevel"
@@ -805,7 +807,9 @@
           "score": {
             "type": "number",
             "minimum": 0,
-            "maximum": 3
+            "maximum": 3,
+            "multipleOf": 0.01,
+            "description": "Korrigierter Fragenscore; entspricht dem `average` des enthaltenen Feldes."
           },
           "level": {
             "$ref": "#/components/schemas/ResultLevel"
@@ -832,7 +836,7 @@
             "type": "array",
             "minItems": 15,
             "maxItems": 15,
-            "description": "Enthält alle 15 Fragen in der Reihenfolge des Fragenkatalogs. Jede Frage wird aus sämtlichen Bewertungen mit Werten von 0 bis 3 aggregiert.",
+            "description": "Enthält alle 15 Fragen in der Reihenfolge des Fragenkatalogs. Counts und Prozentwerte basieren auf sämtlichen Bewertungen von 0 bis 3; Score und Level enthalten die Korrektur für zwei bis acht Reviews.",
             "items": {
               "$ref": "#/components/schemas/AggregationQuestion"
             }
@@ -864,7 +868,8 @@
             "type": "number",
             "minimum": 0,
             "maximum": 3,
-            "description": "Schlechtester, also höchster Score der enthaltenen Fragen."
+            "multipleOf": 0.01,
+            "description": "Schlechtester, also höchster korrigierter Score der enthaltenen Fragen."
           },
           "result_level": {
             "$ref": "#/components/schemas/ResultLevel"

@@ -5,8 +5,9 @@ import {
 } from "./schemas.ts";
 
 export const MIN_WEDIUM_REVIEWS = 2;
+const MAX_CORRECTED_WEDIUM_REVIEWS = 8;
 
-type RatingLevel = 0 | 1 | 2 | 3;
+export type RatingLevel = 0 | 1 | 2 | 3;
 type RatingCounts = Record<RatingLevel, number>;
 type RatingPercentages = Record<RatingLevel, number>;
 
@@ -44,7 +45,7 @@ export type WediumResultCode =
   | "not_trustworthy";
 
 export function scoreToLevel(score: number): RatingLevel {
-  return Math.max(0, Math.min(3, Math.ceil(score))) as RatingLevel;
+  return Math.max(0, Math.min(3, Math.round(score))) as RatingLevel;
 }
 
 export function levelToResultCode(level: RatingLevel): WediumResultCode {
@@ -62,6 +63,10 @@ export function buildWediumAggregation(
   reviews: WediumSubmittedReview[],
 ): WediumAggregationResult {
   const questions: WediumAggregationData["questions"] = [];
+  const correction = reviews.length >= MIN_WEDIUM_REVIEWS &&
+      reviews.length <= MAX_CORRECTED_WEDIUM_REVIEWS
+    ? 2 / reviews.length
+    : 0;
 
   for (const questionId of WEDIUM_QUESTION_IDS) {
     const counts: RatingCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -79,21 +84,24 @@ export function buildWediumAggregation(
         : 0;
     }
 
-    const average = reviews.length > 0
+    const rawAverage = reviews.length > 0
       ? (counts[1] + counts[2] * 2 + counts[3] * 3) / reviews.length
       : 0;
-    const level = scoreToLevel(average);
+    const score = Math.round(
+      (Math.max(0, rawAverage - correction) + Number.EPSILON) * 100,
+    ) / 100;
+    const level = scoreToLevel(score);
 
     questions.push({
       id: questionId,
-      score: average,
+      score,
       level,
       fields: [{
         id: questionId,
         type: "traffic-light",
         counts,
         percentages,
-        average,
+        average: score,
         level,
       }],
     });

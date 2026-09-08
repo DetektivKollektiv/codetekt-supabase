@@ -1,6 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { levelToResultCode, scoreToLevel } from "../_wedium/aggregation.ts";
+import {
+  levelToResultCode,
+  type RatingLevel,
+  type WediumAggregationData,
+} from "../_wedium/aggregation.ts";
 import { isSecretValid } from "../_wedium/auth.ts";
 import {
   putWediumReviewBodySchema,
@@ -152,14 +156,18 @@ async function handleAggregationRequest(
     }
 
     const resultScore = Number(aggregation.result_score);
-    const resultLevel = scoreToLevel(resultScore);
+    const aggregationData = aggregation
+      .data as unknown as WediumAggregationData;
+    const resultLevel = Math.max(
+      ...aggregationData.questions.map(({ level }) => level),
+    ) as RatingLevel;
     results.push({
       post_hash: postHash,
       review_count: aggregation.reviewer_ids.length,
       result_score: resultScore,
       result_level: resultLevel,
       result_code: levelToResultCode(resultLevel),
-      data: aggregation.data,
+      data: aggregationData,
       calculated_at: aggregation.calculated_at,
     });
   }

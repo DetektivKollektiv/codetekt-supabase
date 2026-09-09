@@ -3,6 +3,7 @@
 Backend for Codetekt, review system for cases, drafts, published reviews, aggregations, disputes, comments, and notification emails.
 
 The separate Wedium Community Checks contract is documented in [WEDIUM_API.md](./WEDIUM_API.md) and [WEDIUM_OPENAPI.json](./WEDIUM_OPENAPI.json).
+Production CI/CD, migration safety and the one-time server setup are documented in [docs/production-cicd.md](./docs/production-cicd.md).
 
 ## Local setup
 

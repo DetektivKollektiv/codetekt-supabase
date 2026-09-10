@@ -21,8 +21,12 @@ exists=$(docker exec -u postgres -e PGUSER=supabase_admin supabase-db \
 
 {
   printf 'begin;\n'
-  printf 'create schema if not exists supabase_migrations;\n'
+  printf 'create schema if not exists supabase_migrations authorization postgres;\n'
+  printf 'alter schema supabase_migrations owner to postgres;\n'
   printf 'create table supabase_migrations.schema_migrations (version text primary key, statements text[], name text);\n'
+  printf 'alter table supabase_migrations.schema_migrations owner to postgres;\n'
+  printf 'create table if not exists supabase_migrations.seed_files (path text primary key, hash text not null);\n'
+  printf 'alter table supabase_migrations.seed_files owner to postgres;\n'
   for filename in "${files[@]}"; do
     if [[ ! $filename =~ ^([0-9]{14})_([A-Za-z0-9_-]+)\.sql$ ]]; then
       echo "Invalid migration filename: $filename" >&2
@@ -34,4 +38,19 @@ exists=$(docker exec -u postgres -e PGUSER=supabase_admin supabase-db \
   printf 'commit;\n'
 } | docker exec -i -u postgres -e PGUSER=supabase_admin supabase-db \
   psql -d postgres -X -v ON_ERROR_STOP=1
+
+ownership_ok=$(docker exec -u postgres -e PGUSER=supabase_admin supabase-db \
+  psql -d postgres -X -q -A -t -v ON_ERROR_STOP=1 -c \
+  "select (
+     (select pg_get_userbyid(nspowner) from pg_namespace where nspname = 'supabase_migrations') = 'postgres'
+     and (select pg_get_userbyid(relowner) from pg_class where oid = 'supabase_migrations.schema_migrations'::regclass) = 'postgres'
+     and (select pg_get_userbyid(relowner) from pg_class where oid = 'supabase_migrations.seed_files'::regclass) = 'postgres'
+     and has_schema_privilege('postgres', 'supabase_migrations', 'USAGE')
+     and has_schema_privilege('postgres', 'supabase_migrations', 'CREATE')
+     and has_table_privilege('postgres', 'supabase_migrations.schema_migrations', 'INSERT')
+   )::int")
+[[ $ownership_ok == 1 ]] || {
+  echo 'Migration history ownership verification failed.' >&2
+  exit 69
+}
 echo "Baselined ${#files[@]} existing migrations. No migration SQL was executed."

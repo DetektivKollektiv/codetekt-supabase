@@ -46,6 +46,7 @@ jobs:
         run: >-
           deno test --allow-env
           supabase/functions/_shared/supabase-api-keys.test.ts
+          supabase/functions/send-email/scaleway-tem.test.ts
           supabase/functions/_wedium/schemas.test.ts
           supabase/functions/_wedium/aggregation.test.ts
       - name: Start Supabase and apply every migration to a fresh database

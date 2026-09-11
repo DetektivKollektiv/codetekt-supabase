@@ -1,7 +1,7 @@
 /**
  * SEND EMAIL EDGE FUNCTION
  *
- * Sends transactional emails via Mailgun. Called exclusively by database triggers
+ * Sends transactional emails via Scaleway TEM. Called exclusively by database triggers
  * through pg_net — never directly by clients. Authenticated via a shared secret
  * (X-Db-Secret header) stored in Supabase Vault on the DB side and in
  * DB_WEBHOOK_SECRET env on the function side.
@@ -49,11 +49,13 @@ import {
   newCaseEmail,
   reviewMilestoneEmail,
 } from "./email-templates.ts";
+import { sendScalewayEmail } from "./scaleway-tem.ts";
 
 const enc = new TextEncoder();
 
-const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY")!;
-const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN")!;
+const SCALEWAY_TEM_PROJECT_ID = Deno.env.get("SCALEWAY_TEM_PROJECT_ID")!;
+const SCALEWAY_TEM_SECRET_KEY = Deno.env.get("SCALEWAY_TEM_SECRET_KEY")!;
+const SCALEWAY_TEM_FROM_EMAIL = Deno.env.get("SCALEWAY_TEM_FROM_EMAIL")!;
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://codetekt.org";
 const NEW_CASE_NOTIFICATION_EMAIL = Deno.env.get(
   "NEW_CASE_NOTIFICATION_EMAIL",
@@ -67,35 +69,21 @@ const COMMENT_REPORT_NOTIFICATION_EMAIL = Deno.env.get(
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SECRET_KEY = getSupabaseSecretKey();
 
-// ─── Mailgun helper ───────────────────────────────────────────────────────────
+// ─── Scaleway TEM helper ─────────────────────────────────────────────────────
 
 async function sendMail(
   to: string,
   subject: string,
   html: string,
 ): Promise<void> {
-  const form = new URLSearchParams();
-  form.set("from", `Codetekt <noreply@${MAILGUN_DOMAIN}>`);
-  form.set("to", to);
-  form.set("subject", subject);
-  form.set("html", html);
-
-  const res = await fetch(
-    `https://api.eu.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
+  await sendScalewayEmail(
     {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: form.toString(),
+      projectId: SCALEWAY_TEM_PROJECT_ID,
+      secretKey: SCALEWAY_TEM_SECRET_KEY,
+      fromEmail: SCALEWAY_TEM_FROM_EMAIL,
     },
+    { to, subject, html },
   );
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Mailgun error ${res.status}: ${text}`);
-  }
 }
 
 // ─── Payload schemas ─────────────────────────────────────────────────────────

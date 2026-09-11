@@ -80,16 +80,18 @@ erneuert werden.
 
 ## Vor dem ersten automatischen Deploy
 
-Production besitzt derzeit noch keine Tabelle
-`supabase_migrations.schema_migrations`. Der Deploy bricht deshalb kontrolliert
-ab, bis die bestehende Datenbank einmalig baselined wurde.
+Vor dem ersten automatischen Deploy muss Production eine geprüfte
+`supabase_migrations.schema_migrations`-Historie besitzen. Der Deploy bricht
+kontrolliert ab, solange die bestehende Datenbank nicht baselined wurde.
 
 Vor der Baseline müssen alle vorhandenen Production-Objekte mit dem gewählten
 Backend-Commit abgeglichen werden. Außerdem müssen der tägliche Full-Backup-Timer
 installiert, ein frisches Full Backup nachgewiesen und ein isolierter Restore-Test
 geplant beziehungsweise durchgeführt werden. Die Baseline ist kein Schema-Abgleich
 und führt keine Migrationsdatei aus; sie markiert die Dateien des angegebenen
-Checkouts nur als bereits angewendet.
+Checkouts nur als bereits angewendet. Das Baseline-Skript legt das
+Migrationsschema und seine Tabellen mit `postgres` als Eigentümer an, damit die
+Supabase CLI ausstehende Migrationen und deren Historieneinträge schreiben kann.
 
 Erst danach auf dem Server ausführen:
 

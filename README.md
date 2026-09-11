@@ -10,7 +10,7 @@ Production CI/CD, migration safety and the one-time server setup are documented 
 1. Install the Supabase CLI, Docker, and Deno 2.
 2. Start the local stack with `supabase start`.
 3. Use the local publishable and secret credentials from the CLI output. The edge runtime injects its keys automatically; standalone E2E tests expect `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`.
-4. If you run the webhook, email, or Wedium functions locally, also set `DB_WEBHOOK_SECRET`, `WEDIUM_API_KEY`, and the Mailgun and notification email variables listed below.
+4. If you run the webhook, email, or Wedium functions locally, also set `DB_WEBHOOK_SECRET`, `WEDIUM_API_KEY`, and the Scaleway TEM and notification email variables listed below.
 5. Stop the stack with `supabase stop`.
 
 ## Environment variables
@@ -22,8 +22,9 @@ Production CI/CD, migration safety and the one-time server setup are documented 
 - `SUPABASE_SECRET_KEY`: Single secret key used by the standalone E2E test.
 - `DB_WEBHOOK_SECRET`: Shared secret that database triggers send to webhook-backed edge functions.
 - `WEDIUM_API_KEY`: Server-to-server key required in the Wedium API's `X-API-Key` header.
-- `MAILGUN_API_KEY`: Mailgun API key used by `send-email`.
-- `MAILGUN_DOMAIN`: Mailgun domain used by `send-email`.
+- `SCALEWAY_TEM_PROJECT_ID`: Scaleway Project ID used by `send-email`.
+- `SCALEWAY_TEM_SECRET_KEY`: Secret key with permission to send email through the Scaleway TEM API.
+- `SCALEWAY_TEM_FROM_EMAIL`: Verified sender address used by `send-email`.
 - `SITE_URL`: Public site URL used in email links.
 - `NEW_CASE_NOTIFICATION_EMAIL`: Recipient for new case notifications.
 - `DISPUTE_NOTIFICATION_EMAIL`: Recipient for dispute notifications.

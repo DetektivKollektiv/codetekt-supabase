@@ -5,6 +5,7 @@
 | Item | Current production setup |
 | --- | --- |
 | API | `https://api.codetekt.org` |
+| Studio | `https://api.codetekt.org` (protected with HTTP Basic Authentication) |
 | Host | [Hetzner production](../hetzner-production/README.md) |
 | Stack | Caddy, API gateway, PostgreSQL, Auth, REST, Realtime, Storage, Imgproxy, Meta, Studio, Supavisor, Edge Functions, templates server |
 | Configuration | Compose configuration and private environment files on the production host |
@@ -13,6 +14,7 @@
 - Caddy exposes the public routes; internal containers communicate on the Compose network.
 - Auth owns identities in `auth.users`; application access is governed by RLS on all public tables.
 - Configuration values and function secrets live only in the production secret configuration. Never copy their values into a migration, function source, or documentation.
+- To use Studio, request the Basic Authentication credentials from Gorm or Christoph. If they may have been exposed, report it to them immediately and request replacement credentials; do not continue using or share the exposed pair.
 
 ## CI/CD and local verification
 

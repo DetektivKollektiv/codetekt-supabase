@@ -1,0 +1,15 @@
+[Unit]
+Description=Codetekt monitoring (%i)
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=gorm
+ExecStart=/usr/bin/python3 /opt/codetekt-monitoring/monitor.py %i
+TimeoutStartSec=120
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true

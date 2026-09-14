@@ -14,6 +14,14 @@
 - Auth owns identities in `auth.users`; application access is governed by RLS on all public tables.
 - Configuration values and function secrets live only in the production secret configuration. Never copy their values into a migration, function source, or documentation.
 
+## CI/CD and local verification
+
+- Pull requests to `main` run migration-history checks, unit tests, a disposable local Supabase stack, pgTAP when present, and Edge Function E2E tests. They receive no Production secrets.
+- A successful push to `main` is the only production-backend deployment path. It transfers a secret-free, SHA-256-checked bundle of migrations and Edge Functions through a restricted deployment account.
+- Before deployment, the server checks WAL archive health, a recent full backup, and the baselined migration history. It then applies only pending migrations, refreshes functions, and checks Auth plus an expected unauthorised function response.
+- Applied database migrations are corrected with a new migration, never an automatic rollback. A failed function refresh restores its prior function directory.
+- For local work, use the Supabase CLI, Docker, and Deno. Start an isolated stack with `supabase start`; use only local test credentials and stop it with `supabase stop`.
+
 ## Database
 
 All tables below are in `public` and have RLS enabled.

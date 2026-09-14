@@ -1,0 +1,23 @@
+services:
+  auth:
+    depends_on:
+      templates-server:
+        condition: service_started
+    environment:
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://templates-server/confirmation.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "E-Mail-Adresse bestätigen"
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://templates-server/reset-password.html
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Passwort zurücksetzen"
+
+  templates-server:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    command:
+      - caddy
+      - file-server
+      - -r
+      - /templates
+      - --listen
+      - :80
+    volumes:
+      - ./volumes/templates:/templates:ro

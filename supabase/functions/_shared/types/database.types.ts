@@ -523,6 +523,42 @@ export type Database = {
           },
         ]
       }
+      challenge_configs: {
+        Row: {
+          content: Json
+          created_at: string
+          ends_on: string
+          id: string
+          messages: Json
+          starts_on: string
+          updated_at: string
+          visible_from: string
+          visible_until: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          ends_on: string
+          id?: string
+          messages?: Json
+          starts_on: string
+          updated_at?: string
+          visible_from: string
+          visible_until: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          ends_on?: string
+          id?: string
+          messages?: Json
+          starts_on?: string
+          updated_at?: string
+          visible_from?: string
+          visible_until?: string
+        }
+        Relationships: []
+      }
       open_graph_data: {
         Row: {
           case_id: string
@@ -603,6 +639,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          challenge_intro_seen_at: string | null
           deactivated_at: string | null
           get_notifications: boolean
           id: string
@@ -613,6 +650,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          challenge_intro_seen_at?: string | null
           deactivated_at?: string | null
           get_notifications?: boolean
           id: string
@@ -623,6 +661,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          challenge_intro_seen_at?: string | null
           deactivated_at?: string | null
           get_notifications?: boolean
           id?: string
@@ -840,6 +879,122 @@ export type Database = {
         }
         Relationships: []
       }
+      wedium_posts: {
+        Row: {
+          id: string
+          post_hash: string
+          review_revision: number
+        }
+        Insert: {
+          id?: string
+          post_hash: string
+          review_revision?: number
+        }
+        Update: {
+          id?: string
+          post_hash?: string
+          review_revision?: number
+        }
+        Relationships: []
+      }
+      wedium_review_aggregations: {
+        Row: {
+          calculated_at: string
+          data: Json
+          post_id: string
+          result_score: number
+          reviewer_ids: string[]
+          source_revision: number
+        }
+        Insert: {
+          calculated_at?: string
+          data: Json
+          post_id: string
+          result_score: number
+          reviewer_ids: string[]
+          source_revision: number
+        }
+        Update: {
+          calculated_at?: string
+          data?: Json
+          post_id?: string
+          result_score?: number
+          reviewer_ids?: string[]
+          source_revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedium_review_aggregations_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "wedium_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedium_reviews: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          post_id: string
+          reviewed_by: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id?: string
+          post_id: string
+          reviewed_by: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          post_id?: string
+          reviewed_by?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedium_reviews_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "wedium_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedium_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "wedium_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedium_users: {
+        Row: {
+          created_at: string
+          id: string
+          user_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_hash?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       cases_without_open_disputes: {
@@ -1001,6 +1156,19 @@ export type Database = {
           username: string
         }[]
       }
+      get_challenge_progress: {
+        Args: {
+          challenge_ends_on: string
+          challenge_starts_on: string
+          leaderboard_limit?: number
+        }
+        Returns: {
+          daily_resolved_cases: Json
+          leaderboard: Json
+          total_resolved_cases: number
+          user_resolved_points: Json
+        }[]
+      }
       get_project_url: { Args: never; Returns: string }
       get_user_leaderboard: {
         Args: { limit_count?: number }
@@ -1017,6 +1185,16 @@ export type Database = {
         Returns: boolean
       }
       is_active_profile: { Args: never; Returns: boolean }
+      publish_wedium_review_aggregation: {
+        Args: {
+          p_data: Json
+          p_post_id: string
+          p_result_score: number
+          p_reviewer_ids: string[]
+          p_source_revision: number
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

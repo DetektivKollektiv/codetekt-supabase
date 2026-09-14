@@ -2,14 +2,14 @@
 
 Compact operating documentation for the self-hosted Codetekt backend. It reflects the production setup verified on 2026-09-14.
 
-| Area | Provider / project | Entry point | Details |
+| Area | Provider / project | Primary team entry | Details |
 | --- | --- | --- | --- |
-| Production host | Hetzner Cloud / `Codetekt` | Personal SSH access | [Host and runtime](docs/hetzner-production/README.md) |
+| Production host | Hetzner Cloud / `Codetekt` | Hetzner Cloud Console | [Host and runtime](docs/hetzner-production/README.md) |
 | Supabase backend | Production host | `https://api.codetekt.org` | [Services, data, functions](docs/supabase-backend/README.md) |
-| Recovery | Hetzner Cloud + Object Storage / `Codetekt Backups` | Operations only | [Backups and recovery](docs/backups-recovery/README.md) |
-| Public status | Scaleway / `Codetekt` / `Status` | Personal SSH access | [Uptime Kuma and checks](docs/scaleway-status/README.md) |
+| Recovery | Hetzner Cloud + Object Storage / `Codetekt Backups` | Hetzner Cloud Console | [Backups and recovery](docs/backups-recovery/README.md) |
+| Public status | Scaleway / `Codetekt` / `Status` | `https://status.codetekt.org` | [Uptime Kuma and checks](docs/scaleway-status/README.md) |
 | Transactional email | Scaleway / `Codetekt` / `Mail` | Scaleway console | [Delivery and credentials](docs/scaleway-mail/README.md) |
-| Wedium API | Supabase function runtime | API-key protected | [Guide and OpenAPI](docs/wedium/README.md) |
+| Wedium API | Supabase function runtime | `https://api.codetekt.org/functions/v1/wedium` | [Guide and OpenAPI](docs/wedium/README.md) |
 
 ## Access rule
 

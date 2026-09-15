@@ -1,0 +1,15 @@
+services:
+  auth:
+    environment:
+      # Caddy replaces spoofable incoming X-Forwarded-For values and Envoy
+      # preserves the real client IP as the first address in the header.
+      GOTRUE_RATE_LIMIT_HEADER: X-Forwarded-For
+
+      # GoTrue v2.189.0 interprets these values per five minutes per client IP.
+      GOTRUE_RATE_LIMIT_OTP: "30"
+      GOTRUE_RATE_LIMIT_VERIFY: "30"
+      GOTRUE_RATE_LIMIT_TOKEN_REFRESH: "150"
+
+      # Project-wide email allowance and per-user resend cooldown.
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: "30"
+      GOTRUE_SMTP_MAX_FREQUENCY: 60s

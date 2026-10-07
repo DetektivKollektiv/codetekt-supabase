@@ -111,6 +111,27 @@ Beispiele, wenn alle Reviews eine Frage mit Rot (`3`) beantworten:
 `result_score` ist der höchste korrigierte Score aller Fragen. Die Korrektur
 wird nicht noch einmal auf das Gesamtergebnis angewendet.
 
+### Persönliches Ergebnis
+
+Die `PUT`- und `GET`-Antworten eines Reviews enthalten `personal_result`.
+`result_level` ist der höchste (kritischste) Wert der 15 Einzelantworten.
+Es gibt keinen Mittelwert und keine Community-Korrektur. Das persönliche
+Ergebnis ist unmittelbar nach dem Speichern verfügbar, auch beim ersten
+Review eines Posts, und unabhängig von der asynchronen Community-Aggregation.
+
+| `result_level` | `result_code` | Kommentartext |
+| --- | --- | --- |
+| `0` | `trustworthy` | Vertrauenswürdig |
+| `1` | `rather_trustworthy` | Eher vertrauenswürdig |
+| `2` | `rather_not_trustworthy` | Eher nicht vertrauenswürdig |
+| `3` | `not_trustworthy` | Nicht vertrauenswürdig |
+
+Wedium kann den Wert aus der erfolgreichen `PUT`-Antwort direkt für einen
+Kommentar verwenden und später über `GET` erneut abrufen. Wedium ordnet die
+eingeloggte Person serverseitig dem passenden `user_hash` zu, hält den API-Key
+serverseitig und übersetzt den Ergebniscode in die Sprache des Kommentars.
+Ein bereits veröffentlichter Kommentar wird durch diese API nicht verändert.
+
 ## Endpunkte
 
 ### Aggregationen abrufen
@@ -162,6 +183,10 @@ Body: vollständiges `answers`-Objekt aus dem Fragenkatalog.
 ```json
 {
   "saved": true,
+  "personal_result": {
+    "result_level": 3,
+    "result_code": "not_trustworthy"
+  },
   "submitted_at": "2026-08-25T09:00:00.000Z",
   "updated_at": "2026-08-25T09:00:00.000Z"
 }
@@ -177,8 +202,9 @@ Review vollständig. `created_at` bleibt erhalten; `submitted_at` und
 GET /functions/v1/wedium/users/{user_hash}/reviews/{post_hash}
 ```
 
-Liefert `post_hash`, `answers`, `submitted_at` und `updated_at`. Ein fehlendes
-Review ergibt `404`.
+Liefert `post_hash`, `answers`, `personal_result`, `submitted_at` und `updated_at`.
+Das persönliche Ergebnis entspricht den aktuell gespeicherten Antworten, auch
+nach dem Überschreiben eines Reviews. Ein fehlendes Review ergibt `404`.
 
 ### Review löschen
 

@@ -108,6 +108,10 @@ Deno.test({
     );
     assertEquals(firstReview.status, 200);
     assertEquals(firstReview.data.saved, true);
+    assertEquals(firstReview.data.personal_result, {
+      result_level: 1,
+      result_code: "rather_trustworthy",
+    });
     const firstSubmittedAt = firstReview.data.submitted_at;
 
     const storedReview = await apiRequest(
@@ -115,6 +119,10 @@ Deno.test({
       `/users/${USER_A}/reviews/${POST_A}`,
     );
     assertEquals(storedReview.status, 200);
+    assertEquals(
+      storedReview.data.personal_result,
+      firstReview.data.personal_result,
+    );
     assertEquals(
       (storedReview.data.answers as Record<string, number>)
         .content_false_context,
@@ -147,6 +155,10 @@ Deno.test({
       },
     );
     assertEquals(secondReview.status, 200);
+    assertEquals(secondReview.data.personal_result, {
+      result_level: 3,
+      result_code: "not_trustworthy",
+    });
 
     const firstAggregation = await waitForAggregation(1);
     assertEquals(firstAggregation.review_count, 2);
@@ -198,6 +210,19 @@ Deno.test({
       },
     );
     assertEquals(updatedReview.status, 200);
+    assertEquals(updatedReview.data.personal_result, {
+      result_level: 3,
+      result_code: "not_trustworthy",
+    });
+    const storedUpdatedReview = await apiRequest(
+      "GET",
+      `/users/${USER_A}/reviews/${POST_A}`,
+    );
+    assertEquals(storedUpdatedReview.status, 200);
+    assertEquals(
+      storedUpdatedReview.data.personal_result,
+      updatedReview.data.personal_result,
+    );
     assert(updatedReview.data.submitted_at !== firstSubmittedAt);
     const updatedAggregation = await waitForAggregation(1.5);
     assertEquals(updatedAggregation.result_level, 2);

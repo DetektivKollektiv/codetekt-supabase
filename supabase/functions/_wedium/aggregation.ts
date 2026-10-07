@@ -59,6 +59,20 @@ export function levelToResultCode(level: RatingLevel): WediumResultCode {
   return codes[level];
 }
 
+export function buildWediumPersonalResult(answers: WediumAnswers): {
+  result_level: RatingLevel;
+  result_code: WediumResultCode;
+} {
+  const level = Math.max(
+    ...WEDIUM_QUESTION_IDS.map((id) => answers[id]),
+  ) as RatingLevel;
+
+  return {
+    result_level: level,
+    result_code: levelToResultCode(level),
+  };
+}
+
 export function buildWediumAggregation(
   reviews: WediumSubmittedReview[],
 ): WediumAggregationResult {

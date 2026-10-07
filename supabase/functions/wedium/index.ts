@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import {
+  buildWediumPersonalResult,
   levelToResultCode,
   type RatingLevel,
   type WediumAggregationData,
@@ -9,6 +10,7 @@ import { isSecretValid } from "../_wedium/auth.ts";
 import {
   putWediumReviewBodySchema,
   wediumAggregationRequestSchema,
+  wediumAnswersSchema,
   wediumHashSchema,
 } from "../_wedium/schemas.ts";
 import { getSupabaseSecretKey } from "../_shared/supabase-api-keys.ts";
@@ -227,7 +229,7 @@ async function handlePutReview(
       submitted_at: timestamp,
       updated_at: timestamp,
     }, { onConflict: "post_id,reviewed_by" })
-    .select("submitted_at, updated_at")
+    .select("data, submitted_at, updated_at")
     .single();
 
   if (error) {
@@ -237,6 +239,9 @@ async function handlePutReview(
 
   return jsonResponse({
     saved: true,
+    personal_result: buildWediumPersonalResult(
+      wediumAnswersSchema.parse(review.data),
+    ),
     submitted_at: review.submitted_at,
     updated_at: review.updated_at,
   });
@@ -271,6 +276,9 @@ async function handleGetReview(
   return jsonResponse({
     post_hash: postHash,
     answers: review.data,
+    personal_result: buildWediumPersonalResult(
+      wediumAnswersSchema.parse(review.data),
+    ),
     submitted_at: review.submitted_at,
     updated_at: review.updated_at,
   });

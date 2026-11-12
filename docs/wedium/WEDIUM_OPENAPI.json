@@ -106,7 +106,7 @@
           "Reviews"
         ],
         "summary": "Review speichern oder vollständig überschreiben",
-        "description": "Legt User und Post bei Bedarf an. Ein vorhandenes Review desselben Users für denselben Post wird vollständig ersetzt. Jede erfolgreiche Änderung stößt die asynchrone Neuberechnung an.",
+        "description": "Legt User und Post bei Bedarf an. Ein vorhandenes Review desselben Users für denselben Post wird vollständig ersetzt. Jede erfolgreiche Änderung stößt die asynchrone Neuberechnung an. Die Antwort enthält das persönliche Ergebnis des gespeicherten Reviews in personal_result, sofort und unabhängig von der Community-Aggregation.",
         "requestBody": {
           "required": true,
           "content": {
@@ -193,7 +193,8 @@
           "500": {
             "$ref": "#/components/responses/InternalError"
           }
-        }
+        },
+        "description": "Liefert die 15 Antworten und das persönliche Ergebnis des aktuellen gespeicherten Reviews. personal_result wird durch den höchsten Einzelwert bestimmt. Ohne gespeichertes Review wird 404 zurückgegeben."
       },
       "delete": {
         "operationId": "deleteWediumReview",
@@ -546,7 +547,8 @@
         "required": [
           "saved",
           "submitted_at",
-          "updated_at"
+          "updated_at",
+          "personal_result"
         ],
         "properties": {
           "saved": {
@@ -560,6 +562,9 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "personal_result": {
+            "$ref": "#/components/schemas/PersonalResult"
           }
         }
       },
@@ -570,7 +575,8 @@
           "post_hash",
           "answers",
           "submitted_at",
-          "updated_at"
+          "updated_at",
+          "personal_result"
         ],
         "properties": {
           "post_hash": {
@@ -586,6 +592,9 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "personal_result": {
+            "$ref": "#/components/schemas/PersonalResult"
           }
         }
       },
@@ -972,6 +981,37 @@
         "properties": {
           "error": {
             "$ref": "#/components/schemas/ApiError"
+          }
+        }
+      },
+      "PersonalResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Persönliches Ergebnis des aktuellen gespeicherten Reviews. Der höchste der 15 Einzelwerte bestimmt die Stufe, ohne Mittelwert oder Community-Korrektur. Sofort verfügbar, unabhängig von der Anzahl anderer Reviews.",
+        "required": [
+          "result_level",
+          "result_code"
+        ],
+        "properties": {
+          "result_level": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "description": "Höchster (kritischster) Einzelwert der 15 Antworten."
+          },
+          "result_code": {
+            "type": "string",
+            "enum": [
+              "trustworthy",
+              "rather_trustworthy",
+              "rather_not_trustworthy",
+              "not_trustworthy"
+            ],
+            "description": "Zuordnung der Stufen 0, 1, 2, 3 in derselben Reihenfolge."
           }
         }
       }

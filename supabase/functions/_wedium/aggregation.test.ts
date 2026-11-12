@@ -1,6 +1,7 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import {
   buildWediumAggregation,
+  buildWediumPersonalResult,
   levelToResultCode,
   scoreToLevel,
 } from "./aggregation.ts";
@@ -14,6 +15,43 @@ function answers(values: Partial<WediumAnswers>): WediumAnswers {
     ]),
   ) as WediumAnswers;
 }
+
+Deno.test("Wedium personal result uses the worst answer across all questions", () => {
+  const codes = [
+    "trustworthy",
+    "rather_trustworthy",
+    "rather_not_trustworthy",
+    "not_trustworthy",
+  ] as const;
+
+  for (const level of [0, 1, 2, 3] as const) {
+    for (const questionId of WEDIUM_QUESTION_IDS) {
+      assertEquals(
+        buildWediumPersonalResult(answers({ [questionId]: level })),
+        { result_level: level, result_code: codes[level] },
+      );
+    }
+  }
+});
+
+Deno.test("Wedium personal result follows changed answers without community correction", () => {
+  assertEquals(
+    buildWediumPersonalResult(answers({
+      content_false_context: 1,
+      content_deepfake: 3,
+      sources_missing: 2,
+    })),
+    { result_level: 3, result_code: "not_trustworthy" },
+  );
+  assertEquals(
+    buildWediumPersonalResult(answers({
+      content_false_context: 1,
+      content_deepfake: 0,
+      sources_missing: 2,
+    })),
+    { result_level: 2, result_code: "rather_not_trustworthy" },
+  );
+});
 
 Deno.test("Wedium aggregation corrects every question while preserving distributions", () => {
   const result = buildWediumAggregation([

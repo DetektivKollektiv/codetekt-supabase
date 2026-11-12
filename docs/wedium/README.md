@@ -16,8 +16,8 @@ The human guide and the machine-readable contract live together here:
 | Operation | Route | Result |
 | --- | --- | --- |
 | Read aggregates | `POST /review-aggregations` | Existing aggregates and `missing_post_hashes`; 1–100 posts |
-| Create/replace review | `PUT /users/{user_hash}/reviews/{post_hash}` | One complete current review per user/post |
-| Read/delete review | `GET` / `DELETE` same route | Current review or idempotent deletion |
+| Create/replace review | `PUT /users/{user_hash}/reviews/{post_hash}` | One complete current review per user/post, including `personal_result` |
+| Read/delete review | `GET` / `DELETE` same route | Current review with `personal_result` or idempotent deletion |
 | Read/delete user | `GET` / `DELETE /users/{user_hash}` | Pseudonymous user metadata or user plus reviews deletion |
 
 - `user_hash` and `post_hash` are lowercase 64-character hashes.
@@ -25,6 +25,27 @@ The human guide and the machine-readable contract live together here:
 - The data model is `wedium_users` → `wedium_reviews` ← `wedium_posts`; published results are in `wedium_review_aggregations`.
 - Every review mutation queues recalculation. An aggregate is publishable from two reviews onwards and is therefore intentionally asynchronous.
 - The contract defines the status and validation behavior. Check it before changing a consumer, API implementation, question catalogue, or aggregation logic.
+
+## Persönliches Ergebnis
+
+Die `PUT`- und `GET`-Antworten eines Reviews enthalten `personal_result`.
+`result_level` ist der höchste (kritischste) Wert der 15 Einzelantworten.
+Es gibt keinen Mittelwert und keine Community-Korrektur. Das persönliche
+Ergebnis ist unmittelbar nach dem Speichern verfügbar, auch beim ersten
+Review eines Posts, und unabhängig von der asynchronen Community-Aggregation.
+
+| `result_level` | `result_code` | Kommentartext |
+| --- | --- | --- |
+| `0` | `trustworthy` | Vertrauenswürdig |
+| `1` | `rather_trustworthy` | Eher vertrauenswürdig |
+| `2` | `rather_not_trustworthy` | Eher nicht vertrauenswürdig |
+| `3` | `not_trustworthy` | Nicht vertrauenswürdig |
+
+Wedium kann den Wert aus der erfolgreichen `PUT`-Antwort direkt für einen
+Kommentar verwenden und später über `GET` erneut abrufen. Wedium ordnet die
+eingeloggte Person serverseitig dem passenden `user_hash` zu, hält den API-Key
+serverseitig und übersetzt den Ergebniscode in die Sprache des Kommentars.
+Ein bereits veröffentlichter Kommentar wird durch diese API nicht verändert.
 
 ## Change boundary
 
